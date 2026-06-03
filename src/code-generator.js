@@ -130,7 +130,9 @@ function resolveParameterType(record, baseName, interfacesToDeclare) {
   if (isNullable) {
     finalType = `(${finalType}) | null`;
   }
-  return finalType;
+  
+  // 自動清理舊資料遺留的 [object Object] 字串，以保證 100% 編譯通過
+  return finalType.replace(/\[object Object\]/g, '{ [key: string]: any }');
 }
 
 function processFileRefactoring(filePath, typeDB, config) {

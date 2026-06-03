@@ -1,0 +1,389 @@
+{
+  "src/utils.js::isNode::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 31
+  },
+  "src/TodoStore.js::load::return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "src/TodoStore.js::add::param::text": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoStore.js::add::var::trimmed": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/utils.js::generateId::return": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoStore.js::add::var::newTodo": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "text": "string",
+        "completed": "boolean",
+        "createdAt": "string"
+      }
+    ],
+    "callCount": 6
+  },
+  "src/TodoStore.js::save::return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 5
+  },
+  "src/TodoStore.js::add::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "text": "string",
+        "completed": "boolean",
+        "createdAt": "string"
+      }
+    ],
+    "callCount": 6
+  },
+  "src/TodoStore.js::toggle::param::id": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 3
+  },
+  "src/TodoStore.js::toggle::var::todo": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "text": "string",
+        "completed": "boolean",
+        "createdAt": "string"
+      }
+    ],
+    "callCount": 3
+  },
+  "src/TodoStore.js::toggle::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 3
+  },
+  "src/TodoStore.js::getFiltered::param::filter": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 25
+  },
+  "src/TodoStore.js::anonymous::param::t": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "text": "string",
+        "completed": "boolean",
+        "createdAt": "string"
+      }
+    ],
+    "callCount": 24
+  },
+  "src/TodoStore.js::anonymous::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 24
+  },
+  "src/TodoStore.js::getFiltered::return": {
+    "observedTypes": [
+      "Array<[object Object]>",
+      "Array<[object Object] | [object Object]>",
+      "Array<any>",
+      "Array<{ [key: string]: any }>"
+    ],
+    "objectShapes": [],
+    "callCount": 25
+  },
+  "src/TodoStore.js::delete::param::id": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "src/TodoStore.js::delete::var::initialLength": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "src/TodoStore.js::todos::param::t": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "text": "string",
+        "completed": "boolean",
+        "createdAt": "string"
+      }
+    ],
+    "callCount": 3
+  },
+  "src/TodoStore.js::todos::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 3
+  },
+  "src/TodoStore.js::delete::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "src/utils.js::sanitizeHTML::param::str": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/utils.js::sanitizeHTML::return": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/index.js::global::var::currentFilter": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/TodoStore.js::load::var::data": {
+    "observedTypes": [
+      "null"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::initApp::var::todoForm": {
+    "observedTypes": [
+      "HTMLFormElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::initApp::var::todoInput": {
+    "observedTypes": [
+      "HTMLInputElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::initApp::var::todoList": {
+    "observedTypes": [
+      "HTMLUListElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::initApp::var::filterBtns": {
+    "observedTypes": [
+      "NodeList"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::initApp::var::clearCompletedBtn": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::initApp::var::itemsLeftSpan": {
+    "observedTypes": [
+      "HTMLSpanElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::anonymous::param::btn": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/index.js::render::var::filtered": {
+    "observedTypes": [
+      "Array<any>",
+      "Array<[object Object]>",
+      "Array<[object Object] | [object Object]>",
+      "Array<{ [key: string]: any }>"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/index.js::render::var::placeholder": {
+    "observedTypes": [
+      "HTMLDivElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/index.js::updateStatus::var::activeCount": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 8
+  },
+  "src/index.js::updateStatus::var::completedCount": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 8
+  },
+  "src/index.js::anonymous::param::e": {
+    "observedTypes": [
+      "SubmitEvent"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "src/index.js::anonymous::var::val": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "src/index.js::anonymous::param::todo": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "text": "string",
+        "completed": "boolean",
+        "createdAt": "string"
+      }
+    ],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::param::todo": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "text": "string",
+        "completed": "boolean",
+        "createdAt": "string"
+      }
+    ],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::param::onToggle": {
+    "observedTypes": [],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::param::onDelete": {
+    "observedTypes": [],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::var::li": {
+    "observedTypes": [
+      "HTMLLIElement"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/utils.js::sanitizeHTML::var::temp": {
+    "observedTypes": [
+      "HTMLDivElement"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::var::safeText": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::var::checkbox": {
+    "observedTypes": [
+      "HTMLInputElement"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::var::deleteBtn": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::return": {
+    "observedTypes": [
+      "HTMLLIElement"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/index.js::anonymous::var::element": {
+    "observedTypes": [
+      "HTMLLIElement"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "src/TodoDOM.js::createTodoItem::param::onToggle::cb_param::0": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/TodoDOM.js::createTodoItem::param::onToggle::cb_return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  }
+}

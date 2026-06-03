@@ -1,0 +1,17 @@
+{
+  "include": [
+    "src/**/*.js",
+    "modules/**/*.js",
+    "*.js"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "**/dist/**",
+    "**/*.test.js",
+    "**/test/**"
+  ],
+  "trackerPort": 9002,
+  "maxDepth": 5,
+  "confidenceThreshold": 1,
+  "interfaceThreshold": 3
+}

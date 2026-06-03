@@ -1,5 +1,14 @@
 import { isNode, generateId } from './utils.js';
 
+interface AddReturnShape {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+  [key: string]: any;
+}
+
+
 export class TodoStore {
   constructor() {
     /** @type {Array<{id: string, text: string, completed: boolean, createdAt: string}>} */
@@ -10,7 +19,7 @@ export class TodoStore {
   /**
    * 載入待辦事項
    */
-  load() {
+  load(): undefined {
     if (isNode()) {
       this.todos = [];
       return;
@@ -27,7 +36,7 @@ export class TodoStore {
   /**
    * 儲存待辦事項
    */
-  save() {
+  save(): undefined {
     if (isNode()) return;
     try {
       localStorage.setItem('antigravity-todos', JSON.stringify(this.todos));
@@ -41,7 +50,7 @@ export class TodoStore {
    * @param {string} text
    * @returns {object}
    */
-  add(text) {
+  add(text: string): AddReturnShape {
     const trimmed = text.trim();
     if (!trimmed) return null;
 
@@ -62,7 +71,7 @@ export class TodoStore {
    * @param {string} id
    * @returns {boolean}
    */
-  toggle(id) {
+  toggle(id: string): boolean {
     const todo = this.todos.find(t => t.id === id);
     if (todo) {
       todo.completed = !todo.completed;
@@ -77,7 +86,7 @@ export class TodoStore {
    * @param {string} id
    * @returns {boolean}
    */
-  delete(id) {
+  delete(id: string): boolean {
     const initialLength = this.todos.length;
     this.todos = this.todos.filter(t => t.id !== id);
     this.save();
@@ -97,7 +106,7 @@ export class TodoStore {
    * @param {string} filter 'all' | 'active' | 'completed'
    * @returns {Array<object>}
    */
-  getFiltered(filter) {
+  getFiltered(filter: string): Array<{ [key: string]: any }> | Array<{ [key: string]: any } | { [key: string]: any }> | Array<any> | Array<{ [key: string]: any }> {
     if (filter === 'active') {
       return this.todos.filter(t => !t.completed);
     } else if (filter === 'completed') {

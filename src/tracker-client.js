@@ -144,7 +144,12 @@
       if (val.length === 0) return 'Array<any>';
       const elementTypes = new Set();
       val.slice(0, 10).forEach(item => {
-        elementTypes.add(serializeType(item, depth + 1));
+        const itemType = serializeType(item, depth + 1);
+        if (typeof itemType === 'object') {
+          elementTypes.add('{ [key: string]: any }');
+        } else {
+          elementTypes.add(itemType);
+        }
       });
       return `Array<${Array.from(elementTypes).join(' | ')}>`;
     }

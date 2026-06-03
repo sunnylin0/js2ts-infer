@@ -15,4 +15,10 @@
 - **重大問題修正**：
   - 解決 Windows 環境下 `NODE_OPTIONS` 路徑逸出與大小寫磁碟代號匹配問題。
   - 修正 Babel AST 替換造成的遍歷無窮遞迴（引入 `returnPath.skip()` 解決）。
+- **進階 E2E 驗證**：
+  - 在 `1_todo` 前端專案中執行完整的 scan、run 側錄與 generate 轉換。
+  - **Chrome 瀏覽器側錄驗證**：成功在 `run` 命令中背景啟動 9002 型別伺服器與 Vite 開發伺服器，利用 Puppeteer 控制 Chrome 瀏覽器自動對網頁待辦事項進行新增、刪除、狀態切換操作，完整驗證了前端 Vite 插件於 unload 時將型別資料 POST 傳回的運作流。
+  - 成功克服隱式型別轉換導致的 `Array<[object Object]>` 髒資料巨坑，設計了雙重防護替換與 Array 元素物件格式化器，將其歸一為合法的 `Array<{ [key: string]: any }>`，達成 100% TS 語法無暇生成。
+
+
 

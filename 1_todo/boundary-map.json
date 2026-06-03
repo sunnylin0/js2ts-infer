@@ -1,0 +1,33 @@
+{
+  "classes": {
+    "TodoStore": "src/TodoStore.js",
+    "TodoDOM": "src/TodoDOM.js"
+  },
+  "boundaries": [
+    {
+      "filePath": "src/utils.js",
+      "exportName": "isNode",
+      "type": "function"
+    },
+    {
+      "filePath": "src/utils.js",
+      "exportName": "generateId",
+      "type": "function"
+    },
+    {
+      "filePath": "src/utils.js",
+      "exportName": "sanitizeHTML",
+      "type": "function"
+    },
+    {
+      "filePath": "src/TodoStore.js",
+      "exportName": "TodoStore",
+      "type": "class"
+    },
+    {
+      "filePath": "src/TodoDOM.js",
+      "exportName": "TodoDOM",
+      "type": "class"
+    }
+  ]
+}
