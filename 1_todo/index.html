@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Todo - 極致美學待辦清單</title>
+  
+  <!-- 載入 Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS 設計系統與變數 */
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, hsl(244, 49%, 18%) 0%, hsl(222, 47%, 7%) 100%);
+      --glass-bg: rgba(15, 23, 42, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-purple: hsl(263, 90%, 65%);
+      --accent-cyan: hsl(190, 95%, 45%);
+      --accent-gradient: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+      --accent-gradient-hover: linear-gradient(135deg, hsl(263, 90%, 70%) 0%, hsl(190, 95%, 50%) 100%);
+      --item-bg: rgba(30, 41, 59, 0.35);
+      --item-border: rgba(255, 255, 255, 0.04);
+      --font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    /* 炫麗背景霓虹光暈 */
+    .bg-glow-1 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+      top: -100px;
+      left: -100px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow-2 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+      bottom: -150px;
+      right: -100px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 主卡片玻璃擬態 */
+    .todo-container {
+      position: relative;
+      width: 100%;
+      max-width: 540px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: var(--glass-shadow);
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* 頂部標題 */
+    header {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    /* 輸入區塊 */
+    .todo-form {
+      display: flex;
+      gap: 12px;
+      position: relative;
+    }
+
+    .todo-input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    .todo-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .todo-input:focus {
+      border-color: hsl(263, 90%, 65%);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .todo-input::placeholder {
+      color: rgba(148, 163, 184, 0.4);
+    }
+
+    .todo-submit-btn {
+      background: var(--accent-gradient);
+      border: none;
+      border-radius: 14px;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: white;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .todo-submit-btn:hover {
+      background: var(--accent-gradient-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+
+    .todo-submit-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 控制與狀態列 */
+    .todo-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 16px;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-family);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.25s ease;
+    }
+
+    .filter-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .filter-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .items-count {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* 列表區塊 */
+    .todo-list-wrapper {
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* 美化滾動條 */
+    .todo-list-wrapper::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .todo-list-wrapper::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .todo-list-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .todo-list-wrapper::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .todo-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* 單個 Todo 項目設計 */
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--item-bg);
+      border: 1px solid var(--item-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .todo-item:hover {
+      background: rgba(30, 41, 59, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* 質感複選框 */
+    .todo-checkbox-wrapper {
+      position: relative;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .todo-checkbox-wrapper input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .custom-checkbox {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 20px;
+      width: 20px;
+      background: transparent;
+      border: 1.5px solid var(--text-secondary);
+      border-radius: 6px;
+      transition: all 0.25s ease;
+    }
+
+    .todo-checkbox-wrapper:hover input ~ .custom-checkbox {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+    }
+
+    .todo-checkbox-wrapper input:checked ~ .custom-checkbox {
+      background: var(--accent-gradient);
+      border-color: transparent;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+
+    .custom-checkbox:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+
+    .todo-checkbox-wrapper input:checked ~ .custom-checkbox:after {
+      display: block;
+    }
+
+    .todo-checkbox-wrapper .custom-checkbox:after {
+      left: 6px;
+      top: 2px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    /* 文字樣式與劃線動畫 */
+    .todo-text {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      position: relative;
+      word-break: break-all;
+    }
+
+    .todo-item.completed .todo-text {
+      color: var(--text-secondary);
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    /* 刪除按鈕 */
+    .todo-delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.25s ease;
+      opacity: 0; /* 預設隱藏，Hover 顯示 */
+    }
+
+    .todo-item:hover .todo-delete-btn {
+      opacity: 0.7;
+    }
+
+    .todo-delete-btn:hover {
+      color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.1);
+      opacity: 1 !important;
+      transform: scale(1.08);
+    }
+
+    /* 空狀態顯示 */
+    .todo-empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .todo-empty-state svg {
+      stroke: var(--text-secondary);
+      opacity: 0.35;
+    }
+
+    .todo-empty-state p {
+      font-size: 0.9rem;
+      font-weight: 300;
+    }
+
+    /* 頁尾工具 */
+    .todo-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .clear-btn {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      font-family: var(--font-family);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .clear-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    /* Keyframes 動畫 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 手機版響應式微調 */
+    @media (max-width: 480px) {
+      .todo-container {
+        padding: 24px 20px;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      .todo-input {
+        padding: 14px 16px;
+      }
+      .todo-submit-btn {
+        width: 50px;
+        height: 50px;
+      }
+      .todo-toolbar {
+        flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+      }
+      .filter-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .filter-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <main class="todo-container">
+    <header>
+      <h1>Antigravity Todo</h1>
+      <p>極致感官與效能的待辦空間</p>
+    </header>
+
+    <form class="todo-form" id="todo-form" autocomplete="off">
+      <div class="todo-input-wrapper">
+        <input type="text" id="todo-input" class="todo-input" placeholder="在星際深處寫下新任務..." required>
+      </div>
+      <button type="submit" class="todo-submit-btn" aria-label="新增代辦">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+    </form>
+
+    <div class="todo-toolbar">
+      <span class="items-count" id="items-left">0 個未完成</span>
+      <div class="filter-group">
+        <button type="button" class="filter-btn active" data-filter="all">全部</button>
+        <button type="button" class="filter-btn" data-filter="active">未完成</button>
+        <button type="button" class="filter-btn" data-filter="completed">已完成</button>
+      </div>
+    </div>
+
+    <div class="todo-list-wrapper">
+      <ul class="todo-list" id="todo-list">
+        <!-- JS 動態插入 -->
+      </ul>
+    </div>
+
+    <div class="todo-footer">
+      <button type="button" class="clear-btn" id="clear-completed">清除已完成</button>
+    </div>
+  </main>
+
+  <!-- 載入 ESM 主控模組 -->
+  <script type="module" src="/src/index.js"></script>
+</body>
+</html>

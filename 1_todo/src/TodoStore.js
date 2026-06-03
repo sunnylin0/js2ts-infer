@@ -1,0 +1,108 @@
+import { isNode, generateId } from './utils.js';
+
+export class TodoStore {
+  constructor() {
+    /** @type {Array<{id: string, text: string, completed: boolean, createdAt: string}>} */
+    this.todos = [];
+    this.load();
+  }
+
+  /**
+   * 載入待辦事項
+   */
+  load() {
+    if (isNode()) {
+      this.todos = [];
+      return;
+    }
+    try {
+      const data = localStorage.getItem('antigravity-todos');
+      this.todos = data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('無法載入 LocalStorage 資料', e);
+      this.todos = [];
+    }
+  }
+
+  /**
+   * 儲存待辦事項
+   */
+  save() {
+    if (isNode()) return;
+    try {
+      localStorage.setItem('antigravity-todos', JSON.stringify(this.todos));
+    } catch (e) {
+      console.error('無法儲存 LocalStorage 資料', e);
+    }
+  }
+
+  /**
+   * 新增一筆待辦事項
+   * @param {string} text
+   * @returns {object}
+   */
+  add(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return null;
+
+    const newTodo = {
+      id: generateId(),
+      text: trimmed,
+      completed: false,
+      createdAt: new Date().toISOString()
+    };
+
+    this.todos.push(newTodo);
+    this.save();
+    return newTodo;
+  }
+
+  /**
+   * 切換待辦事項完成狀態
+   * @param {string} id
+   * @returns {boolean}
+   */
+  toggle(id) {
+    const todo = this.todos.find(t => t.id === id);
+    if (todo) {
+      todo.completed = !todo.completed;
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 刪除待辦事項
+   * @param {string} id
+   * @returns {boolean}
+   */
+  delete(id) {
+    const initialLength = this.todos.length;
+    this.todos = this.todos.filter(t => t.id !== id);
+    this.save();
+    return this.todos.length < initialLength;
+  }
+
+  /**
+   * 清除已完成事項
+   */
+  clearCompleted() {
+    this.todos = this.todos.filter(t => !t.completed);
+    this.save();
+  }
+
+  /**
+   * 取得篩選後的待辦清單
+   * @param {string} filter 'all' | 'active' | 'completed'
+   * @returns {Array<object>}
+   */
+  getFiltered(filter) {
+    if (filter === 'active') {
+      return this.todos.filter(t => !t.completed);
+    } else if (filter === 'completed') {
+      return this.todos.filter(t => t.completed);
+    }
+    return this.todos;
+  }
+}

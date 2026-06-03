@@ -1,0 +1,31 @@
+{
+  "name": "js2ts-infer",
+  "version": "1.0.0",
+  "description": "JS to TS runtime type inference tool",
+  "main": "src/cli.js",
+  "bin": {
+    "js2ts-infer": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@babel/core": "^7.24.5",
+    "@babel/generator": "^7.24.5",
+    "@babel/parser": "^7.24.5",
+    "@babel/traverse": "^7.24.5",
+    "body-parser": "^1.20.2",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "cors": "^2.8.5",
+    "diff": "^5.2.0",
+    "express": "^4.19.2",
+    "glob": "^10.3.15",
+    "ora": "^5.4.1",
+    "prompts": "^2.4.2",
+    "ts-morph": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

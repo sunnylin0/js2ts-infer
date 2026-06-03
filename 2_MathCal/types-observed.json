@@ -1,0 +1,424 @@
+{
+  "modules/converters.js::global::var::LENGTH_FACTORS": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "m": "number",
+        "cm": "number",
+        "taichi": "number",
+        "taichun": "number",
+        "ft": "number",
+        "in": "number"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/converters.js::global::var::WEIGHT_FACTORS": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "kg": "number",
+        "taichin": "number",
+        "lb": "number",
+        "oz": "number",
+        "g": "number"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/converters.js::global::var::AREA_FACTORS": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "m2": "number",
+        "cm2": "number",
+        "taichi2": "number",
+        "taichun2": "number",
+        "ft2": "number",
+        "in2": "number"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/converters.js::global::var::VOLUME_FACTORS": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "m3": "number",
+        "cm3": "number",
+        "taichi3": "number",
+        "taichun3": "number",
+        "ft3": "number",
+        "in3": "number",
+        "mm3": "number"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/calculators.js::roundToTwo::param::val": {
+    "observedTypes": [
+      "number",
+      "null"
+    ],
+    "objectShapes": [],
+    "callCount": 28
+  },
+  "modules/calculators.js::roundToTwo::return": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 28
+  },
+  "modules/calculators.js::calculateBMI::param::heightCm": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "modules/calculators.js::calculateBMI::param::weightKg": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "modules/calculators.js::calculateBMI::var::heightM": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/calculators.js::calculateBMI::var::bmiRaw": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/calculators.js::calculateBMI::var::bmi": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/calculators.js::calculateBMI::var::category": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/calculators.js::calculateBMI::var::colorClass": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/calculators.js::calculateBMI::var::percent": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/calculators.js::calculateBMI::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "bmi": "string",
+        "category": "string",
+        "colorClass": "string",
+        "percent": "number"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/calculators.js::calculateArea::param::shape": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "modules/calculators.js::calculateArea::param::params": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "length": "number",
+        "width": "number"
+      },
+      {
+        "side": "number"
+      },
+      {
+        "base": "number",
+        "height": "number"
+      },
+      {
+        "radius": "number"
+      }
+    ],
+    "callCount": 4
+  },
+  "modules/calculators.js::calculateArea::var::result": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "modules/calculators.js::calculateArea::var::steps": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "modules/calculators.js::calculateArea::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "result": "string",
+        "steps": "string"
+      }
+    ],
+    "callCount": 4
+  },
+  "modules/calculators.js::calculateVolume::param::shape": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 3
+  },
+  "modules/calculators.js::calculateVolume::param::params": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "length": "number",
+        "width": "number",
+        "height": "number"
+      },
+      {
+        "side": "number"
+      },
+      {
+        "radius": "number",
+        "height": "number"
+      }
+    ],
+    "callCount": 3
+  },
+  "modules/calculators.js::calculateVolume::var::result": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 3
+  },
+  "modules/calculators.js::calculateVolume::var::steps": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 3
+  },
+  "modules/calculators.js::calculateVolume::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "result": "string",
+        "steps": "string"
+      }
+    ],
+    "callCount": 3
+  },
+  "modules/converters.js::convertAll::param::type": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "modules/converters.js::convertAll::param::fromUnit": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "modules/converters.js::convertAll::param::value": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "modules/converters.js::convertAll::var::numVal": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "modules/converters.js::convertStandard::param::factors": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "m": "number",
+        "cm": "number",
+        "taichi": "number",
+        "taichun": "number",
+        "ft": "number",
+        "in": "number"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/converters.js::convertStandard::param::fromUnit": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/converters.js::convertStandard::param::value": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/converters.js::convertStandard::var::baseValue": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/converters.js::convertStandard::var::result": {
+    "observedTypes": [],
+    "objectShapes": [
+      {}
+    ],
+    "callCount": 1
+  },
+  "modules/converters.js::anonymous::param::unit": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "modules/converters.js::formatConvertedValue::param::val": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 10
+  },
+  "modules/converters.js::formatConvertedValue::var::rounded": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 10
+  },
+  "modules/converters.js::formatConvertedValue::return": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 10
+  },
+  "modules/converters.js::anonymous::var::convertedVal": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 5
+  },
+  "modules/converters.js::convertStandard::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "m": "string",
+        "cm": "string",
+        "taichi": "string",
+        "taichun": "string",
+        "ft": "string",
+        "in": "string"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/converters.js::convertAll::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "m": "string",
+        "cm": "string",
+        "taichi": "string",
+        "taichun": "string",
+        "ft": "string",
+        "in": "string"
+      },
+      {
+        "C": "string",
+        "F": "string",
+        "K": "string",
+        "c": "string"
+      }
+    ],
+    "callCount": 2
+  },
+  "modules/converters.js::convertTemperature::param::fromUnit": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/converters.js::convertTemperature::param::value": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/converters.js::convertTemperature::var::result": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "C": "string",
+        "F": "string",
+        "K": "string"
+      }
+    ],
+    "callCount": 1
+  },
+  "modules/converters.js::convertTemperature::var::cValue": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "modules/converters.js::convertTemperature::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "C": "string",
+        "F": "string",
+        "K": "string",
+        "c": "string"
+      }
+    ],
+    "callCount": 1
+  }
+}

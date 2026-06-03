@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>極光數學計算與轉換工具 | MathCal</title>
+  <!-- 引入 Google Fonts: JetBrains Mono & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- 引入 Lucide Icons 用於科技感圖示 -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- 本地樣式表 -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- 頂部 Sticky 導航列 -->
+  <header class="app-header">
+    <div class="logo">
+      <i data-lucide="binary" class="cyan-glow-icon"></i>
+      <span>Math<span>Cal</span></span>
+    </div>
+    <nav class="nav-chips-container">
+      <div class="nav-chips">
+        <button class="chip active" data-target="bmi-card">BMI 計算</button>
+        <button class="chip" data-target="area-card">面積計算</button>
+        <button class="chip" data-target="volume-card">體積計算</button>
+        <button class="chip" data-target="length-card">長度轉換</button>
+        <button class="chip" data-target="temp-card">溫度轉換</button>
+        <button class="chip" data-target="weight-card">重量轉換</button>
+        <button class="chip" data-target="area-conv-card">面積轉換</button>
+        <button class="chip" data-target="vol-conv-card">體積轉換</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="main-container">
+
+    <!-- 1. BMI 計算器卡片 -->
+    <section id="bmi-card" class="tool-card expanded">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="activity"></i>
+          <h2>BMI 身體質量指數計算器</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <div class="calculator-layout">
+            <!-- 輸入區 -->
+            <div class="input-group-panel">
+              <div class="form-field">
+                <label for="bmi-height">身高 (cm)</label>
+                <div class="input-wrapper">
+                  <input type="number" id="bmi-height" placeholder="請輸入身高" min="1" step="0.1">
+                  <span class="input-unit">cm</span>
+                </div>
+                <span class="field-error" id="bmi-height-error"></span>
+              </div>
+              <div class="form-field">
+                <label for="bmi-weight">體重 (kg)</label>
+                <div class="input-wrapper">
+                  <input type="number" id="bmi-weight" placeholder="請輸入體重" min="1" step="0.1">
+                  <span class="input-unit">kg</span>
+                </div>
+                <span class="field-error" id="bmi-weight-error"></span>
+              </div>
+              <button id="btn-calc-bmi" class="btn-primary">
+                <i data-lucide="play"></i> 計算 BMI
+              </button>
+            </div>
+            
+            <!-- 結果區 -->
+            <div class="result-panel empty" id="bmi-result-panel">
+              <div class="result-placeholder">
+                <i data-lucide="trending-up"></i>
+                <p>請輸入身高與體重，點擊計算按鈕顯示結果</p>
+              </div>
+              <div class="result-data">
+                <div class="result-number-container">
+                  <span class="result-label">您的 BMI 指數</span>
+                  <span class="result-value" id="bmi-val">--.--</span>
+                </div>
+                <!-- 衛福部標準標籤 -->
+                <div class="bmi-badge" id="bmi-badge">--</div>
+                
+                <!-- 視覺化範圍條 -->
+                <div class="bmi-range-container">
+                  <div class="bmi-gradient-bar">
+                    <span class="range-mark" style="left: 30%;">18.5</span>
+                    <span class="range-mark" style="left: 60%;">24</span>
+                    <span class="range-mark" style="left: 80%;">27</span>
+                    <!-- 指針 -->
+                    <div class="bmi-pointer" id="bmi-pointer"></div>
+                  </div>
+                  <div class="bmi-range-labels">
+                    <span style="color: var(--color-blue)">過輕</span>
+                    <span style="color: var(--color-green)">正常</span>
+                    <span style="color: var(--color-warning)">過重</span>
+                    <span style="color: var(--color-danger)">肥胖</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 面積計算器卡片 -->
+    <section id="area-card" class="tool-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="layers"></i>
+          <h2>面積計算器</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <div class="tab-container">
+            <div class="tabs" id="area-tabs">
+              <button class="tab-btn active" data-tab="rectangle">矩形</button>
+              <button class="tab-btn" data-tab="square">正方形</button>
+              <button class="tab-btn" data-tab="triangle">三角形</button>
+              <button class="tab-btn" data-tab="circle">圓形</button>
+            </div>
+          </div>
+          
+          <div class="calculator-layout with-visual">
+            <!-- 輸入欄位 (動態顯示) -->
+            <div class="input-group-panel">
+              <div id="area-fields-container">
+                <!-- 矩形欄位 -->
+                <div class="tab-fields active" id="fields-area-rectangle">
+                  <div class="form-field">
+                    <label for="area-rect-len">長度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="area-rect-len" placeholder="請輸入長度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="area-rect-wid">寬度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="area-rect-wid" placeholder="請輸入寬度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 正方形欄位 -->
+                <div class="tab-fields" id="fields-area-square">
+                  <div class="form-field">
+                    <label for="area-sq-side">邊長 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="area-sq-side" placeholder="請輸入邊長" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 三角形欄位 -->
+                <div class="tab-fields" id="fields-area-triangle">
+                  <div class="form-field">
+                    <label for="area-tri-base">底邊長 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="area-tri-base" placeholder="請輸入底邊長" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="area-tri-height">高 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="area-tri-height" placeholder="請輸入高" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 圓形欄位 -->
+                <div class="tab-fields" id="fields-area-circle">
+                  <div class="form-field">
+                    <label for="area-circ-rad">半徑 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="area-circ-rad" placeholder="請輸入半徑" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+              </div>
+              <button id="btn-calc-area" class="btn-primary">
+                <i data-lucide="play"></i> 計算面積
+              </button>
+            </div>
+            
+            <!-- 視覺與結果 -->
+            <div class="visual-result-panel">
+              <!-- 精美科技 SVG 示意圖 -->
+              <div class="shape-visual-box" id="area-visual-box">
+                <!-- 預設矩形 SVG -->
+                <svg viewBox="0 0 200 150" class="tech-shape-svg" id="area-svg">
+                  <!-- 矩形邊框與裝飾 -->
+                  <rect x="40" y="35" width="120" height="80" rx="4" class="svg-shape-path" />
+                  <!-- 輔助線與文字標記 -->
+                  <line x1="40" y1="125" x2="160" y2="125" class="svg-helper-line" />
+                  <text x="100" y="140" class="svg-text">長度 (L)</text>
+                  <line x1="25" y1="35" x2="25" y2="115" class="svg-helper-line" />
+                  <text x="12" y="80" class="svg-text" transform="rotate(-90 12 80)">寬度 (W)</text>
+                </svg>
+              </div>
+              
+              <!-- 結果面板 -->
+              <div class="result-panel empty" id="area-result-panel">
+                <div class="result-placeholder">
+                  <i data-lucide="info"></i>
+                  <p>請輸入數值，點擊計算按鈕顯示面積結果</p>
+                </div>
+                <div class="result-data">
+                  <div class="result-number-container">
+                    <span class="result-label">計算面積結果</span>
+                    <span class="result-value" id="area-val">--.--</span>
+                    <span class="result-unit-label">m²</span>
+                  </div>
+                  <div class="formula-steps" id="area-steps">--</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 體積計算器卡片 -->
+    <section id="volume-card" class="tool-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="box"></i>
+          <h2>體積計算器</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <div class="tab-container">
+            <div class="tabs scrollable-tabs" id="volume-tabs">
+              <button class="tab-btn active" data-tab="cuboid">長方體</button>
+              <button class="tab-btn" data-tab="cube">正方體</button>
+              <button class="tab-btn" data-tab="cylinder">圓柱體</button>
+              <button class="tab-btn" data-tab="cone">圓錐體</button>
+              <button class="tab-btn" data-tab="sphere">球體</button>
+              <button class="tab-btn" data-tab="prism">角柱體</button>
+              <button class="tab-btn" data-tab="pyramid">角錐體</button>
+            </div>
+          </div>
+          
+          <div class="calculator-layout with-visual">
+            <!-- 輸入欄位 (動態顯示) -->
+            <div class="input-group-panel">
+              <div id="volume-fields-container">
+                <!-- 長方體欄位 -->
+                <div class="tab-fields active" id="fields-volume-cuboid">
+                  <div class="form-field">
+                    <label for="vol-cuboid-len">長度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cuboid-len" placeholder="請輸入長度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="vol-cuboid-wid">寬度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cuboid-wid" placeholder="請輸入寬度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="vol-cuboid-hei">高度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cuboid-hei" placeholder="請輸入高度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 正方體欄位 -->
+                <div class="tab-fields" id="fields-volume-cube">
+                  <div class="form-field">
+                    <label for="vol-cube-side">邊長 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cube-side" placeholder="請輸入邊長" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 圓柱體欄位 -->
+                <div class="tab-fields" id="fields-volume-cylinder">
+                  <div class="form-field">
+                    <label for="vol-cyl-rad">底面半徑 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cyl-rad" placeholder="請輸入底面半徑" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="vol-cyl-hei">高度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cyl-hei" placeholder="請輸入高度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 圓錐體欄位 -->
+                <div class="tab-fields" id="fields-volume-cone">
+                  <div class="form-field">
+                    <label for="vol-cone-rad">底面半徑 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cone-rad" placeholder="請輸入底面半徑" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="vol-cone-hei">高度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-cone-hei" placeholder="請輸入高度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 球體欄位 -->
+                <div class="tab-fields" id="fields-volume-sphere">
+                  <div class="form-field">
+                    <label for="vol-sph-rad">半徑 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-sph-rad" placeholder="請輸入半徑" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 角柱體欄位 -->
+                <div class="tab-fields" id="fields-volume-prism">
+                  <div class="form-field">
+                    <label for="vol-prism-base">底面積 (m²)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-prism-base" placeholder="請輸入底面積" min="0.01" step="0.1">
+                      <span class="input-unit">m²</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="vol-prism-hei">高度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-prism-hei" placeholder="請輸入高度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+                <!-- 角錐體欄位 -->
+                <div class="tab-fields" id="fields-volume-pyramid">
+                  <div class="form-field">
+                    <label for="vol-pyr-base">底面積 (m²)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-pyr-base" placeholder="請輸入底面積" min="0.01" step="0.1">
+                      <span class="input-unit">m²</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="vol-pyr-hei">高度 (m)</label>
+                    <div class="input-wrapper">
+                      <input type="number" id="vol-pyr-hei" placeholder="請輸入高度" min="0.01" step="0.1">
+                      <span class="input-unit">m</span>
+                    </div>
+                    <span class="field-error"></span>
+                  </div>
+                </div>
+              </div>
+              <button id="btn-calc-vol" class="btn-primary">
+                <i data-lucide="play"></i> 計算體積
+              </button>
+            </div>
+            
+            <!-- 視覺與結果 -->
+            <div class="visual-result-panel">
+              <!-- 精美科技 SVG 示意圖 -->
+              <div class="shape-visual-box" id="volume-visual-box">
+                <!-- 預設長方體 SVG -->
+                <svg viewBox="0 0 200 150" class="tech-shape-svg" id="volume-svg">
+                  <!-- 3D長方體線框 -->
+                  <path d="M 50,60 L 120,60 L 150,30 L 80,30 Z" class="svg-shape-path" style="stroke-dasharray: 2 2; opacity: 0.7;" />
+                  <path d="M 50,120 L 120,120 L 150,90 L 80,90 Z" class="svg-shape-path" />
+                  <line x1="50" y1="60" x2="50" y2="120" class="svg-shape-path" />
+                  <line x1="120" y1="60" x2="120" y2="120" class="svg-shape-path" />
+                  <line x1="150" y1="30" x2="150" y2="90" class="svg-shape-path" />
+                  <line x1="80" y1="30" x2="80" y2="90" class="svg-shape-path" style="stroke-dasharray: 2 2; opacity: 0.7;" />
+                  <!-- 標記 -->
+                  <text x="85" y="135" class="svg-text">長度 (L)</text>
+                  <text x="142" y="112" class="svg-text" transform="rotate(-30 142 112)">寬 (W)</text>
+                  <text x="32" y="90" class="svg-text">高 (H)</text>
+                </svg>
+              </div>
+              
+              <!-- 結果面板 -->
+              <div class="result-panel empty" id="volume-result-panel">
+                <div class="result-placeholder">
+                  <i data-lucide="info"></i>
+                  <p>請輸入數值，點擊計算按鈕顯示體積結果</p>
+                </div>
+                <div class="result-data">
+                  <div class="result-number-container">
+                    <span class="result-label">計算體積結果</span>
+                    <span class="result-value" id="volume-val">--.--</span>
+                    <span class="result-unit-label">m³</span>
+                  </div>
+                  <div class="formula-steps" id="volume-steps">--</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 長度轉換工具卡片 -->
+    <section id="length-card" class="tool-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="arrow-left-right"></i>
+          <h2>長度轉換工具</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <p class="section-desc">在任意格子中輸入數值，並點擊空白處或按下 Enter 鍵，即可聯動更新其他單位。</p>
+          <div class="table-responsive">
+            <table class="converter-table" data-type="length">
+              <thead>
+                <tr>
+                  <th>單位</th>
+                  <th>數值</th>
+                  <th>換算關係 (以公尺為基準)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="unit-badge">公尺 (m)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="m" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1 m</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">公分 (cm)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="cm" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">100 cm</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge is-taiwan">台尺</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="taichi" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">3.30579 台尺</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge is-taiwan">台寸</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="taichun" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">33.0579 台寸</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">英尺 (ft)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="ft" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">3.28084 ft</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">英吋 (in)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="in" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">39.3701 in</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 溫度轉換工具卡片 -->
+    <section id="temp-card" class="tool-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="thermometer"></i>
+          <h2>溫度轉換工具</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <p class="section-desc">在任意格子中輸入數值，並點擊空白處或按下 Enter 鍵，即可聯動更新其他單位。溫度允許輸入負值。</p>
+          <div class="table-responsive">
+            <table class="converter-table" data-type="temperature">
+              <thead>
+                <tr>
+                  <th>單位</th>
+                  <th>數值</th>
+                  <th>換算公式對照</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="unit-badge">攝氏 (°C)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="C" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">基準單位</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">華氏 (°F)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="F" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">°F = (°C × 9/5) + 32</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">絕對溫度 (K)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="K" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">K = °C + 273.15</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 重量轉換工具卡片 -->
+    <section id="weight-card" class="tool-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="scale"></i>
+          <h2>重量轉換工具</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <p class="section-desc">在任意格子中輸入數值，並點擊空白處或按下 Enter 鍵，即可聯動更新其他單位。</p>
+          <div class="table-responsive">
+            <table class="converter-table" data-type="weight">
+              <thead>
+                <tr>
+                  <th>單位</th>
+                  <th>數值</th>
+                  <th>換算關係 (以公斤為基準)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="unit-badge">公斤 (kg)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="kg" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1 kg</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge is-taiwan">台斤</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="taichin" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1.66667 台斤</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">磅 (lb)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="lb" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">2.20462 lb</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">盎司 (oz)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="oz" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">35.2740 oz</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">公克 (g)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="g" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1000 g</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 面積轉換工具卡片 -->
+    <section id="area-conv-card" class="tool-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="grid"></i>
+          <h2>面積轉換工具</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <p class="section-desc">在任意格子中輸入數值，並點擊空白處或按下 Enter 鍵，即可聯動更新其他單位。</p>
+          <div class="table-responsive">
+            <table class="converter-table" data-type="area">
+              <thead>
+                <tr>
+                  <th>單位</th>
+                  <th>數值</th>
+                  <th>換算關係 (以平方公尺為基準)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="unit-badge">平方公尺 (m²)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="m2" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1 m²</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">平方公分 (cm²)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="cm2" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">10,000 cm²</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge is-taiwan">平方台尺</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="taichi2" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">10.9282 平方台尺</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge is-taiwan">平方台寸</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="taichun2" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1092.82 平方台寸</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">平方英尺 (ft²)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="ft2" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">10.7639 ft²</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">平方英吋 (in²)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="in2" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1,550.00 in²</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. 體積轉換工具卡片 -->
+    <section id="vol-conv-card" class="tool-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="database"></i>
+          <h2>體積轉換工具</h2>
+        </div>
+        <i data-lucide="chevron-down" class="toggle-icon"></i>
+      </div>
+      <div class="card-content-wrapper">
+        <div class="card-content">
+          <p class="section-desc">在任意格子中輸入數值，並點擊空白處或按下 Enter 鍵，即可聯動更新其他單位。</p>
+          <div class="table-responsive">
+            <table class="converter-table" data-type="volume">
+              <thead>
+                <tr>
+                  <th>單位</th>
+                  <th>數值</th>
+                  <th>換算關係 (以立方公尺為基準)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="unit-badge">立方公尺 (m³)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="m3" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1 m³</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">立方公分 (cm³)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="cm3" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1,000,000 cm³</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge is-taiwan">立方台尺</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="taichi3" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">36.1263 立方台尺</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge is-taiwan">立方台寸</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="taichun3" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">36,126.3 立方台寸</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">立方英尺 (ft³)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="ft3" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">35.3147 ft³</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">立方英吋 (in³)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="in3" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">61,023.7 in³</td>
+                </tr>
+                <tr>
+                  <td><span class="unit-badge">立方公釐 (mm³)</span></td>
+                  <td>
+                    <div class="table-input-wrapper">
+                      <input type="number" class="conv-input" data-unit="mm3" placeholder="輸入數值...">
+                    </div>
+                  </td>
+                  <td class="ref-value">1,000,000,000 mm³</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部 Footer -->
+  <footer class="app-footer">
+    <p>© 2026 MathCal 極光數學計算工具 | 技術實作：Modern Vanilla JS</p>
+  </footer>
+
+  <!-- 核心交互 JS -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "classes": {},
+  "boundaries": [
+    {
+      "filePath": "modules/converters.js",
+      "exportName": "formatConvertedValue",
+      "type": "function"
+    },
+    {
+      "filePath": "modules/converters.js",
+      "exportName": "convertAll",
+      "type": "function"
+    },
+    {
+      "filePath": "modules/calculators.js",
+      "exportName": "roundToTwo",
+      "type": "function"
+    },
+    {
+      "filePath": "modules/calculators.js",
+      "exportName": "calculateBMI",
+      "type": "function"
+    },
+    {
+      "filePath": "modules/calculators.js",
+      "exportName": "calculateArea",
+      "type": "function"
+    },
+    {
+      "filePath": "modules/calculators.js",
+      "exportName": "calculateVolume",
+      "type": "function"
+    }
+  ]
+}
