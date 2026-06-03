@@ -1,9 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
-const { mergeDatabases } = require('../type-merger');
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
+import { mergeDatabases } from '../type-merger';
 
-function merge(files, options) {
+interface MergeOptions {
+  out: string;
+}
+
+export default function merge(files: string[], options: MergeOptions): void {
   if (!files || files.length === 0) {
     console.error(chalk.red('❌ 請指定至少一個要合併的 JSON 檔案！'));
     process.exit(1);
@@ -21,10 +25,10 @@ function merge(files, options) {
       continue;
     }
 
-    let db;
+    let db: any;
     try {
       db = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-    } catch (e) {
+    } catch (e: any) {
       console.error(chalk.red(`❌ 無法解析檔案: ${file}, 錯誤: ${e.message}`));
       process.exit(1);
     }
@@ -37,10 +41,8 @@ function merge(files, options) {
     fs.writeFileSync(outPath, JSON.stringify(finalDB, null, 2), 'utf-8');
     console.log(chalk.green(`✔ 成功輸出合併後的資料庫: ${outPath}`));
     console.log(chalk.green(`  - 總側錄節點數: ${Object.keys(finalDB).length}`));
-  } catch (error) {
+  } catch (error: any) {
     console.error(chalk.red(`❌ 寫入合併檔案失敗: ${error.message}`));
     process.exit(1);
   }
 }
-
-module.exports = merge;

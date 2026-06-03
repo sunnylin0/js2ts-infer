@@ -106,7 +106,7 @@ export class TodoStore {
    * @param {string} filter 'all' | 'active' | 'completed'
    * @returns {Array<object>}
    */
-  getFiltered(filter: string): Array<{ [key: string]: any }> | Array<{ [key: string]: any } | { [key: string]: any }> | Array<any> | Array<{ [key: string]: any }> {
+  getFiltered(filter: string): Array<{ [key: string]: any }> {
     if (filter === 'active') {
       return this.todos.filter(t => !t.completed);
     } else if (filter === 'completed') {

@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
 
 const DEFAULT_CONFIG = {
   include: ["src/**/*.js", "modules/**/*.js", "*.js"],
@@ -11,7 +11,7 @@ const DEFAULT_CONFIG = {
   interfaceThreshold: 3
 };
 
-function init() {
+export default function init(): void {
   const configPath = path.join(process.cwd(), 'js2ts.config.json');
   
   if (fs.existsSync(configPath)) {
@@ -22,9 +22,7 @@ function init() {
   try {
     fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2), 'utf-8');
     console.log(chalk.green(`✔ 成功生成設定檔：${configPath}`));
-  } catch (error) {
+  } catch (error: any) {
     console.error(chalk.red(`❌ 無法建立設定檔：${error.message}`));
   }
 }
-
-module.exports = init;

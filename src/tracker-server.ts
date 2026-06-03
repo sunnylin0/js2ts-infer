@@ -1,21 +1,21 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
 
-let typeDB = {};
-let config = {};
+let typeDB: Record<string, any> = {};
+let config: any = {};
 let boundaryMap = { classes: {}, boundaries: [] };
-let serverInstance = null;
+let serverInstance: any = null;
 
 function loadExistingTypes() {
   const targetPath = path.resolve(process.cwd(), 'types-observed.json');
   if (fs.existsSync(targetPath)) {
     try {
       typeDB = JSON.parse(fs.readFileSync(targetPath, 'utf-8'));
-    } catch (e) {
+    } catch (e: any) {
       console.warn(chalk.yellow(`⚠ 讀取現有 types-observed.json 失敗: ${e.message}`));
     }
   }
@@ -25,13 +25,12 @@ function saveTypes() {
   const targetPath = path.resolve(process.cwd(), 'types-observed.json');
   try {
     fs.writeFileSync(targetPath, JSON.stringify(typeDB, null, 2), 'utf-8');
-  } catch (e) {
+  } catch (e: any) {
     console.error(chalk.red(`❌ 寫入 types-observed.json 失敗: ${e.message}`));
   }
 }
 
-// 增量合併單個 record
-function mergeRecord(id, newRecord) {
+function mergeRecord(id: string, newRecord: any) {
   if (!typeDB[id]) {
     typeDB[id] = {
       observedTypes: [],
@@ -43,15 +42,13 @@ function mergeRecord(id, newRecord) {
   const existing = typeDB[id];
   existing.callCount += (newRecord.callCount || 0);
 
-  // 合併 observedTypes (基本型別與 Class 名稱)
   const typesSet = new Set([...(existing.observedTypes || []), ...(newRecord.observedTypes || [])]);
   existing.observedTypes = Array.from(typesSet);
 
-  // 合併 objectShapes
   if (newRecord.objectShapes && newRecord.objectShapes.length > 0) {
-    newRecord.objectShapes.forEach(newShape => {
+    newRecord.objectShapes.forEach((newShape: any) => {
       const newShapeStr = JSON.stringify(newShape);
-      const exists = (existing.objectShapes || []).some(s => JSON.stringify(s) === newShapeStr);
+      const exists = (existing.objectShapes || []).some((s: any) => JSON.stringify(s) === newShapeStr);
       if (!exists) {
         if (!existing.objectShapes) existing.objectShapes = [];
         existing.objectShapes.push(newShape);
@@ -60,11 +57,10 @@ function mergeRecord(id, newRecord) {
   }
 }
 
-function startServer(port, runConfig) {
+export function startServer(port: number, runConfig: any): Promise<any> {
   config = runConfig || {};
   loadExistingTypes();
 
-  // 載入邊界地圖以便有些地方可以比對
   const boundaryMapPath = path.resolve(process.cwd(), 'boundary-map.json');
   if (fs.existsSync(boundaryMapPath)) {
     try {
@@ -76,12 +72,10 @@ function startServer(port, runConfig) {
   app.use(cors());
   app.use(bodyParser.json({ limit: '50mb' }));
 
-  // 提供給瀏覽器端的 tracker.js 腳本
   app.get('/tracker.js', (req, res) => {
     const clientPath = path.join(__dirname, 'tracker-client.js');
     if (fs.existsSync(clientPath)) {
       let clientCode = fs.readFileSync(clientPath, 'utf-8');
-      // 將設定動態注入用戶端代碼中
       clientCode = clientCode.replace('// __CONFIG_INJECTION_PLACEHOLDER__', `
         globalThis.__trackerPort = ${port};
         globalThis.__trackerConfig = ${JSON.stringify(config)};
@@ -93,7 +87,6 @@ function startServer(port, runConfig) {
     }
   });
 
-  // 接收型別回傳
   app.post('/types', (req, res) => {
     const incomingDB = req.body || {};
     let count = 0;
@@ -107,7 +100,6 @@ function startServer(port, runConfig) {
     res.json({ success: true, merged: count });
   });
 
-  // 提供主動關閉伺服器
   app.post('/shutdown', (req, res) => {
     res.json({ success: true });
     saveTypes();
@@ -125,15 +117,10 @@ function startServer(port, runConfig) {
   });
 }
 
-function stopServer() {
+export function stopServer() {
   if (serverInstance) {
     serverInstance.close();
     saveTypes();
     console.log(chalk.blue('🔌 型別收集背景伺服器已關閉。'));
   }
 }
-
-module.exports = {
-  startServer,
-  stopServer
-};

@@ -1,13 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-const { Project, SyntaxKind } = require('ts-morph');
-const chalk = require('chalk');
-const diff = require('diff');
-const { mergeSingleVal } = require('./type-merger');
+import * as fs from 'fs';
+import * as path from 'path';
+import { execSync } from 'child_process';
+import { Project, SyntaxKind } from 'ts-morph';
+import chalk from 'chalk';
+import * as diff from 'diff';
+import { mergeSingleVal } from './type-merger';
+import { globSync } from 'glob';
 
-// 檢查 Git 狀態
-function checkGitStatus() {
+function checkGitStatus(): boolean {
   try {
     const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
     return status === '';
@@ -16,22 +16,20 @@ function checkGitStatus() {
   }
 }
 
-// 歸納合併多個 shapes 為單一個包含可選欄位的 shape
-function mergeObjectShapesArray(shapes) {
+function mergeObjectShapesArray(shapes: any[]): any {
   if (shapes.length === 0) return {};
   if (shapes.length === 1) return shapes[0];
 
-  const combined = {};
+  const combined: any = {};
   
-  // 收集所有屬性鍵
-  const allKeys = new Set();
+  const allKeys = new Set<string>();
   shapes.forEach(s => {
     Object.keys(s).filter(k => k !== '__nullable').forEach(k => allKeys.add(k));
   });
 
   for (const key of allKeys) {
     let existCount = 0;
-    const valTypes = [];
+    const valTypes: any[] = [];
     
     shapes.forEach(s => {
       if (s[key] !== undefined) {
@@ -45,7 +43,6 @@ function mergeObjectShapesArray(shapes) {
       mergedVal = valTypes.reduce((acc, curr) => mergeSingleVal(acc, curr));
     }
 
-    // 若不是每個 shape 都擁有此屬性，標記為 optional (即聯集 undefined)
     if (existCount < shapes.length) {
       mergedVal = mergeSingleVal(mergedVal, 'undefined');
     }
@@ -53,7 +50,6 @@ function mergeObjectShapesArray(shapes) {
     combined[key] = mergedVal;
   }
 
-  // 只要其中一個是 nullable，歸納後就是 nullable
   if (shapes.some(s => s.__nullable)) {
     combined.__nullable = true;
   }
@@ -61,8 +57,7 @@ function mergeObjectShapesArray(shapes) {
   return combined;
 }
 
-// 將物件 shape 轉譯為 TypeScript Interface 屬性內容
-function shapeToInterfaceBody(shape, depth = 1) {
+function shapeToInterfaceBody(shape: any, depth = 1): string {
   const indent = '  '.repeat(depth);
   let body = '';
   
@@ -75,11 +70,11 @@ function shapeToInterfaceBody(shape, depth = 1) {
     if (typeof typeVal === 'object') {
       const subBody = shapeToInterfaceBody(typeVal, depth + 1);
       finalType = `{\n${subBody}${'  '.repeat(depth)}}`;
-      if (typeVal.__nullable) {
+      if ((typeVal as any).__nullable) {
         finalType += ' | null';
       }
     } else {
-      let typeStr = typeVal;
+      let typeStr = typeVal as string;
       const parts = typeStr.split(' | ');
       if (parts.includes('undefined')) {
         isOptional = true;
@@ -91,24 +86,20 @@ function shapeToInterfaceBody(shape, depth = 1) {
     body += `${indent}${key}${isOptional ? '?' : ''}: ${finalType};\n`;
   }
 
-  // 自動加上索引簽章以提高對動態屬性訪問的相容性
   body += `${indent}[key: string]: any;\n`;
-
   return body;
 }
 
-// 根據 observedTypes 與 objectShapes 決定型別名稱與宣告
-function resolveParameterType(record, baseName, interfacesToDeclare) {
+function resolveParameterType(record: any, baseName: string, interfacesToDeclare: Record<string, string>): string {
   const observedTypes = record.observedTypes || [];
   const objectShapes = record.objectShapes || [];
   
   const isNullable = observedTypes.includes('null');
   const isUndefined = observedTypes.includes('undefined');
 
-  const cleanBasicTypes = observedTypes.filter(t => t !== 'null' && t !== 'undefined');
+  const cleanBasicTypes = observedTypes.filter((t: string) => t !== 'null' && t !== 'undefined');
   let typeNames = [...cleanBasicTypes];
 
-  // 融合多個 shapes 為單一個 Interface 避免產生 Union Of Shapes 導致無法解構
   if (objectShapes.length > 0) {
     const combinedShape = mergeObjectShapesArray(objectShapes);
     const interfaceName = `${baseName.charAt(0).toUpperCase()}${baseName.slice(1)}Shape`;
@@ -131,32 +122,26 @@ function resolveParameterType(record, baseName, interfacesToDeclare) {
     finalType = `(${finalType}) | null`;
   }
   
-  // 自動清理舊資料遺留的 [object Object] 字串，以保證 100% 編譯通過
   return finalType.replace(/\[object Object\]/g, '{ [key: string]: any }');
 }
 
-function processFileRefactoring(filePath, typeDB, config) {
+function processFileRefactoring(filePath: string, typeDB: any, config: any): string {
   const project = new Project();
   const sourceFile = project.addSourceFileAtPath(filePath);
   const relPath = path.relative(process.cwd(), filePath).replace(/\\/g, '/');
 
-  // 自清潔機制：清除可能已存在的 interfaces，以利 Idempotent 重複生成
   sourceFile.getInterfaces().forEach(iface => iface.remove());
   
-  // 清除可能已存在的參數型別標註
   sourceFile.getDescendantsOfKind(SyntaxKind.Parameter).forEach(param => {
     param.removeType();
   });
 
-  // 1. 頂層 CommonJS 轉 ESM
   refactorCjsToEsm(sourceFile);
 
-  const interfacesToDeclare = {};
+  const interfacesToDeclare: Record<string, string> = {};
 
-  // 2. 注入參數與回傳值型別
   sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration).forEach(fn => {
     const fnName = fn.getName() || 'anonymous';
-    // 重新生成前先清除回傳型別
     if (typeof fn.removeReturnType === 'function') fn.removeReturnType();
     annotateFunction(fn, fnName, relPath, typeDB, interfacesToDeclare, config);
   });
@@ -169,7 +154,7 @@ function processFileRefactoring(filePath, typeDB, config) {
     });
   });
 
-  sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclarator).forEach(decl => {
+  sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach((decl: any) => {
     const init = decl.getInitializer();
     if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
       const fnName = decl.getName();
@@ -177,7 +162,6 @@ function processFileRefactoring(filePath, typeDB, config) {
     }
   });
 
-  // 3. 在檔案頂部寫入生成的 interfaces (在 imports 之後)
   const interfaceDeclarations = Object.values(interfacesToDeclare).join('\n\n');
   if (interfaceDeclarations) {
     const imports = sourceFile.getImportDeclarations();
@@ -192,11 +176,11 @@ function processFileRefactoring(filePath, typeDB, config) {
   return sourceFile.getFullText();
 }
 
-function annotateFunction(fnNode, fnName, relPath, typeDB, interfacesToDeclare, config) {
+function annotateFunction(fnNode: any, fnName: string, relPath: string, typeDB: any, interfacesToDeclare: Record<string, string>, config: any) {
   const confidenceThreshold = config.confidenceThreshold || 5;
 
   const params = fnNode.getParameters();
-  params.forEach((param, idx) => {
+  params.forEach((param: any) => {
     const paramName = param.getName();
     const trackerId = `${relPath}::${fnName}::param::${paramName}`;
     const record = typeDB[trackerId];
@@ -227,9 +211,8 @@ function annotateFunction(fnNode, fnName, relPath, typeDB, interfacesToDeclare, 
   }
 }
 
-// 實作 CommonJS 轉 ESM 的 AST 轉換
-function refactorCjsToEsm(sourceFile) {
-  sourceFile.getVariableStatements().forEach(stmt => {
+function refactorCjsToEsm(sourceFile: any) {
+  sourceFile.getVariableStatements().forEach((stmt: any) => {
     if (stmt.getParent().getKind() !== SyntaxKind.SourceFile) return;
 
     const declarations = stmt.getDeclarations();
@@ -244,7 +227,7 @@ function refactorCjsToEsm(sourceFile) {
           const isDestructured = nameNode.getKind() === SyntaxKind.ObjectBindingPattern;
 
           if (isDestructured) {
-            const elements = nameNode.getElements().map(el => el.getName());
+            const elements = nameNode.getElements().map((el: any) => el.getName());
             sourceFile.addImportDeclaration({
               namedImports: elements,
               moduleSpecifier: moduleSpecifier
@@ -261,7 +244,7 @@ function refactorCjsToEsm(sourceFile) {
     }
   });
 
-  sourceFile.getStatements().forEach(stmt => {
+  sourceFile.getStatements().forEach((stmt: any) => {
     if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
       const expr = stmt.getExpression();
       if (expr.getKind() === SyntaxKind.BinaryExpression) {
@@ -297,7 +280,7 @@ function refactorCjsToEsm(sourceFile) {
   });
 }
 
-function runGeneration(options) {
+export function runGeneration(options: any) {
   const configPath = path.resolve(process.cwd(), options.config);
   let config = {
     include: ["src/**/*.js", "modules/**/*.js", "*.js"],
@@ -324,13 +307,12 @@ function runGeneration(options) {
   if (fs.existsSync(observedTypesPath)) {
     try {
       typeDB = JSON.parse(fs.readFileSync(observedTypesPath, 'utf-8'));
-    } catch (e) {
+    } catch (e: any) {
       console.error(chalk.red(`❌ 無法讀取型別觀測檔: ${observedTypesPath}, error: ${e.message}`));
       process.exit(1);
     }
   }
 
-  const { globSync } = require('glob');
   const files = globSync(config.include, {
     ignore: config.exclude,
     nodir: true,
@@ -360,7 +342,7 @@ function runGeneration(options) {
         fs.unlinkSync(absolutePath);
         console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(chalk.red(`❌ 轉換檔案失敗: ${relPath}, 錯誤: ${err.message}`));
       console.error(err.stack);
     }
@@ -372,7 +354,3 @@ function runGeneration(options) {
     console.log(chalk.green('\n✔ 程式碼型別注入與重構完成！'));
   }
 }
-
-module.exports = {
-  runGeneration
-};

@@ -1,14 +1,5 @@
 import { isNode, sanitizeHTML } from './utils.js';
 
-interface CreateTodoItemTodoShape {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: string;
-  [key: string]: any;
-}
-
-
 export class TodoDOM {
   /**
    * 建立單一 Todo 的 DOM 節點
@@ -17,7 +8,7 @@ export class TodoDOM {
    * @param {function} onDelete
    * @returns {HTMLElement|object}
    */
-  static createTodoItem(todo: CreateTodoItemTodoShape, onToggle: any, onDelete: any): HTMLLIElement {
+  static createTodoItem(todo, onToggle, onDelete) {
     if (isNode()) {
       return { id: todo.id, mockDOM: true };
     }

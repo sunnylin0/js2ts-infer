@@ -1,27 +1,28 @@
-const { transformSync } = require('@babel/core');
-const customBabelPlugin = require('./babel-plugin-js2ts');
+import { transformSync } from '@babel/core';
+// @ts-ignore
+import customBabelPlugin from './babel-plugin-js2ts';
 
-function vitePlugin(options = {}) {
+export function vitePlugin(options: any = {}) {
   const port = options.port || 9002;
   return {
     name: 'vite-plugin-js2ts-infer',
-    apply: 'serve', // 僅在開發伺服器啟用
+    apply: 'serve' as const, // 僅在開發伺服器啟用
     
     // 自動在 HTML 中注入全域 typeTracker
-    transformIndexHtml(html) {
+    transformIndexHtml(html: string) {
       return {
         html,
         tags: [
           {
             tag: 'script',
             attrs: { src: `http://localhost:${port}/tracker.js` },
-            injectTo: 'head-prepend'
+            injectTo: 'head-prepend' as const
           }
         ]
       };
     },
 
-    transform(code, id) {
+    transform(code: string, id: string) {
       // 排除 node_modules 與非 JS 檔案
       if (id.includes('node_modules') || (!id.endsWith('.js') && !id.endsWith('.jsx'))) {
         return null;
@@ -37,10 +38,10 @@ function vitePlugin(options = {}) {
         });
 
         return {
-          code: result.code,
-          map: result.map
+          code: result?.code || '',
+          map: result?.map || null
         };
-      } catch (err) {
+      } catch (err: any) {
         console.error(`❌ [vite-plugin-js2ts-infer] 插樁失敗: ${id}, 錯誤: ${err.message}`);
         return null;
       }
@@ -48,7 +49,7 @@ function vitePlugin(options = {}) {
   };
 }
 
-function webpackLoader(source, map, meta) {
+export function webpackLoader(this: any, source: string, map: any, meta: any) {
   if (this.resourcePath.includes('node_modules')) {
     return this.callback(null, source, map, meta);
   }
@@ -63,14 +64,9 @@ function webpackLoader(source, map, meta) {
       configFile: false
     });
 
-    this.callback(null, result.code, result.map, meta);
-  } catch (err) {
+    this.callback(null, result?.code || '', result?.map || null, meta);
+  } catch (err: any) {
     this.emitError(err);
     this.callback(err, source, map, meta);
   }
 }
-
-module.exports = {
-  vitePlugin,
-  webpackLoader
-};

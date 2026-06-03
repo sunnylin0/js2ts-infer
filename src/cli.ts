@@ -1,16 +1,14 @@
 #!/usr/bin/env node
 
-const { Command } = require('commander');
-const program = new Command();
-const path = require('path');
+import { Command } from 'commander';
+import initCmd from './commands/init';
+import scanCmd from './commands/scan';
+import runCmd from './commands/run';
+import mergeCmd from './commands/merge';
+import generateCmd from './commands/generate';
+import reviewCmd from './commands/review';
 
-// 載入指令實作
-const initCmd = require('./commands/init');
-const scanCmd = require('./commands/scan');
-const runCmd = require('./commands/run');
-const mergeCmd = require('./commands/merge');
-const generateCmd = require('./commands/generate');
-const reviewCmd = require('./commands/review');
+const program = new Command();
 
 program
   .name('js2ts-infer')

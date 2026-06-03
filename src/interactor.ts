@@ -1,28 +1,26 @@
-const fs = require('fs');
-const path = require('path');
-const { Project, SyntaxKind } = require('ts-morph');
-const chalk = require('chalk');
-const prompts = require('prompts');
+import * as fs from 'fs';
+import * as path from 'path';
+import { Project, SyntaxKind } from 'ts-morph';
+import chalk from 'chalk';
+import prompts from 'prompts';
 
-async function runReview(options) {
+export async function runReview(options: any) {
   const configPath = path.resolve(process.cwd(), options.config);
   let config = {
-    include: ["src/**/*.ts", "modules/**/*.ts", "*.ts"], // 審閱 generate 後的 TS
-    exclude: ["node_modules/**", "**/dist/**", "**/*.test.ts", "**/test/**"]
+    include: ["src/**/*.ts", "modules/**/*.ts", "*.ts"],
+    exclude: ["node_modules/**", "**/dist/**", "**/*.test.js", "**/test/**"]
   };
 
   if (fs.existsSync(configPath)) {
     try {
       const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      // 改為尋找對應的 .ts 檔案
-      config.include = (userConfig.include || []).map(p => p.replace(/\.js$/, '.ts'));
-      config.exclude = (userConfig.exclude || []).map(p => p.replace(/\.js$/, '.ts'));
+      config.include = (userConfig.include || []).map((p: string) => p.replace(/\.js$/, '.ts'));
+      config.exclude = (userConfig.exclude || []).map((p: string) => p.replace(/\.js$/, '.ts'));
     } catch (e) {}
   }
 
-  // 讀取觀測型別
   const observedTypesPath = path.resolve(process.cwd(), 'types-observed.json');
-  let typeDB = {};
+  let typeDB: any = {};
   if (fs.existsSync(observedTypesPath)) {
     try {
       typeDB = JSON.parse(fs.readFileSync(observedTypesPath, 'utf-8'));
@@ -33,24 +31,19 @@ async function runReview(options) {
   project.addSourceFilesAtPaths(config.include);
 
   const sourceFiles = project.getSourceFiles().filter(sf => {
-    // 排除被 ignore 的檔案
     const relPath = path.relative(process.cwd(), sf.getFilePath());
     return !config.exclude.some(ex => relPath.includes(ex.replace(/\*\*/g, '')));
   });
 
   console.log(chalk.blue(`🔍 開始掃描專案中的 any 與介面定義...`));
 
-  // 1. 審閱 interfaces 重新命名
   for (const sf of sourceFiles) {
     const interfaces = sf.getInterfaces();
     for (const iface of interfaces) {
       const name = iface.getName();
-      // 如果名字是自動產生的，例如 ProcessUserUser (沒有明確指示是自訂名)
-      // 我們可以讓使用者選擇是否重新命名所有 interface
       if (name.startsWith('Shape_') || /^[A-Z][a-zA-Z0-9]+[A-Z][a-zA-Z0-9]+$/.test(name)) {
         console.log(chalk.yellow(`\nfound interface: ${chalk.bold(name)} in ${path.relative(process.cwd(), sf.getFilePath())}`));
         
-        // 印出 interface 的部分結構
         const body = iface.getText();
         console.log(chalk.gray(body));
 
@@ -70,7 +63,6 @@ async function runReview(options) {
           });
 
           if (newNameRes.newName) {
-            // ts-morph 自動更新所有引用！
             iface.rename(newNameRes.newName);
             sf.saveSync();
             console.log(chalk.green(`✔ 已重命名為: ${newNameRes.newName}`));
@@ -80,12 +72,10 @@ async function runReview(options) {
     }
   }
 
-  // 2. 審閱 any 型別補完
   for (const sf of sourceFiles) {
     const relPath = path.relative(process.cwd(), sf.getFilePath()).replace(/\\/g, '/');
-    const paramsToReview = [];
+    const paramsToReview: any[] = [];
 
-    // 收集所有 any 的參數
     sf.getDescendantsOfKind(SyntaxKind.Parameter).forEach(param => {
       const typeNode = param.getTypeNode();
       const typeText = typeNode ? typeNode.getText() : 'any';
@@ -109,7 +99,6 @@ async function runReview(options) {
       const originalCode = sf.getFullText();
       const lines = originalCode.split('\n');
       
-      // 獲取上下文 (前後 3 行)
       const startLine = Math.max(0, line - 4);
       const endLine = Math.min(lines.length - 1, line + 2);
       console.log(chalk.yellow(`\n--- 審閱 ${relPath}:${line} (${fnName} 中的 ${paramName}) ---`));
@@ -121,8 +110,7 @@ async function runReview(options) {
         }
       }
 
-      // 提供候選選項
-      const choices = [
+      const choices: any[] = [
         { title: '保持為 any', value: 'any' }
       ];
 
@@ -142,7 +130,7 @@ async function runReview(options) {
         choices: choices
       });
 
-      if (!choiceRes.type) continue; // 使用者按 Ctrl+C
+      if (!choiceRes.type) continue;
 
       let chosenType = choiceRes.type;
       if (chosenType === '__custom__') {
@@ -169,7 +157,3 @@ async function runReview(options) {
 
   console.log(chalk.green('\n✔ 互動式審閱結束。'));
 }
-
-module.exports = {
-  runReview
-};

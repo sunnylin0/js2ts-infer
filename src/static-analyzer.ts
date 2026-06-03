@@ -1,11 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const parser = require('@babel/parser');
-const traverse = require('@babel/traverse').default;
-const { globSync } = require('glob');
+import * as fs from 'fs';
+import * as path from 'path';
+import * as parser from '@babel/parser';
+import traverse from '@babel/traverse';
+import { globSync } from 'glob';
 
-// 輔助函式：判斷某個節點在靜態下是否為 function
-function getTypeOfNode(node) {
+function getTypeOfNode(node: any): string {
   if (!node) return 'unknown';
   if (node.type === 'FunctionDeclaration' || 
       node.type === 'FunctionExpression' || 
@@ -18,31 +17,30 @@ function getTypeOfNode(node) {
   return 'unknown';
 }
 
-function analyzeProject(config) {
+export function analyzeProject(config: any) {
   const includePatterns = config.include || [];
   const excludePatterns = config.exclude || [];
   
-  // 找出所有符合 include 且排除 exclude 的檔案
   const files = globSync(includePatterns, {
     ignore: excludePatterns,
     nodir: true,
     absolute: true
   });
 
-  const classes = {}; // class name -> file path (相對路徑)
-  const boundaries = []; // 邊界 export 清單
+  const classes: Record<string, string> = {};
+  const boundaries: any[] = [];
 
   for (const absolutePath of files) {
     const relativePath = path.relative(process.cwd(), absolutePath).replace(/\\/g, '/');
-    let code;
+    let code: string;
     try {
       code = fs.readFileSync(absolutePath, 'utf-8');
-    } catch (e) {
+    } catch (e: any) {
       console.warn(`無法讀取檔案: ${absolutePath}, error: ${e.message}`);
       continue;
     }
 
-    let ast;
+    let ast: any;
     try {
       ast = parser.parse(code, {
         sourceType: 'unambiguous',
@@ -55,21 +53,22 @@ function analyzeProject(config) {
           'nullishCoalescingOperator'
         ]
       });
-    } catch (err) {
+    } catch (err: any) {
       console.warn(`AST 解析失敗: ${relativePath}, error: ${err.message}`);
       continue;
     }
 
-    traverse(ast, {
-      // 收集 Class 定義
-      ClassDeclaration(astPath) {
+    // @ts-ignore
+    const traverseFn = typeof traverse === 'function' ? traverse : (traverse as any).default;
+
+    traverseFn(ast, {
+      ClassDeclaration(astPath: any) {
         if (astPath.node.id) {
           classes[astPath.node.id.name] = relativePath;
         }
       },
       
-      // ESM 命名匯出
-      ExportNamedDeclaration(astPath) {
+      ExportNamedDeclaration(astPath: any) {
         if (astPath.node.declaration) {
           const dec = astPath.node.declaration;
           if (dec.type === 'FunctionDeclaration' && dec.id) {
@@ -85,7 +84,7 @@ function analyzeProject(config) {
               type: 'class'
             });
           } else if (dec.type === 'VariableDeclaration') {
-            dec.declarations.forEach(d => {
+            dec.declarations.forEach((d: any) => {
               if (d.id && d.id.type === 'Identifier') {
                 boundaries.push({
                   filePath: relativePath,
@@ -97,7 +96,7 @@ function analyzeProject(config) {
           }
         }
         if (astPath.node.specifiers) {
-          astPath.node.specifiers.forEach(spec => {
+          astPath.node.specifiers.forEach((spec: any) => {
             if (spec.exported && spec.exported.type === 'Identifier') {
               boundaries.push({
                 filePath: relativePath,
@@ -109,8 +108,7 @@ function analyzeProject(config) {
         }
       },
 
-      // ESM 預設匯出
-      ExportDefaultDeclaration(astPath) {
+      ExportDefaultDeclaration(astPath: any) {
         const dec = astPath.node.declaration;
         let exportName = 'default';
         let type = 'unknown';
@@ -135,18 +133,15 @@ function analyzeProject(config) {
         });
       },
 
-      // CommonJS 匯出
-      AssignmentExpression(astPath) {
+      AssignmentExpression(astPath: any) {
         const { left, right } = astPath.node;
         
-        // 匹配 module.exports = ...
         if (left.type === 'MemberExpression' &&
             left.object.type === 'Identifier' && left.object.name === 'module' &&
             left.property.type === 'Identifier' && left.property.name === 'exports') {
           
           if (right.type === 'ObjectExpression') {
-            // module.exports = { foo, bar }
-            right.properties.forEach(prop => {
+            right.properties.forEach((prop: any) => {
               if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
                 boundaries.push({
                   filePath: relativePath,
@@ -156,7 +151,6 @@ function analyzeProject(config) {
               }
             });
           } else {
-            // module.exports = myFunc
             const exportName = right.type === 'Identifier' ? right.name : 'default';
             boundaries.push({
               filePath: relativePath,
@@ -167,7 +161,6 @@ function analyzeProject(config) {
           }
         }
         
-        // 匹配 exports.foo = ...
         else if (left.type === 'MemberExpression' &&
                  left.object.type === 'Identifier' && left.object.name === 'exports' &&
                  left.property.type === 'Identifier') {
@@ -178,7 +171,6 @@ function analyzeProject(config) {
           });
         }
         
-        // 匹配 module.exports.foo = ...
         else if (left.type === 'MemberExpression' &&
                  left.object.type === 'MemberExpression' &&
                  left.object.object.type === 'Identifier' && left.object.object.name === 'module' &&
@@ -194,9 +186,8 @@ function analyzeProject(config) {
     });
   }
 
-  // 去除重複的邊界（有些寫法可能會被匹配到多次）
-  const uniqueBoundaries = [];
-  const visited = new Set();
+  const uniqueBoundaries: any[] = [];
+  const visited = new Set<string>();
   for (const b of boundaries) {
     const key = `${b.filePath}::${b.exportName}`;
     if (!visited.has(key)) {
@@ -210,7 +201,3 @@ function analyzeProject(config) {
     boundaries: uniqueBoundaries
   };
 }
-
-module.exports = {
-  analyzeProject
-};

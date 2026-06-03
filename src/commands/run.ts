@@ -1,13 +1,17 @@
-const fs = require('fs');
-const path = require('path');
-const { spawn } = require('child_process');
-const chalk = require('chalk');
-const { startServer, stopServer } = require('../tracker-server');
+import * as fs from 'fs';
+import * as path from 'path';
+import { spawn } from 'child_process';
+import chalk from 'chalk';
+import { startServer, stopServer } from '../tracker-server';
 
-async function run(command, options) {
+interface RunOptions {
+  config: string;
+}
+
+export default async function run(command: string, options: RunOptions): Promise<void> {
   const configPath = path.resolve(process.cwd(), options.config);
   
-  let config = {
+  let config: any = {
     trackerPort: 9002,
     maxDepth: 5
   };
@@ -15,7 +19,7 @@ async function run(command, options) {
   if (fs.existsSync(configPath)) {
     try {
       config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    } catch (e) {
+    } catch (e: any) {
       console.warn(chalk.yellow(`⚠ 讀取設定檔失敗: ${e.message}。將使用預設設定。`));
     }
   }
@@ -23,10 +27,9 @@ async function run(command, options) {
   const port = config.trackerPort || 9002;
 
   // 1. 啟動型別收集伺服器
-  let server;
   try {
-    server = await startServer(port, config);
-  } catch (err) {
+    await startServer(port, config);
+  } catch (err: any) {
     console.error(chalk.red(`❌ 無法啟動型別收集伺服器: ${err.message}`));
     process.exit(1);
   }
@@ -34,9 +37,22 @@ async function run(command, options) {
   // 2. 設置環境變數以掛載 Hook
   const loaderHookCjs = path.resolve(__dirname, '../loader-hook.js').replace(/\\/g, '/');
   const loaderHookEsm = path.resolve(__dirname, '../loader-hook-esm.mjs').replace(/\\/g, '/');
+  const registerJs = path.resolve(__dirname, '../register.js').replace(/\\/g, '/');
   
+  const [major, minor] = process.versions.node.split('.').map(Number);
+  const supportImport = major > 20 || (major === 20 && minor >= 6);
+
   // 同時掛載 CJS 與 ESM Hook
-  let nodeOptions = ` --require "${loaderHookCjs}" --experimental-loader "file:///${loaderHookEsm}"`;
+  let nodeOptions = '';
+  if (supportImport) {
+    nodeOptions = ` --require "${loaderHookCjs}" --import "file:///${registerJs}"`;
+  } else {
+    nodeOptions = ` --require "${loaderHookCjs}" --experimental-loader "file:///${loaderHookEsm}"`;
+  }
+  
+  if (major >= 22) {
+    nodeOptions += ' --no-experimental-require-module';
+  }
   
   const env = {
     ...process.env,
@@ -71,14 +87,12 @@ async function run(command, options) {
       console.log(chalk.yellow(`⚠ 未偵測到任何型別。請確認代碼是否有被執行且符合包含範圍。`));
     }
     
-    process.exit(code);
+    process.exit(code ?? 0);
   });
 
-  child.on('error', (err) => {
+  child.on('error', (err: any) => {
     console.error(chalk.red(`❌ 執行指令時出錯: ${err.message}`));
     stopServer();
     process.exit(1);
   });
 }
-
-module.exports = run;

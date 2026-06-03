@@ -2,11 +2,12 @@
   "name": "js2ts-infer",
   "version": "1.0.0",
   "description": "JS to TS runtime type inference tool",
-  "main": "src/cli.js",
+  "main": "dist/cli.js",
   "bin": {
-    "js2ts-infer": "./src/cli.js"
+    "js2ts-infer": "./dist/cli.js"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node build-post.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -29,6 +30,8 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "puppeteer": "^25.1.0"
+    "@types/node": "^25.9.1",
+    "puppeteer": "^25.1.0",
+    "typescript": "^6.0.3"
   }
 }
