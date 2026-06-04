@@ -135,3 +135,23 @@ node ../src/cli.js review
 ### 2. 運行時空資料警告
 若指令執行結束時產出的 `types-observed.json` 為空，且偵測到前端框架，則提示使用者確認是否正確開啟網頁進行操作，以利觸發側錄。
 
+---
+
+## Class 屬性自動宣告與置頂重構機制 (新增)
+
+為了解決從 JavaScript 轉 TypeScript 後，Class 成員屬性（Member Properties）未宣告導致的編譯錯誤，新增以下重構機制：
+
+### 1. 成員屬性宣告置頂
+- **問題**：在 JavaScript 中，可直接在 `constructor` 內使用 `this.xxx = yyy` 來動態建立變數；但在 TypeScript 中，Class 的成員屬性必須先在 Class 頂層進行顯式宣告，否則編譯器會報錯。
+- **解決方案**：在型別生成階段，透過靜態分析掃描 Class 內部所有以 `this.xxx` 賦值的動態成員，自動於 TS 類別中最頂部（第一順位）補上成員屬性宣告，並自動過濾 `constructor` 關鍵字，以防出現「屬性未定義」之 TypeScript 編譯錯誤。
+- **Safe Fallback 降級處理**：實作 `safeAddProperty` 機制，若 AST 修改失敗，則改用 safe 降級插入文字機制，繞過 ts-morph 在特殊類別結構上的插入崩潰，保障 100% 成功注入。
+
+### 2. 構造函式無依賴屬性置頂初始化重構 (Class Fields Codemod)
+- **Class Fields 動態搬移**：自動識別 `constructor` 中不依賴參數與內部局部變數的 `this.xxx = yyy` 賦值語句，將其與 Leading Comments (註解) 一起安全地搬移至 Class 頂部作為屬性初始值，並於 `constructor` 內部刪除，使 TS 類別更加精煉。
+- **JSDoc 升級**：在搬移註解時，自動將關聯的 `//` 或 `/*` 註解轉換為標準 JSDoc 格式附加於新產生的 Class 屬性上。
+
+### 3. Class 建構函式參數型別注入
+- **問題**：在型別生成時，原工具僅對成員方法進行遍歷，忽略了 `constructor` 本身，導致 `types-observed.json` 中已收集到的構造函式參數型別（如 `x: number, y: number, color: string`）無法注入。
+- **解決方案**：在 `generate` 階段，補上對 `cls.getConstructors()` 的遍歷與 `annotateFunction` 呼叫，使建構函式參數也能無縫標註型別。
+
+

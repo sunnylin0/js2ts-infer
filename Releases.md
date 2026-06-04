@@ -37,4 +37,16 @@
 - **前端配置靜態偵測**：於 `run` 指令啟動前自動掃描 `package.json`，若為 Vite/Webpack 專案但設定檔未啟用 `vitePlugin` 或 `webpackLoader`，會主動印出錯誤並中斷程式執行。
 - **動態結果查驗與提示**：在指令執行結束且背景伺服器關閉時，若偵測到產出的型別紀錄 (`types-observed.json`) 為空，則會為前端專案提供具體的排查建議，防止因未啟用插樁導致側錄落空。
 
+## [2026-06-04] v1.1.2 - 新增 Class 屬性自動宣告與注入機制
+- **自動化成員屬性宣告**：在型別生成階段，透過靜態分析掃描 Class 內部所有以 `this.xxx` 賦值的動態成員，自動於 TS 類別中補上成員屬性宣告，排除轉換後出現「屬性未定義」之 TypeScript 編譯錯誤，並自動過濾 `constructor` 關鍵字，且宣告位置強制置於 Class 最頂部（第一順位）。
+- **強大 Parser 切換與 Safe Fallback**：將原始碼一律改以預設 TS Parser 解析載入，並實作 safeAddProperty 降級插入文字機制，繞過 ts-morph 在特殊類別結構上的插入崩潰，保障 100% 成功注入。
 
+## [2026-06-04] v1.1.3 - 實作構造函式無依賴屬性置頂初始化重構 (Class Fields Codemod)
+- **Class Fields 動態搬移**：在型別生成階段，自動識別 `constructor` 中不依賴參數與內部局部變數的 `this.xxx = yyy` 賦值語句，將其與其 Leading Comments (註解) 一起安全地搬移至 Class 頂部作為屬性初始值，並於 `constructor` 內部刪除，使 TS 類別更加精煉與現代化。
+- **防止 Node 失效與併發安全**：採用「唯讀收集與修改分離」雙階段設計，並一次性呼叫 `insertProperties` 批量寫入屬性，徹底解決 `ts-morph` 頻繁修改 AST 導致的 `Attempted to get information from a node that was removed or forgotten` 崩潰問題。
+
+## [2026-06-04] v1.1.4 - 支援 Class 建構函式參數型別注入
+- **Class 建構函式型別標註**：修復了重構工具在寫入型別時遺漏對 `constructor` 進行標註的問題。在 AST 處理流程中加入對 `cls.getConstructors()` 的遍歷並調用 `annotateFunction`，使側錄到的建構函式參數型別（例如 `particles.ts` 中的 `x: number, y: number, color: string`）能精確注入至生成的 TypeScript 檔案中。
+
+## [2026-06-04] v1.1.5 - 專案地圖初始化
+- **初始化專案地圖**：依據 `/init` 指令，執行靜態掃描分析並生成 `agent.md`。記錄核心技術棧 (Node.js/TypeScript)、專案架構目錄樹、開發規範與 AI 協作備忘錄。

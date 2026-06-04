@@ -21,7 +21,7 @@ function mergeObjectShapesArray(shapes: any[]): any {
   if (shapes.length === 1) return shapes[0];
 
   const combined: any = {};
-  
+
   const allKeys = new Set<string>();
   shapes.forEach(s => {
     Object.keys(s).filter(k => k !== '__nullable').forEach(k => allKeys.add(k));
@@ -30,7 +30,7 @@ function mergeObjectShapesArray(shapes: any[]): any {
   for (const key of allKeys) {
     let existCount = 0;
     const valTypes: any[] = [];
-    
+
     shapes.forEach(s => {
       if (s[key] !== undefined) {
         existCount++;
@@ -60,7 +60,7 @@ function mergeObjectShapesArray(shapes: any[]): any {
 function shapeToInterfaceBody(shape: any, depth = 1): string {
   const indent = '  '.repeat(depth);
   let body = '';
-  
+
   for (const [key, typeVal] of Object.entries(shape)) {
     if (key === '__nullable') continue;
 
@@ -93,7 +93,7 @@ function shapeToInterfaceBody(shape: any, depth = 1): string {
 function resolveParameterType(record: any, baseName: string, interfacesToDeclare: Record<string, string>): string {
   const observedTypes = record.observedTypes || [];
   const objectShapes = record.objectShapes || [];
-  
+
   const isNullable = observedTypes.includes('null');
   const isUndefined = observedTypes.includes('undefined');
 
@@ -103,10 +103,10 @@ function resolveParameterType(record: any, baseName: string, interfacesToDeclare
   if (objectShapes.length > 0) {
     const combinedShape = mergeObjectShapesArray(objectShapes);
     const interfaceName = `${baseName.charAt(0).toUpperCase()}${baseName.slice(1)}Shape`;
-    
+
     const body = shapeToInterfaceBody(combinedShape);
     const declaration = `interface ${interfaceName} {\n${body}}`;
-    
+
     interfacesToDeclare[interfaceName] = declaration;
     typeNames.push(interfaceName);
   }
@@ -121,236 +121,416 @@ function resolveParameterType(record: any, baseName: string, interfacesToDeclare
   if (isNullable) {
     finalType = `(${finalType}) | null`;
   }
-  
+
   return finalType.replace(/\[object Object\]/g, '{ [key: string]: any }');
 }
 
-function processFileRefactoring(filePath: string, typeDB: any, config: any): string {
-  const project = new Project();
-  const sourceFile = project.addSourceFileAtPath(filePath);
-  const relPath = path.relative(process.cwd(), filePath).replace(/\\/g, '/');
-
-  sourceFile.getInterfaces().forEach(iface => iface.remove());
-  
-  sourceFile.getDescendantsOfKind(SyntaxKind.Parameter).forEach(param => {
-    param.removeType();
-  });
-
-  refactorCjsToEsm(sourceFile);
-
-  const interfacesToDeclare: Record<string, string> = {};
-
-  sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration).forEach(fn => {
-    const fnName = fn.getName() || 'anonymous';
-    if (typeof fn.removeReturnType === 'function') fn.removeReturnType();
-    annotateFunction(fn, fnName, relPath, typeDB, interfacesToDeclare, config);
-  });
-
-  sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration).forEach(cls => {
-    cls.getMethods().forEach(method => {
-      const fnName = method.getName();
-      if (typeof method.removeReturnType === 'function') method.removeReturnType();
-      annotateFunction(method, fnName, relPath, typeDB, interfacesToDeclare, config);
+function safeAddProperty(cls: any, propName: string, typeStr: string = 'any') {
+  try {
+    cls.insertProperty(0, {
+      name: propName,
+      type: typeStr,
+      hasQuestionToken: false
     });
-  });
-
-  sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach((decl: any) => {
-    const init = decl.getInitializer();
-    if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
-      const fnName = decl.getName();
-      annotateFunction(init, fnName, relPath, typeDB, interfacesToDeclare, config);
-    }
-  });
-
-  const interfaceDeclarations = Object.values(interfacesToDeclare).join('\n\n');
-  if (interfaceDeclarations) {
-    const imports = sourceFile.getImportDeclarations();
-    if (imports.length > 0) {
-      const lastImport = imports[imports.length - 1];
-      sourceFile.insertText(lastImport.getEnd(), '\n\n' + interfaceDeclarations + '\n');
-    } else {
-      sourceFile.insertText(0, interfaceDeclarations + '\n\n');
-    }
-  }
-
-  return sourceFile.getFullText();
-}
-
-function annotateFunction(fnNode: any, fnName: string, relPath: string, typeDB: any, interfacesToDeclare: Record<string, string>, config: any) {
-  const confidenceThreshold = config.confidenceThreshold || 5;
-
-  const params = fnNode.getParameters();
-  params.forEach((param: any) => {
-    const paramName = param.getName();
-    const trackerId = `${relPath}::${fnName}::param::${paramName}`;
-    const record = typeDB[trackerId];
-
-    if (record && record.callCount >= confidenceThreshold) {
-      const baseName = `${fnName.charAt(0).toUpperCase()}${fnName.slice(1)}${paramName.charAt(0).toUpperCase()}${paramName.slice(1)}`;
-      const typeStr = resolveParameterType(record, baseName, interfacesToDeclare);
-      
-      if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
-        param.setType(typeStr);
-      }
-    } else if (record && record.callCount > 0) {
-      if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
-        param.setType('/* @inferred-low-confidence */ any');
-      }
-    }
-  });
-
-  const returnTrackerId = `${relPath}::${fnName}::return`;
-  const returnRecord = typeDB[returnTrackerId];
-  if (returnRecord && returnRecord.callCount >= confidenceThreshold) {
-    const baseName = `${fnName.charAt(0).toUpperCase()}${fnName.slice(1)}Return`;
-    const typeStr = resolveParameterType(returnRecord, baseName, interfacesToDeclare);
-    
-    if (typeof fnNode.setReturnType === 'function' && !fnNode.getReturnTypeNode()) {
-      fnNode.setReturnType(typeStr);
-    }
-  }
-}
-
-function refactorCjsToEsm(sourceFile: any) {
-  sourceFile.getVariableStatements().forEach((stmt: any) => {
-    if (stmt.getParent().getKind() !== SyntaxKind.SourceFile) return;
-
-    const declarations = stmt.getDeclarations();
-    if (declarations.length === 1) {
-      const decl = declarations[0];
-      const init = decl.getInitializer();
-      if (init && init.getKind() === SyntaxKind.CallExpression) {
-        const call = init;
-        if (call.getExpression().getText() === 'require' && call.getArguments().length === 1) {
-          const moduleSpecifier = call.getArguments()[0].getText().replace(/['"]/g, '');
-          const nameNode = decl.getNameNode();
-          const isDestructured = nameNode.getKind() === SyntaxKind.ObjectBindingPattern;
-
-          if (isDestructured) {
-            const elements = nameNode.getElements().map((el: any) => el.getName());
-            sourceFile.addImportDeclaration({
-              namedImports: elements,
-              moduleSpecifier: moduleSpecifier
-            });
-          } else {
-            sourceFile.addImportDeclaration({
-              defaultImport: decl.getName(),
-              moduleSpecifier: moduleSpecifier
-            });
-          }
-          stmt.remove();
-        }
-      }
-    }
-  });
-
-  sourceFile.getStatements().forEach((stmt: any) => {
-    if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
-      const expr = stmt.getExpression();
-      if (expr.getKind() === SyntaxKind.BinaryExpression) {
-        const binary = expr;
-        const left = binary.getLeft();
-        const right = binary.getRight();
-
-        if (left.getText() === 'module.exports') {
-          sourceFile.addExportAssignment({
-            isExportEquals: false,
-            expression: right.getText()
-          });
-          stmt.remove();
-        } else if (left.getText().startsWith('module.exports.')) {
-          const propName = left.getText().replace('module.exports.', '');
-          sourceFile.addVariableStatement({
-            declarationKind: 'const',
-            declarations: [{ name: propName, initializer: right.getText() }],
-            isExported: true
-          });
-          stmt.remove();
-        } else if (left.getText().startsWith('exports.')) {
-          const propName = left.getText().replace('exports.', '');
-          sourceFile.addVariableStatement({
-            declarationKind: 'const',
-            declarations: [{ name: propName, initializer: right.getText() }],
-            isExported: true
-          });
-          stmt.remove();
-        }
-      }
-    }
-  });
-}
-
-export function runGeneration(options: any) {
-  const configPath = path.resolve(process.cwd(), options.config);
-  let config = {
-    include: ["src/**/*.js", "modules/**/*.js", "*.js"],
-    exclude: ["node_modules/**", "**/dist/**", "**/*.test.js", "**/test/**"],
-    confidenceThreshold: 5
-  };
-
-  if (fs.existsSync(configPath)) {
+  } catch (err: any) {
     try {
-      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    } catch (e) {}
-  }
-
-  if (!options.force && !options.dryRun) {
-    if (!checkGitStatus()) {
-      console.error(chalk.red('❌ Git 工作區有未提交的變更！請先 commit 您的變更。'));
-      console.error(chalk.red('   或者使用 --force 旗標強制執行。'));
-      process.exit(1);
-    }
-  }
-
-  const observedTypesPath = path.resolve(process.cwd(), 'types-observed.json');
-  let typeDB = {};
-  if (fs.existsSync(observedTypesPath)) {
-    try {
-      typeDB = JSON.parse(fs.readFileSync(observedTypesPath, 'utf-8'));
-    } catch (e: any) {
-      console.error(chalk.red(`❌ 無法讀取型別觀測檔: ${observedTypesPath}, error: ${e.message}`));
-      process.exit(1);
-    }
-  }
-
-  const files = globSync(config.include, {
-    ignore: config.exclude,
-    nodir: true,
-    absolute: true
-  });
-
-  console.log(chalk.blue(`📝 開始重構與注入型別，共 ${files.length} 個檔案...`));
-
-  for (const absolutePath of files) {
-    const relPath = path.relative(process.cwd(), absolutePath).replace(/\\/g, '/');
-    const ext = path.extname(absolutePath);
-    const newExt = '.ts';
-    const dir = path.dirname(absolutePath);
-    const base = path.basename(absolutePath, ext);
-    const newPath = path.join(dir, base + newExt);
-
-    try {
-      const newContent = processFileRefactoring(absolutePath, typeDB, config);
-
-      if (options.dryRun) {
-        const originalContent = fs.readFileSync(absolutePath, 'utf-8');
-        const fileDiff = diff.createTwoFilesPatch(relPath, relPath.replace(/\.js$/, '.ts'), originalContent, newContent);
-        console.log(chalk.yellow(`\n--- [Dry Run Diff] ${relPath} -> ${relPath.replace(/\.js$/, '.ts')} ---`));
-        console.log(fileDiff);
+      const ctor = cls.getConstructors()[0];
+      if (ctor) {
+        cls.insertText(ctor.getStart(), `${propName}: ${typeStr};\n  `);
       } else {
-        fs.writeFileSync(newPath, newContent, 'utf-8');
-        fs.unlinkSync(absolutePath);
-        console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
+        const firstMethod = cls.getMethods()[0];
+        if (firstMethod) {
+          cls.insertText(firstMethod.getStart(), `${propName}: ${typeStr};\n  `);
+        } else {
+          const classText = cls.getText();
+          const braceIdx = classText.indexOf('{');
+          if (braceIdx !== -1) {
+            cls.insertText(cls.getStart() + braceIdx + 1, `\n  ${propName}: ${typeStr};`);
+          }
+        }
       }
-    } catch (err: any) {
-      console.error(chalk.red(`❌ 轉換檔案失敗: ${relPath}, 錯誤: ${err.message}`));
-      console.error(err.stack);
+    } catch (fallbackErr: any) {
+      console.warn(`⚠ [SafeAddProperty] 降級寫入成員屬性 ${propName} 失敗: ${fallbackErr.message}`);
+    }
+  }
+}
+
+function cleanCommentToJSDoc(comment: string): string {
+  if (comment.startsWith('/**')) {
+    return comment.replace(/^\/\*\*+/, '').replace(/\*+\/$/, '').trim();
+  }
+  if (comment.startsWith('/*')) {
+    return comment.replace(/^\/\*+/, '').replace(/\*+\/$/, '').trim();
+  }
+  return comment.split('\n').map(line => line.replace(/^\/\/+/, '').trim()).join('\n');
+}
+
+function processFileRefactoring(filePath: string, typeDB: any, config: any): string {
+    const project = new Project();
+    const originalCode = fs.readFileSync(filePath, 'utf-8');
+    const sourceFile = project.createSourceFile(filePath.replace(/\.js$/, '.ts'), originalCode, { overwrite: true });
+    const relPath = path.relative(process.cwd(), filePath).replace(/\\/g, '/');
+
+    sourceFile.getInterfaces().forEach(iface => iface.remove());
+
+    sourceFile.getDescendantsOfKind(SyntaxKind.Parameter).forEach(param => {
+      param.removeType();
+    });
+
+    refactorCjsToEsm(sourceFile);
+
+    const interfacesToDeclare: Record<string, string> = {};
+
+    sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration).forEach(fn => {
+      const fnName = fn.getName() || 'anonymous';
+      if (typeof fn.removeReturnType === 'function') fn.removeReturnType();
+      annotateFunction(fn, fnName, relPath, typeDB, interfacesToDeclare, config);
+    });
+
+    sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration).forEach(cls => {
+      // 1. 收集 Class 中所有 `this.xxx` 賦值
+      const properties = new Set<string>();
+      cls.getDescendantsOfKind(SyntaxKind.BinaryExpression).forEach(expr => {
+        const left = expr.getLeft();
+        if (left.getKind() === SyntaxKind.PropertyAccessExpression) {
+          const propAccess = left as any;
+          if (propAccess.getExpression().getText() === 'this') {
+            const name = propAccess.getName();
+            if (name !== 'constructor') {
+              properties.add(name);
+            }
+          }
+        }
+      });
+
+      // 1.5 將 constructor 內無依賴的 this 賦值移至 Class 頂部作為屬性初始值
+      const ctor = cls.getConstructors()[0];
+      if (ctor) {
+        const ctorParams = ctor.getParameters().map((p: any) => p.getName());
+        const localVars = new Set<string>();
+        ctor.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach((decl: any) => {
+          localVars.add(decl.getName());
+        });
+
+        const statements = ctor.getStatements();
+        const propertiesToMigrate: { propName: string; rightText: string; commentText: string }[] = [];
+
+        // 第一階段：唯讀收集
+        statements.forEach((stmt: any) => {
+          if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
+            const expr = stmt.getExpression();
+            if (expr.getKind() === SyntaxKind.BinaryExpression) {
+              const binary = expr;
+              const left = binary.getLeft();
+              const right = binary.getRight();
+
+              if (left.getKind() === SyntaxKind.PropertyAccessExpression && binary.getOperatorToken().getText() === '=') {
+                const propAccess = left;
+                if (propAccess.getExpression().getText() === 'this') {
+                  const propName = propAccess.getName();
+                  const rightText = right.getText();
+
+                  // 檢查是否含有對 constructor 參數或內部變數的參照
+                  let isSafe = true;
+                  for (const param of ctorParams) {
+                    const regex = new RegExp(`\\b${param}\\b`);
+                    if (regex.test(rightText)) {
+                      isSafe = false;
+                      break;
+                    }
+                  }
+                  if (isSafe) {
+                    for (const localVar of localVars) {
+                      const regex = new RegExp(`\\b${localVar}\\b`);
+                      if (regex.test(rightText)) {
+                        isSafe = false;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (isSafe && propName !== 'constructor') {
+                    const leadingCommentRanges = stmt.getLeadingCommentRanges();
+                    let commentText = '';
+                    if (leadingCommentRanges && leadingCommentRanges.length > 0) {
+                      commentText = leadingCommentRanges.map((r: any) => r.getText()).join('\n');
+                    }
+
+                    propertiesToMigrate.push({
+                      propName,
+                      rightText,
+                      commentText
+                    });
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        // 第二階段：執行修改（一次性批量插入屬性宣告，包含將註解轉換為 JSDoc 注入，避免 Node 失效錯誤）
+        const propertiesStructures = propertiesToMigrate.map(item => {
+          const struct: any = {
+            name: item.propName,
+            initializer: item.rightText,
+            hasQuestionToken: false
+          };
+          if (item.commentText) {
+            struct.docs = [cleanCommentToJSDoc(item.commentText)];
+          }
+          return struct;
+        });
+
+        if (propertiesStructures.length > 0) {
+          cls.insertProperties(0, propertiesStructures);
+        }
+
+        propertiesToMigrate.forEach(item => {
+          properties.delete(item.propName); // 移除了就不必再以 any 補宣告
+        });
+
+        // 第三階段：從後往前移除 constructor 內已被搬移的賦值語句
+        const migratedPropsSet = new Set(propertiesToMigrate.map(x => x.propName));
+        const currentStatements = ctor.getStatements();
+        for (let i = currentStatements.length - 1; i >= 0; i--) {
+          const stmt = currentStatements[i] as any;
+          if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
+            const expr = stmt.getExpression();
+            if (expr.getKind() === SyntaxKind.BinaryExpression) {
+              const left = expr.getLeft();
+              if (left.getKind() === SyntaxKind.PropertyAccessExpression && expr.getOperatorToken().getText() === '=') {
+                const propAccess = left;
+                if (propAccess.getExpression().getText() === 'this') {
+                  const propName = propAccess.getName();
+                  if (migratedPropsSet.has(propName)) {
+                    stmt.remove();
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      const existingProps = new Set(cls.getProperties().map(p => p.getName()));
+
+      // 2. 自動在頂部補上未宣告的屬性
+      properties.forEach(prop => {
+        if (!existingProps.has(prop)) {
+          safeAddProperty(cls, prop, 'any');
+        }
+      });
+
+      // 3. 標註方法
+      cls.getMethods().forEach(method => {
+        const fnName = method.getName();
+        if (typeof method.removeReturnType === 'function') method.removeReturnType();
+        annotateFunction(method, fnName, relPath, typeDB, interfacesToDeclare, config);
+      });
+
+      // 3.5 標註建構函式
+      cls.getConstructors().forEach(ctor => {
+        annotateFunction(ctor, 'constructor', relPath, typeDB, interfacesToDeclare, config);
+      });
+    });
+
+    sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach((decl: any) => {
+      const init = decl.getInitializer();
+      if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
+        const fnName = decl.getName();
+        annotateFunction(init, fnName, relPath, typeDB, interfacesToDeclare, config);
+      }
+    });
+
+    const interfaceDeclarations = Object.values(interfacesToDeclare).join('\n\n');
+    if (interfaceDeclarations) {
+      const imports = sourceFile.getImportDeclarations();
+      if (imports.length > 0) {
+        const lastImport = imports[imports.length - 1];
+        sourceFile.insertText(lastImport.getEnd(), '\n\n' + interfaceDeclarations + '\n');
+      } else {
+        sourceFile.insertText(0, interfaceDeclarations + '\n\n');
+      }
+    }
+
+    return sourceFile.getFullText();
+  }
+
+  function annotateFunction(fnNode: any, fnName: string, relPath: string, typeDB: any, interfacesToDeclare: Record<string, string>, config: any) {
+    const confidenceThreshold = config.confidenceThreshold || 5;
+
+    const params = fnNode.getParameters();
+    params.forEach((param: any) => {
+      const paramName = param.getName();
+      const trackerId = `${relPath}::${fnName}::param::${paramName}`;
+      const record = typeDB[trackerId];
+
+      if (record && record.callCount >= confidenceThreshold) {
+        const baseName = `${fnName.charAt(0).toUpperCase()}${fnName.slice(1)}${paramName.charAt(0).toUpperCase()}${paramName.slice(1)}`;
+        const typeStr = resolveParameterType(record, baseName, interfacesToDeclare);
+
+        if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
+          param.setType(typeStr);
+        }
+      } else if (record && record.callCount > 0) {
+        if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
+          param.setType('/* @inferred-low-confidence */ any');
+        }
+      }
+    });
+
+    const returnTrackerId = `${relPath}::${fnName}::return`;
+    const returnRecord = typeDB[returnTrackerId];
+    if (returnRecord && returnRecord.callCount >= confidenceThreshold) {
+      const baseName = `${fnName.charAt(0).toUpperCase()}${fnName.slice(1)}Return`;
+      const typeStr = resolveParameterType(returnRecord, baseName, interfacesToDeclare);
+
+      if (typeof fnNode.setReturnType === 'function' && !fnNode.getReturnTypeNode()) {
+        fnNode.setReturnType(typeStr);
+      }
     }
   }
 
-  if (options.dryRun) {
-    console.log(chalk.yellow('\n⚠ 目前為 Dry Run 模式，未對磁碟檔案進行任何修改。'));
-  } else {
-    console.log(chalk.green('\n✔ 程式碼型別注入與重構完成！'));
+  function refactorCjsToEsm(sourceFile: any) {
+    sourceFile.getVariableStatements().forEach((stmt: any) => {
+      if (stmt.getParent().getKind() !== SyntaxKind.SourceFile) return;
+
+      const declarations = stmt.getDeclarations();
+      if (declarations.length === 1) {
+        const decl = declarations[0];
+        const init = decl.getInitializer();
+        if (init && init.getKind() === SyntaxKind.CallExpression) {
+          const call = init;
+          if (call.getExpression().getText() === 'require' && call.getArguments().length === 1) {
+            const moduleSpecifier = call.getArguments()[0].getText().replace(/['"]/g, '');
+            const nameNode = decl.getNameNode();
+            const isDestructured = nameNode.getKind() === SyntaxKind.ObjectBindingPattern;
+
+            if (isDestructured) {
+              const elements = nameNode.getElements().map((el: any) => el.getName());
+              sourceFile.addImportDeclaration({
+                namedImports: elements,
+                moduleSpecifier: moduleSpecifier
+              });
+            } else {
+              sourceFile.addImportDeclaration({
+                defaultImport: decl.getName(),
+                moduleSpecifier: moduleSpecifier
+              });
+            }
+            stmt.remove();
+          }
+        }
+      }
+    });
+
+    sourceFile.getStatements().forEach((stmt: any) => {
+      if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
+        const expr = stmt.getExpression();
+        if (expr.getKind() === SyntaxKind.BinaryExpression) {
+          const binary = expr;
+          const left = binary.getLeft();
+          const right = binary.getRight();
+
+          if (left.getText() === 'module.exports') {
+            sourceFile.addExportAssignment({
+              isExportEquals: false,
+              expression: right.getText()
+            });
+            stmt.remove();
+          } else if (left.getText().startsWith('module.exports.')) {
+            const propName = left.getText().replace('module.exports.', '');
+            sourceFile.addVariableStatement({
+              declarationKind: 'const',
+              declarations: [{ name: propName, initializer: right.getText() }],
+              isExported: true
+            });
+            stmt.remove();
+          } else if (left.getText().startsWith('exports.')) {
+            const propName = left.getText().replace('exports.', '');
+            sourceFile.addVariableStatement({
+              declarationKind: 'const',
+              declarations: [{ name: propName, initializer: right.getText() }],
+              isExported: true
+            });
+            stmt.remove();
+          }
+        }
+      }
+    });
   }
-}
+
+  export function runGeneration(options: any) {
+    const configPath = path.resolve(process.cwd(), options.config);
+    let config = {
+      include: ["src/**/*.js", "modules/**/*.js", "*.js"],
+      exclude: ["node_modules/**", "**/dist/**", "**/*.test.js", "**/test/**"],
+      confidenceThreshold: 5
+    };
+
+    if (fs.existsSync(configPath)) {
+      try {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      } catch (e) { }
+    }
+
+    if (!options.force && !options.dryRun) {
+      if (!checkGitStatus()) {
+        console.error(chalk.red('❌ Git 工作區有未提交的變更！請先 commit 您的變更。'));
+        console.error(chalk.red('   或者使用 --force 旗標強制執行。'));
+        process.exit(1);
+      }
+    }
+
+    const observedTypesPath = path.resolve(process.cwd(), 'types-observed.json');
+    let typeDB = {};
+    if (fs.existsSync(observedTypesPath)) {
+      try {
+        typeDB = JSON.parse(fs.readFileSync(observedTypesPath, 'utf-8'));
+      } catch (e: any) {
+        console.error(chalk.red(`❌ 無法讀取型別觀測檔: ${observedTypesPath}, error: ${e.message}`));
+        process.exit(1);
+      }
+    }
+
+    const files = globSync(config.include, {
+      ignore: config.exclude,
+      nodir: true,
+      absolute: true
+    });
+
+    console.log(chalk.blue(`📝 開始重構與注入型別，共 ${files.length} 個檔案...`));
+
+    for (const absolutePath of files) {
+      const relPath = path.relative(process.cwd(), absolutePath).replace(/\\/g, '/');
+      const ext = path.extname(absolutePath);
+      const newExt = '.ts';
+      const dir = path.dirname(absolutePath);
+      const base = path.basename(absolutePath, ext);
+      const newPath = path.join(dir, base + newExt);
+
+      try {
+        const newContent = processFileRefactoring(absolutePath, typeDB, config);
+
+        if (options.dryRun) {
+          const originalContent = fs.readFileSync(absolutePath, 'utf-8');
+          const fileDiff = diff.createTwoFilesPatch(relPath, relPath.replace(/\.js$/, '.ts'), originalContent, newContent);
+          console.log(chalk.yellow(`\n--- [Dry Run Diff] ${relPath} -> ${relPath.replace(/\.js$/, '.ts')} ---`));
+          console.log(fileDiff);
+        } else {
+          fs.writeFileSync(newPath, newContent, 'utf-8');
+          fs.unlinkSync(absolutePath);
+          console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
+        }
+      } catch (err: any) {
+        console.error(chalk.red(`❌ 轉換檔案失敗: ${relPath}, 錯誤: ${err.message}`));
+        console.error(err.stack);
+      }
+    }
+
+    if (options.dryRun) {
+      console.log(chalk.yellow('\n⚠ 目前為 Dry Run 模式，未對磁碟檔案進行任何修改。'));
+    } else {
+      console.log(chalk.green('\n✔ 程式碼型別注入與重構完成！'));
+    }
+  }
