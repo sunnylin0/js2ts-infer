@@ -48,3 +48,20 @@ if (register) {
   console.error(`❌ 生成 dist/register.js 失敗: ${err.message}`);
   process.exit(1);
 }
+
+// 複製 templates 目錄
+try {
+  const srcTempDir = path.resolve(__dirname, 'src/templates');
+  const destTempDir = path.resolve(__dirname, 'dist/templates');
+  if (fs.existsSync(srcTempDir)) {
+    fs.mkdirSync(destTempDir, { recursive: true });
+    fs.readdirSync(srcTempDir).forEach(file => {
+      fs.copyFileSync(path.join(srcTempDir, file), path.join(destTempDir, file));
+    });
+    console.log('✔ 成功複製 templates 到 dist/templates');
+  }
+} catch (err) {
+  console.error(`❌ 複製 templates 失敗: ${err.message}`);
+  process.exit(1);
+}
+

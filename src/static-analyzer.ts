@@ -17,6 +17,65 @@ function getTypeOfNode(node: any): string {
   return 'unknown';
 }
 
+function getFunctionName(pathNode: any): string {
+  const node = pathNode.node;
+  if (node.id && node.id.name) {
+    return node.id.name;
+  }
+  if (pathNode.isClassMethod() || pathNode.isObjectMethod()) {
+    if (node.key && node.key.type === 'Identifier') {
+      return node.key.name;
+    }
+    return 'computed_method';
+  }
+  const parentDecl = pathNode.findParent((p: any) => p.isVariableDeclarator());
+  if (parentDecl && parentDecl.node.id && parentDecl.node.id.type === 'Identifier') {
+    return parentDecl.node.id.name;
+  }
+  const parentAssign = pathNode.findParent((p: any) => p.isAssignmentExpression());
+  if (parentAssign && parentAssign.node.left && parentAssign.node.left.type === 'Identifier') {
+    return parentAssign.node.left.name;
+  }
+  if (parentAssign && parentAssign.node.left && parentAssign.node.left.type === 'MemberExpression') {
+    const property = parentAssign.node.left.property;
+    if (property && property.type === 'Identifier') {
+      return property.name;
+    }
+  }
+  return 'anonymous';
+}
+
+function getParentFunctionName(astPath: any): string {
+  const parentFunc = astPath.findParent((p: any) => p.isFunction());
+  if (!parentFunc) return 'global';
+  return getFunctionName(parentFunc);
+}
+
+function resolveImportPath(currentFile: string, importSource: string, projectFiles: string[]): string | null {
+  if (!importSource.startsWith('.')) {
+    return null;
+  }
+  const absoluteImport = path.resolve(path.dirname(currentFile), importSource);
+  const possiblePaths = [
+    absoluteImport,
+    absoluteImport + '.js',
+    absoluteImport + '.ts',
+    absoluteImport + '.jsx',
+    absoluteImport + '.tsx',
+    path.join(absoluteImport, 'index.js'),
+    path.join(absoluteImport, 'index.ts')
+  ];
+
+  for (const p of possiblePaths) {
+    const normalized = p.replace(/\\/g, '/').toLowerCase();
+    const found = projectFiles.find(pf => pf.replace(/\\/g, '/').toLowerCase() === normalized);
+    if (found) {
+      return path.relative(process.cwd(), found).replace(/\\/g, '/');
+    }
+  }
+  return null;
+}
+
 export function analyzeProject(config: any) {
   const includePatterns = config.include || [];
   const excludePatterns = config.exclude || [];
@@ -29,6 +88,10 @@ export function analyzeProject(config: any) {
 
   const classes: Record<string, string> = {};
   const boundaries: any[] = [];
+  const staticCallGraph = {
+    files: [] as { from: string, to: string }[],
+    functions: [] as { from: string, to: string }[]
+  };
 
   for (const absolutePath of files) {
     const relativePath = path.relative(process.cwd(), absolutePath).replace(/\\/g, '/');
@@ -61,11 +124,73 @@ export function analyzeProject(config: any) {
     // @ts-ignore
     const traverseFn = typeof traverse === 'function' ? traverse : (traverse as any).default;
 
+    const fileImports: Record<string, { sourceFile: string, exportName: string }> = {};
+    const fileLocalFunctions = new Set<string>();
+
     traverseFn(ast, {
+      ImportDeclaration(astPath: any) {
+        const sourceVal = astPath.node.source.value;
+        const resolved = resolveImportPath(absolutePath, sourceVal, files);
+        if (resolved) {
+          staticCallGraph.files.push({ from: relativePath, to: resolved });
+          astPath.node.specifiers.forEach((spec: any) => {
+            if (spec.type === 'ImportSpecifier') {
+              fileImports[spec.local.name] = { sourceFile: resolved, exportName: spec.imported.name };
+            } else if (spec.type === 'ImportDefaultSpecifier') {
+              fileImports[spec.local.name] = { sourceFile: resolved, exportName: 'default' };
+            } else if (spec.type === 'ImportNamespaceSpecifier') {
+              fileImports[spec.local.name] = { sourceFile: resolved, exportName: '*' };
+            }
+          });
+        }
+      },
+
+      VariableDeclarator(astPath: any) {
+        const id = astPath.node.id;
+        const init = astPath.node.init;
+
+        if (init && init.type === 'CallExpression' && init.callee.type === 'Identifier' && init.callee.name === 'require') {
+          if (init.arguments.length > 0 && init.arguments[0].type === 'StringLiteral') {
+            const sourceVal = init.arguments[0].value;
+            const resolved = resolveImportPath(absolutePath, sourceVal, files);
+            if (resolved) {
+              staticCallGraph.files.push({ from: relativePath, to: resolved });
+              if (id.type === 'Identifier') {
+                fileImports[id.name] = { sourceFile: resolved, exportName: '*' };
+              } else if (id.type === 'ObjectPattern') {
+                id.properties.forEach((prop: any) => {
+                  if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.value.type === 'Identifier') {
+                    fileImports[prop.value.name] = { sourceFile: resolved, exportName: prop.key.name };
+                  }
+                });
+              }
+            }
+          }
+        }
+
+        if (id.type === 'Identifier' && init && (init.type === 'FunctionExpression' || init.type === 'ArrowFunctionExpression')) {
+          fileLocalFunctions.add(id.name);
+        }
+      },
+
+      FunctionDeclaration(astPath: any) {
+        if (astPath.node.id) {
+          fileLocalFunctions.add(astPath.node.id.name);
+        }
+      },
+
       ClassDeclaration(astPath: any) {
         if (astPath.node.id) {
           classes[astPath.node.id.name] = relativePath;
+          fileLocalFunctions.add(astPath.node.id.name);
         }
+        
+        // 收集 Class 內部的 Method 名稱
+        astPath.node.body.body.forEach((member: any) => {
+          if (member.type === 'ClassMethod' && member.key && member.key.type === 'Identifier') {
+            fileLocalFunctions.add(member.key.name);
+          }
+        });
       },
       
       ExportNamedDeclaration(astPath: any) {
@@ -184,20 +309,96 @@ export function analyzeProject(config: any) {
         }
       }
     });
+
+    // 第二階段遍歷：收集 CallExpression
+    traverseFn(ast, {
+      CallExpression(astPath: any) {
+        const callee = astPath.node.callee;
+        const parentFuncName = getParentFunctionName(astPath);
+        const callerId = `${relativePath}::${parentFuncName}`;
+
+        if (callee.type === 'Identifier') {
+          const name = callee.name;
+          if (fileImports[name]) {
+            const imp = fileImports[name];
+            if (imp.exportName !== '*') {
+              staticCallGraph.functions.push({
+                from: callerId,
+                to: `${imp.sourceFile}::${imp.exportName}`
+              });
+            }
+          } else if (fileLocalFunctions.has(name)) {
+            staticCallGraph.functions.push({
+              from: callerId,
+              to: `${relativePath}::${name}`
+            });
+          }
+        }
+
+        else if (callee.type === 'MemberExpression' && callee.property.type === 'Identifier') {
+          const propName = callee.property.name;
+          
+          if (callee.object.type === 'ThisExpression') {
+            if (fileLocalFunctions.has(propName)) {
+              staticCallGraph.functions.push({
+                from: callerId,
+                to: `${relativePath}::${propName}`
+              });
+            }
+          } else if (callee.object.type === 'Identifier') {
+            const objName = callee.object.name;
+            if (fileImports[objName]) {
+              const imp = fileImports[objName];
+              if (imp.exportName === '*') {
+                staticCallGraph.functions.push({
+                  from: callerId,
+                  to: `${imp.sourceFile}::${propName}`
+                });
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
+  // 去重處理
   const uniqueBoundaries: any[] = [];
-  const visited = new Set<string>();
+  const visitedBoundaries = new Set<string>();
   for (const b of boundaries) {
     const key = `${b.filePath}::${b.exportName}`;
-    if (!visited.has(key)) {
-      visited.add(key);
+    if (!visitedBoundaries.has(key)) {
+      visitedBoundaries.add(key);
       uniqueBoundaries.push(b);
+    }
+  }
+
+  const uniqueStaticFiles: { from: string, to: string }[] = [];
+  const visitedFiles = new Set<string>();
+  for (const f of staticCallGraph.files) {
+    const key = `${f.from}->${f.to}`;
+    if (!visitedFiles.has(key)) {
+      visitedFiles.add(key);
+      uniqueStaticFiles.push(f);
+    }
+  }
+
+  const uniqueStaticFuncs: { from: string, to: string }[] = [];
+  const visitedFuncs = new Set<string>();
+  for (const f of staticCallGraph.functions) {
+    const key = `${f.from}->${f.to}`;
+    if (!visitedFuncs.has(key)) {
+      visitedFuncs.add(key);
+      uniqueStaticFuncs.push(f);
     }
   }
 
   return {
     classes,
-    boundaries: uniqueBoundaries
+    boundaries: uniqueBoundaries,
+    staticCallGraph: {
+      files: uniqueStaticFiles,
+      functions: uniqueStaticFuncs
+    }
   };
 }

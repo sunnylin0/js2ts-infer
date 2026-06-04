@@ -8,6 +8,9 @@
   const clientDB: Record<string, any> = {};
   let sendTimeout: any = null;
 
+  const callStack: string[] = [];
+  const callGraph: Record<string, Record<string, number>> = {};
+
   function getBaseUrl() {
     return `http://localhost:${port}`;
   }
@@ -17,11 +20,17 @@
 
     const payload: Record<string, any> = {};
     for (const [id, data] of Object.entries(clientDB)) {
-      payload[id] = {
-        observedTypes: Array.from(data.observedTypes),
-        objectShapes: data.objectShapes,
-        callCount: data.callCount
-      };
+      if (id === '__callGraph') {
+        payload[id] = {
+          graph: data.graph
+        };
+      } else {
+        payload[id] = {
+          observedTypes: Array.from(data.observedTypes),
+          objectShapes: data.objectShapes,
+          callCount: data.callCount
+        };
+      }
       delete clientDB[id];
     }
 
@@ -64,11 +73,17 @@
 
     const payload: Record<string, any> = {};
     for (const [id, data] of Object.entries(clientDB)) {
-      payload[id] = {
-        observedTypes: Array.from(data.observedTypes),
-        objectShapes: data.objectShapes,
-        callCount: data.callCount
-      };
+      if (id === '__callGraph') {
+        payload[id] = {
+          graph: data.graph
+        };
+      } else {
+        payload[id] = {
+          observedTypes: Array.from(data.observedTypes),
+          objectShapes: data.objectShapes,
+          callCount: data.callCount
+        };
+      }
     }
 
     const url = `${getBaseUrl()}/types`;
@@ -157,7 +172,7 @@
     return shape;
   }
 
-  (globalThis as any).__typeTracker = function (trackerId: string, value: any) {
+  const trackerFn = function (trackerId: string, value: any) {
     if (!clientDB[trackerId]) {
       clientDB[trackerId] = {
         observedTypes: new Set(),
@@ -208,16 +223,65 @@
     return value;
   };
 
+  (trackerFn as any).enter = function (funcId: string) {
+    if (callStack.length >= 200) {
+      return;
+    }
+    const caller = callStack[callStack.length - 1];
+    if (caller) {
+      if (!callGraph[caller]) {
+        callGraph[caller] = {};
+      }
+      callGraph[caller][funcId] = (callGraph[caller][funcId] || 0) + 1;
+
+      if (!clientDB["__callGraph"]) {
+        clientDB["__callGraph"] = {
+          observedTypes: new Set(),
+          objectShapes: [],
+          callCount: 0,
+          graph: {}
+        };
+      }
+      clientDB["__callGraph"].graph = callGraph;
+      queueFlush();
+    }
+    callStack.push(funcId);
+  };
+
+  (trackerFn as any).exit = function (funcId: string) {
+    const idx = callStack.lastIndexOf(funcId);
+    if (idx !== -1) {
+      callStack.splice(idx);
+    }
+  };
+
+  (globalThis as any).__typeTracker = trackerFn;
+
   function wrapFunction(trackerId: string, originalFn: any): any {
     if (originalFn.__isWrapped) return originalFn;
 
+    const parentCaller = callStack[callStack.length - 1];
+
     const wrappedFn = function (this: any, ...args: any[]) {
-      args.forEach((arg, index) => {
-        (globalThis as any).__typeTracker(`${trackerId}::cb_param::${index}`, arg);
-      });
-      const result = originalFn.apply(this, args);
-      (globalThis as any).__typeTracker(`${trackerId}::cb_return`, result);
-      return result;
+      const hasParent = !!parentCaller;
+      if (hasParent) {
+        callStack.push(parentCaller);
+      }
+      try {
+        args.forEach((arg, index) => {
+          (globalThis as any).__typeTracker(`${trackerId}::cb_param::${index}`, arg);
+        });
+        const result = originalFn.apply(this, args);
+        (globalThis as any).__typeTracker(`${trackerId}::cb_return`, result);
+        return result;
+      } finally {
+        if (hasParent) {
+          const idx = callStack.lastIndexOf(parentCaller);
+          if (idx !== -1) {
+            callStack.splice(idx);
+          }
+        }
+      }
     };
 
     Object.defineProperty(wrappedFn, '__isWrapped', { value: true, enumerable: false });

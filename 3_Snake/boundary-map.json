@@ -57,5 +57,119 @@
       "exportName": "GameEngine",
       "type": "class"
     }
-  ]
+  ],
+  "staticCallGraph": {
+    "files": [
+      {
+        "from": "src/main.js",
+        "to": "src/engine/gameEngine.js"
+      },
+      {
+        "from": "src/main.js",
+        "to": "src/state/states.js"
+      },
+      {
+        "from": "src/state/states.js",
+        "to": "src/state/gameState.js"
+      },
+      {
+        "from": "src/state/states.js",
+        "to": "src/engine/snake.js"
+      },
+      {
+        "from": "src/state/states.js",
+        "to": "src/engine/particles.js"
+      },
+      {
+        "from": "src/engine/gameEngine.js",
+        "to": "src/audio.js"
+      }
+    ],
+    "functions": [
+      {
+        "from": "src/audio.js::playCoin",
+        "to": "src/audio.js::init"
+      },
+      {
+        "from": "src/audio.js::playExplosion",
+        "to": "src/audio.js::init"
+      },
+      {
+        "from": "src/audio.js::playPause",
+        "to": "src/audio.js::init"
+      },
+      {
+        "from": "src/state/states.js::enter",
+        "to": "src/state/states.js::loadLeaderboard"
+      },
+      {
+        "from": "src/state/states.js::enter",
+        "to": "src/state/states.js::setupListeners"
+      },
+      {
+        "from": "src/state/states.js::onclick",
+        "to": "src/state/states.js::loadLeaderboard"
+      },
+      {
+        "from": "src/state/states.js::anonymous",
+        "to": "src/state/states.js::formatTime"
+      },
+      {
+        "from": "src/state/states.js::enter",
+        "to": "src/state/states.js::initSvgCanvas"
+      },
+      {
+        "from": "src/state/states.js::enter",
+        "to": "src/state/states.js::spawnFood"
+      },
+      {
+        "from": "src/state/states.js::gameTimer",
+        "to": "src/state/states.js::formatTime"
+      },
+      {
+        "from": "src/state/states.js::onclick",
+        "to": "src/state/states.js::togglePause"
+      },
+      {
+        "from": "src/state/states.js::handleInput",
+        "to": "src/state/states.js::togglePause"
+      },
+      {
+        "from": "src/state/states.js::update",
+        "to": "src/state/states.js::triggerDeath"
+      },
+      {
+        "from": "src/state/states.js::update",
+        "to": "src/state/states.js::spawnFood"
+      },
+      {
+        "from": "src/state/states.js::enter",
+        "to": "src/state/states.js::formatTime"
+      },
+      {
+        "from": "src/state/states.js::enter",
+        "to": "src/state/states.js::saveToLeaderboard"
+      },
+      {
+        "from": "src/engine/snake.js::handleKeydown",
+        "to": "src/engine/snake.js::pushDirection"
+      },
+      {
+        "from": "src/engine/gameEngine.js::start",
+        "to": "src/engine/gameEngine.js::initGlobalEvents"
+      },
+      {
+        "from": "src/engine/gameEngine.js::start",
+        "to": "src/engine/gameEngine.js::changeState"
+      },
+      {
+        "from": "src/engine/gameEngine.js::anonymous",
+        "to": "src/engine/gameEngine.js::changeState"
+      },
+      {
+        "from": "src/engine/gameEngine.js::anonymous",
+        "to": "src/engine/gameEngine.js::handleDpadInput"
+      }
+    ]
+  }
 }

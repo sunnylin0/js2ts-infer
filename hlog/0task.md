@@ -26,16 +26,6 @@
 
 ---
 
-### [2026-06-04 14:35] 任務：呼叫關係鏈 (Call Graph) 側錄與視覺化
-- [ ] 修改 `babel-plugin-js2ts.ts` 插入 enter/exit 追蹤函數。
-- [ ] 升級 `tracker-client.ts` 支援呼叫棧、非同步與 callback 代理呼叫追蹤。
-- [ ] 修改 `static-analyzer.ts` 實作靜態 `import`/`require` 呼叫依賴分析。
-- [ ] 升級 `tracker-server.js` 與合併機制，支援 `"__callGraph"` 資料存儲。
-- [ ] 實作 `visualizer.ts` 與 D3.js `visualizer.html` 力導向互動圖檢視網頁。
-- [ ] 在 `3_Snake` 專案中驗證動靜態混合 Call Graph 是否產出，且可在瀏覽器網頁中拖曳並切換顯示。
-
----
-
 ### [2026-06-04 14:50] 任務：支援目錄匯出與複製品質重構
 - [x] 修改 `src/cli.ts` 註冊 `--out-dir` 參數與 `--in-dir` 參數。
 - [x] 修改 `src/commands/generate.ts` 與 `src/code-generator.ts` 實作來源目錄複製與目標目錄型別注入。
@@ -60,3 +50,14 @@
 ### [2026-06-04 15:55] 任務：提升 Class Fields 屬性搬移安全性
 - [x] 於 `src/code-generator.ts` 的唯讀收集階段，排除同名 Method、重複聲明、以及依賴 `this.` 的表達式。
 - [x] 重新生成 `4_abcTS` 並成功以 `pnpm run dev` 啟動且無任何 Parse Error。
+
+
+---
+
+### [2026-06-04 14:35] 任務：呼叫關係鏈 (Call Graph) 側錄與視覺化
+- [ ] 修改 `babel-plugin-js2ts.ts` 插入 enter/exit 追蹤函數。
+- [ ] 升級 `tracker-client.ts` 支援呼叫棧、非同步與 callback 代理呼叫追蹤。
+- [ ] 修改 `static-analyzer.ts` 實作靜態 `import`/`require` 呼叫依賴分析。
+- [ ] 升級 `tracker-server.js` 與合併機制，支援 `"__callGraph"` 資料存儲。
+- [ ] 實作 `visualizer.ts` 與 D3.js `visualizer.html` 力導向互動圖檢視網頁。
+- [ ] 在 `3_Snake` 專案中驗證動靜態混合 Call Graph 是否產出，且可在瀏覽器網頁中拖曳並切換顯示。

@@ -5,6 +5,7 @@ import chalk from 'chalk';
 const DEFAULT_CONFIG = {
   include: ["src/**/*.js", "modules/**/*.js", "*.js"],
   exclude: ["node_modules/**", "**/dist/**", "**/*.test.js", "**/test/**"],
+  excludeCallGraph: [],
   trackerPort: 9002,
   maxDepth: 5,
   confidenceThreshold: 5,

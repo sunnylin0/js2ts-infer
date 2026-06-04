@@ -61,7 +61,25 @@ export function mergeTwoShapes(s1: any, s2: any): any {
 export function mergeDatabases(dbA: any, dbB: any): any {
   const merged = { ...dbA };
 
+  if (dbB.__callGraph || dbA.__callGraph) {
+    const graphA = dbA.__callGraph ? dbA.__callGraph.graph : {};
+    const graphB = dbB.__callGraph ? dbB.__callGraph.graph : {};
+    const mergedGraph = { ...graphA };
+    for (const [caller, callees] of Object.entries(graphB)) {
+      if (!mergedGraph[caller]) {
+        mergedGraph[caller] = {};
+      }
+      for (const [callee, count] of Object.entries(callees as Record<string, number>)) {
+        mergedGraph[caller][callee] = (mergedGraph[caller][callee] || 0) + count;
+      }
+    }
+    merged.__callGraph = {
+      graph: mergedGraph
+    };
+  }
+
   for (const [id, recordB] of Object.entries(dbB) as [string, any][]) {
+    if (id === '__callGraph') continue;
     if (!merged[id]) {
       merged[id] = {
         observedTypes: [...(recordB.observedTypes || [])],

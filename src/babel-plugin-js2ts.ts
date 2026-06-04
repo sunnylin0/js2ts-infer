@@ -1,4 +1,39 @@
 import * as path from 'path';
+import * as fs from 'fs';
+
+let config: any = null;
+function loadConfig() {
+  if (config) return config;
+  const configPath = path.resolve(process.cwd(), 'js2ts.config.json');
+  if (fs.existsSync(configPath)) {
+    try {
+      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    } catch (e) {
+      config = {};
+    }
+  } else {
+    config = {};
+  }
+  return config;
+}
+
+function globToRegex(pattern: string): RegExp {
+  const escaped = pattern
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*\*/g, '.*')
+    .replace(/\*/g, '[^/]*')
+    .replace(/\?/g, '.');
+  return new RegExp(`^${escaped}$`, 'i');
+}
+
+function isExcluded(filePath: string, excludePatterns: string[]): boolean {
+  const normalizedPath = filePath.replace(/\\/g, '/');
+  return excludePatterns.some(pattern => {
+    const cleanPattern = pattern.replace(/\\/g, '/');
+    const regex = globToRegex(cleanPattern);
+    return regex.test(normalizedPath);
+  });
+}
 
 export default function (babel: any) {
   const { types: t } = babel;
@@ -111,10 +146,6 @@ export default function (babel: any) {
           ]);
         }
 
-        if (paramStatements.length > 0) {
-          funcPath.get('body').unshiftContainer('body', paramStatements);
-        }
-
         funcPath.traverse({
           ReturnStatement(returnPath: any) {
             if (returnPath.findParent((p: any) => p.isFunction()) !== funcPath) {
@@ -153,6 +184,54 @@ export default function (babel: any) {
             }
           }
         }, state);
+
+        const projectConfig = loadConfig();
+        const excludeCallGraph = projectConfig.excludeCallGraph || [];
+        const skipCallGraph = isExcluded(filePath, excludeCallGraph);
+
+        if (!skipCallGraph) {
+          const funcId = `${filePath}::${funcName}`;
+
+          const enterStatement = t.expressionStatement(
+            t.callExpression(
+              t.memberExpression(
+                t.memberExpression(t.identifier('globalThis'), t.identifier('__typeTracker')),
+                t.identifier('enter')
+              ),
+              [t.stringLiteral(funcId)]
+            )
+          );
+
+          const exitStatement = t.expressionStatement(
+            t.callExpression(
+              t.memberExpression(
+                t.memberExpression(t.identifier('globalThis'), t.identifier('__typeTracker')),
+                t.identifier('exit')
+              ),
+              [t.stringLiteral(funcId)]
+            )
+          );
+
+          const tryBody = [
+            ...paramStatements,
+            ...funcPath.node.body.body
+          ];
+
+          const tryStmt = t.tryStatement(
+            t.blockStatement(tryBody),
+            null,
+            t.blockStatement([exitStatement])
+          );
+
+          funcPath.node.body.body = [
+            enterStatement,
+            tryStmt
+          ];
+        } else {
+          if (paramStatements.length > 0) {
+            funcPath.get('body').unshiftContainer('body', paramStatements);
+          }
+        }
       },
 
       VariableDeclarator(declPath: any, state: any) {

@@ -30,7 +30,27 @@ function saveTypes() {
   }
 }
 
+function mergeCallGraph(existingGraph: any, newGraph: any) {
+  const result = { ...existingGraph };
+  for (const [caller, callees] of Object.entries(newGraph)) {
+    if (!result[caller]) {
+      result[caller] = {};
+    }
+    for (const [callee, count] of Object.entries(callees as Record<string, number>)) {
+      result[caller][callee] = (result[caller][callee] || 0) + count;
+    }
+  }
+  return result;
+}
+
 function mergeRecord(id: string, newRecord: any) {
+  if (id === '__callGraph') {
+    typeDB['__callGraph'] = {
+      graph: mergeCallGraph(typeDB['__callGraph']?.graph || {}, newRecord.graph || {})
+    };
+    return;
+  }
+
   if (!typeDB[id]) {
     typeDB[id] = {
       observedTypes: [],

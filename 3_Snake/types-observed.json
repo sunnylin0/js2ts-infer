@@ -383,8 +383,13 @@
     "observedTypes": [
       "SVGSVGElement"
     ],
-    "objectShapes": [],
-    "callCount": 7
+    "objectShapes": [
+      {
+        "appendChild": "Function",
+        "removeChild": "Function"
+      }
+    ],
+    "callCount": 8
   },
   "src/state/states.js::spawnFood::var::attempts": {
     "observedTypes": [
@@ -419,7 +424,7 @@
       "number"
     ],
     "objectShapes": [],
-    "callCount": 3093
+    "callCount": 3094
   },
   "src/state/states.js::update::var::elapsed": {
     "observedTypes": [
@@ -631,105 +636,110 @@
       "number"
     ],
     "objectShapes": [],
-    "callCount": 9
+    "callCount": 10
   },
   "src/engine/particles.js::spawn::param::y": {
     "observedTypes": [
       "number"
     ],
     "objectShapes": [],
-    "callCount": 9
+    "callCount": 10
   },
   "src/engine/particles.js::spawn::param::color": {
     "observedTypes": [
       "string"
     ],
     "objectShapes": [],
-    "callCount": 9
+    "callCount": 10
   },
   "src/engine/particles.js::spawn::var::count": {
     "observedTypes": [
       "number"
     ],
     "objectShapes": [],
-    "callCount": 9
+    "callCount": 10
   },
   "src/engine/particles.js::spawn::var::i": {
     "observedTypes": [
       "number"
     ],
     "objectShapes": [],
-    "callCount": 9
+    "callCount": 10
   },
   "src/engine/particles.js::constructor::param::svg": {
     "observedTypes": [
       "SVGSVGElement"
     ],
-    "objectShapes": [],
-    "callCount": 131
+    "objectShapes": [
+      {
+        "appendChild": "Function",
+        "removeChild": "Function"
+      }
+    ],
+    "callCount": 144
   },
   "src/engine/particles.js::constructor::param::x": {
     "observedTypes": [
       "number"
     ],
     "objectShapes": [],
-    "callCount": 131
+    "callCount": 144
   },
   "src/engine/particles.js::constructor::param::y": {
     "observedTypes": [
       "number"
     ],
     "objectShapes": [],
-    "callCount": 131
+    "callCount": 144
   },
   "src/engine/particles.js::constructor::param::color": {
     "observedTypes": [
       "string"
     ],
     "objectShapes": [],
-    "callCount": 131
+    "callCount": 144
   },
   "src/engine/particles.js::constructor::var::angle": {
     "observedTypes": [
       "number"
     ],
     "objectShapes": [],
-    "callCount": 131
+    "callCount": 144
   },
   "src/engine/particles.js::constructor::var::speed": {
     "observedTypes": [
       "number"
     ],
     "objectShapes": [],
-    "callCount": 131
+    "callCount": 144
   },
   "src/engine/particles.js::anonymous::param::p": {
     "observedTypes": [
       "Particle"
     ],
     "objectShapes": [],
-    "callCount": 4398
+    "callCount": 4424
   },
   "src/engine/particles.js::anonymous::return": {
     "observedTypes": [
       "undefined"
     ],
     "objectShapes": [],
-    "callCount": 4398
+    "callCount": 4411
   },
   "src/engine/particles.js::update::return": {
     "observedTypes": [
       "boolean"
     ],
     "objectShapes": [],
-    "callCount": 4398
+    "callCount": 4411
   },
   "src/engine/particles.js::update::var::isDead": {
     "observedTypes": [
       "boolean"
     ],
     "objectShapes": [],
-    "callCount": 4398
+    "callCount": 4411
   },
   "src/state/states.js::triggerDeath::param::message": {
     "observedTypes": [
@@ -949,5 +959,72 @@
     ],
     "objectShapes": [],
     "callCount": 2
+  },
+  "run-test.js::global::var::mockSvg": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "appendChild": "Function",
+        "removeChild": "Function"
+      }
+    ],
+    "callCount": 1
+  },
+  "run-test.js::global::var::sys": {
+    "observedTypes": [
+      "ParticleSystem"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "__callGraph": {
+    "graph": {
+      "src/engine/particles.js::spawn": {
+        "src/engine/particles.js::constructor": 13
+      },
+      "src/engine/particles.js::constructor": {
+        "run-test.js::document": 39
+      },
+      "src/engine/particles.js::update": {
+        "src/engine/particles.js::update": 13
+      },
+      "src/engine/particles.js::draw": {
+        "src/engine/particles.js::anonymous": 13,
+        "run-test.js::document": 52
+      },
+      "src/engine/particles.js::anonymous": {
+        "src/engine/particles.js::draw": 13,
+        "run-test.js::document": 13
+      },
+      "src/engine/particles.js::clear": {
+        "src/engine/particles.js::anonymous": 13
+      }
+    }
+  },
+  "run-test.js::document::param::ns": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 13
+  },
+  "run-test.js::document::param::tag": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 13
+  },
+  "run-test.js::document::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "setAttribute": "Function",
+        "parentNode": {
+          "removeChild": "Function"
+        }
+      }
+    ],
+    "callCount": 13
   }
 }

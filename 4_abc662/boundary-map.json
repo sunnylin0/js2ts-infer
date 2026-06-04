@@ -1170,5 +1170,4523 @@
       "type": "unknown",
       "isDefault": true
     }
-  ]
+  ],
+  "staticCallGraph": {
+    "files": [
+      {
+        "from": "src/write/renderer.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/renderer.js",
+        "to": "src/write/svg.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/creation/abstract-engraver.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/renderer.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/creation/elements/free-text.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/creation/elements/separator.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/creation/elements/subtitle.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/creation/elements/top-text.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/creation/elements/bottom-text.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/interactive/selection.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/layout/layout.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/helpers/classes.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/helpers/get-font-and-attr.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/helpers/get-text-size.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/draw/draw.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/tablatures/abc_tablatures.js"
+      },
+      {
+        "from": "src/write/engraver-controller.js",
+        "to": "src/write/interactive/find-selectable-element.js"
+      },
+      {
+        "from": "src/write/layout/voice.js",
+        "to": "src/write/layout/beam.js"
+      },
+      {
+        "from": "src/write/layout/voice.js",
+        "to": "src/write/layout/get-bar-y-at.js"
+      },
+      {
+        "from": "src/write/layout/voice.js",
+        "to": "src/write/layout/triplet.js"
+      },
+      {
+        "from": "src/write/layout/triplet.js",
+        "to": "src/write/layout/get-bar-y-at.js"
+      },
+      {
+        "from": "src/write/layout/staff-group.js",
+        "to": "src/write/layout/voice-elements.js"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/layout/layout.js",
+        "to": "src/write/layout/voice.js"
+      },
+      {
+        "from": "src/write/layout/layout.js",
+        "to": "src/write/layout/set-upper-and-lower-elements.js"
+      },
+      {
+        "from": "src/write/layout/layout.js",
+        "to": "src/write/layout/staff-group.js"
+      },
+      {
+        "from": "src/write/layout/layout.js",
+        "to": "src/write/layout/get-left-edge-of-staff.js"
+      },
+      {
+        "from": "src/write/layout/layout.js",
+        "to": "src/write/layout/layout-in-grid.js"
+      },
+      {
+        "from": "src/write/layout/layout-in-grid.js",
+        "to": "src/write/layout/get-left-edge-of-staff.js"
+      },
+      {
+        "from": "src/write/layout/beam.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/layout/beam.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/layout/beam.js",
+        "to": "src/write/layout/get-bar-y-at.js"
+      },
+      {
+        "from": "src/write/interactive/unhighlight.js",
+        "to": "src/write/helpers/set-class.js"
+      },
+      {
+        "from": "src/write/interactive/selection.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/interactive/selection.js",
+        "to": "src/write/interactive/create-analysis.js"
+      },
+      {
+        "from": "src/write/interactive/highlight.js",
+        "to": "src/write/helpers/set-class.js"
+      },
+      {
+        "from": "src/write/interactive/find-selectable-element.js",
+        "to": "src/write/interactive/create-analysis.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/glissando.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/crescendo.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/dynamics.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/triplet.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/ending.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/tie.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/beam.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/voice.js",
+        "to": "src/write/draw/absolute.js"
+      },
+      {
+        "from": "src/write/draw/triplet.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/triplet.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/triplet.js",
+        "to": "src/write/draw/print-path.js"
+      },
+      {
+        "from": "src/write/draw/triplet.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/tie.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/tie.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/text.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/tempo.js",
+        "to": "src/write/draw/relative.js"
+      },
+      {
+        "from": "src/write/draw/tempo.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/tab-line.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/tab-line.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/tab-line.js",
+        "to": "src/write/draw/print-stem.js"
+      },
+      {
+        "from": "src/write/draw/staff.js",
+        "to": "src/write/draw/staff-line.js"
+      },
+      {
+        "from": "src/write/draw/staff-line.js",
+        "to": "src/write/draw/print-line.js"
+      },
+      {
+        "from": "src/write/draw/staff-group.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/draw/staff-group.js",
+        "to": "src/write/draw/brace.js"
+      },
+      {
+        "from": "src/write/draw/staff-group.js",
+        "to": "src/write/draw/voice.js"
+      },
+      {
+        "from": "src/write/draw/staff-group.js",
+        "to": "src/write/draw/staff.js"
+      },
+      {
+        "from": "src/write/draw/staff-group.js",
+        "to": "src/write/draw/debug-box.js"
+      },
+      {
+        "from": "src/write/draw/staff-group.js",
+        "to": "src/write/draw/print-stem.js"
+      },
+      {
+        "from": "src/write/draw/staff-group.js",
+        "to": "src/write/draw/non-music.js"
+      },
+      {
+        "from": "src/write/draw/selectables.js",
+        "to": "src/write/interactive/highlight.js"
+      },
+      {
+        "from": "src/write/draw/selectables.js",
+        "to": "src/write/interactive/unhighlight.js"
+      },
+      {
+        "from": "src/write/draw/relative.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/relative.js",
+        "to": "src/write/draw/print-stem.js"
+      },
+      {
+        "from": "src/write/draw/relative.js",
+        "to": "src/write/draw/staff-line.js"
+      },
+      {
+        "from": "src/write/draw/relative.js",
+        "to": "src/write/draw/print-symbol.js"
+      },
+      {
+        "from": "src/write/draw/print-vertical-line.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/print-symbol.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/print-symbol.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "src/write/draw/print-symbol.js",
+        "to": "src/write/draw/group-elements.js"
+      },
+      {
+        "from": "src/write/draw/print-stem.js",
+        "to": "src/write/draw/group-elements.js"
+      },
+      {
+        "from": "src/write/draw/print-stem.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/print-line.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/print-line.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/non-music.js",
+        "to": "src/write/draw/separator.js"
+      },
+      {
+        "from": "src/write/draw/non-music.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/horizontal-line.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/group-elements.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/glissando.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/glissando.js",
+        "to": "src/write/draw/print-path.js"
+      },
+      {
+        "from": "src/write/draw/glissando.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/ending.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/ending.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/ending.js",
+        "to": "src/write/draw/print-path.js"
+      },
+      {
+        "from": "src/write/draw/ending.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/dynamics.js",
+        "to": "src/write/draw/print-symbol.js"
+      },
+      {
+        "from": "src/write/draw/draw.js",
+        "to": "src/write/draw/staff-group.js"
+      },
+      {
+        "from": "src/write/draw/draw.js",
+        "to": "src/write/draw/set-paper-size.js"
+      },
+      {
+        "from": "src/write/draw/draw.js",
+        "to": "src/write/draw/non-music.js"
+      },
+      {
+        "from": "src/write/draw/draw.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/draw/draw.js",
+        "to": "src/write/draw/selectables.js"
+      },
+      {
+        "from": "src/write/draw/draw.js",
+        "to": "src/write/draw/chord-grid.js"
+      },
+      {
+        "from": "src/write/draw/crescendo.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/crescendo.js",
+        "to": "src/write/draw/print-path.js"
+      },
+      {
+        "from": "src/write/draw/crescendo.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js",
+        "to": "src/write/draw/print-symbol.js"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js",
+        "to": "src/write/draw/print-stem.js"
+      },
+      {
+        "from": "src/write/draw/brace.js",
+        "to": "src/write/draw/sprintf.js"
+      },
+      {
+        "from": "src/write/draw/brace.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/draw/brace.js",
+        "to": "src/write/draw/text.js"
+      },
+      {
+        "from": "src/write/draw/beam.js",
+        "to": "src/write/draw/print-path.js"
+      },
+      {
+        "from": "src/write/draw/beam.js",
+        "to": "src/write/draw/round-number.js"
+      },
+      {
+        "from": "src/write/draw/absolute.js",
+        "to": "src/write/draw/tempo.js"
+      },
+      {
+        "from": "src/write/draw/absolute.js",
+        "to": "src/write/draw/relative.js"
+      },
+      {
+        "from": "src/write/draw/absolute.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/draw/absolute.js",
+        "to": "src/write/helpers/set-class.js"
+      },
+      {
+        "from": "src/write/draw/absolute.js",
+        "to": "src/write/draw/group-elements.js"
+      },
+      {
+        "from": "src/write/creation/glyphs.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/creation/decoration.js",
+        "to": "src/write/creation/elements/dynamic-decoration.js"
+      },
+      {
+        "from": "src/write/creation/decoration.js",
+        "to": "src/write/creation/elements/crescendo-element.js"
+      },
+      {
+        "from": "src/write/creation/decoration.js",
+        "to": "src/write/creation/elements/glissando-element.js"
+      },
+      {
+        "from": "src/write/creation/decoration.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "src/write/creation/decoration.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/decoration.js",
+        "to": "src/write/creation/elements/tie-element.js"
+      },
+      {
+        "from": "src/write/creation/create-time-signature.js",
+        "to": "src/write/creation/elements/absolute-element.js"
+      },
+      {
+        "from": "src/write/creation/create-time-signature.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "src/write/creation/create-time-signature.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/create-note-head.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "src/write/creation/create-note-head.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/create-key-signature.js",
+        "to": "src/write/creation/elements/absolute-element.js"
+      },
+      {
+        "from": "src/write/creation/create-key-signature.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "src/write/creation/create-key-signature.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/create-clef.js",
+        "to": "src/write/creation/elements/absolute-element.js"
+      },
+      {
+        "from": "src/write/creation/create-clef.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "src/write/creation/create-clef.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/add-chord.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/add-chord.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/creation/add-chord.js",
+        "to": "src/write/creation/translate-chord.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/absolute-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/beam-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/brace-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/create-clef.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/create-key-signature.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/create-note-head.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/create-time-signature.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/decoration.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/ending-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/staff-group-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/tempo-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/tie-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/triplet-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/elements/voice-element.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/write/creation/add-chord.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/synth/pitches-to-perc.js"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/write/creation/elements/top-text.js",
+        "to": "src/write/creation/add-text-if.js"
+      },
+      {
+        "from": "src/write/creation/elements/top-text.js",
+        "to": "src/write/creation/elements/rich-text.js"
+      },
+      {
+        "from": "src/write/creation/elements/tempo-element.js",
+        "to": "src/write/creation/elements/absolute-element.js"
+      },
+      {
+        "from": "src/write/creation/elements/tempo-element.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/write/creation/elements/staff-group-element.js",
+        "to": "src/write/creation/calc-height.js"
+      },
+      {
+        "from": "src/write/creation/elements/rich-text.js",
+        "to": "src/write/creation/add-text-if.js"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js",
+        "to": "src/write/creation/add-text-if.js"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js",
+        "to": "src/write/creation/elements/rich-text.js"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js",
+        "to": "src/write/interactive/highlight.js"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js",
+        "to": "src/write/interactive/unhighlight.js"
+      },
+      {
+        "from": "src/tablatures/abc_tablatures.js",
+        "to": "src/tablatures/instruments/tab-string.js"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js",
+        "to": "src/write/creation/elements/voice-element.js"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js",
+        "to": "src/tablatures/render/tab-absolute-elements.js"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js",
+        "to": "src/write/creation/elements/absolute-element.js"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js",
+        "to": "src/write/creation/elements/relative-element.js"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-string.js",
+        "to": "src/tablatures/instruments/string-tablature.js"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-string.js",
+        "to": "src/tablatures/render/tab-renderer.js"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-string.js",
+        "to": "src/tablatures/instruments/string-patterns.js"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-notes.js",
+        "to": "src/tablatures/instruments/tab-note.js"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js",
+        "to": "src/synth/note-to-midi.js"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js",
+        "to": "src/synth/note-to-midi.js"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js",
+        "to": "src/tablatures/instruments/tab-note.js"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js",
+        "to": "src/tablatures/instruments/tab-notes.js"
+      },
+      {
+        "from": "src/synth/synth-controller.js",
+        "to": "src/synth/create-synth-control.js"
+      },
+      {
+        "from": "src/synth/synth-controller.js",
+        "to": "src/synth/create-synth.js"
+      },
+      {
+        "from": "src/synth/synth-controller.js",
+        "to": "src/api/abc_timing_callbacks.js"
+      },
+      {
+        "from": "src/synth/synth-controller.js",
+        "to": "src/synth/active-audio-context.js"
+      },
+      {
+        "from": "src/synth/supports-audio.js",
+        "to": "src/synth/active-audio-context.js"
+      },
+      {
+        "from": "src/synth/repeats.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/synth/play-event.js",
+        "to": "src/synth/synth-sequence.js"
+      },
+      {
+        "from": "src/synth/play-event.js",
+        "to": "src/synth/create-synth.js"
+      },
+      {
+        "from": "src/synth/play-event.js",
+        "to": "src/synth/active-audio-context.js"
+      },
+      {
+        "from": "src/synth/place-note.js",
+        "to": "src/synth/sounds-cache.js"
+      },
+      {
+        "from": "src/synth/place-note.js",
+        "to": "src/synth/pitch-to-note-name.js"
+      },
+      {
+        "from": "src/synth/place-note.js",
+        "to": "src/synth/cents-to-factor.js"
+      },
+      {
+        "from": "src/synth/load-note.js",
+        "to": "src/synth/sounds-cache.js"
+      },
+      {
+        "from": "src/synth/get-midi-file.js",
+        "to": "src/api/abc_tunebook.js"
+      },
+      {
+        "from": "src/synth/get-midi-file.js",
+        "to": "src/midi/abc_midi_create.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/load-note.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/create-note-map.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/register-audio-context.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/active-audio-context.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/supports-audio.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/pitch-to-note-name.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/instrument-index-to-name.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/download-buffer.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/place-note.js"
+      },
+      {
+        "from": "src/synth/create-synth.js",
+        "to": "src/synth/sounds-cache.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/supports-audio.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/register-audio-context.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/active-audio-context.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/images/loop.svg.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/images/play.svg.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/images/pause.svg.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/images/loading.svg.js"
+      },
+      {
+        "from": "src/synth/create-synth-control.js",
+        "to": "src/synth/images/reset.svg.js"
+      },
+      {
+        "from": "src/synth/create-note-map.js",
+        "to": "src/synth/instrument-index-to-name.js"
+      },
+      {
+        "from": "src/synth/active-audio-context.js",
+        "to": "src/synth/register-audio-context.js"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js",
+        "to": "src/synth/repeats.js"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js",
+        "to": "src/synth/cents-to-factor.js"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js",
+        "to": "src/synth/chord-track.js"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js",
+        "to": "src/synth/pitches-to-perc.js"
+      },
+      {
+        "from": "src/str/output.js",
+        "to": "src/const/key-accidentals.js"
+      },
+      {
+        "from": "src/str/output.js",
+        "to": "src/const/relative-major.js"
+      },
+      {
+        "from": "src/str/output.js",
+        "to": "src/parse/transpose-chord.js"
+      },
+      {
+        "from": "src/parse/tune-builder.js",
+        "to": "src/parse/abc_parse_key_voice.js"
+      },
+      {
+        "from": "src/parse/abc_transpose.js",
+        "to": "src/parse/all-notes.js"
+      },
+      {
+        "from": "src/parse/abc_transpose.js",
+        "to": "src/parse/transpose-chord.js"
+      },
+      {
+        "from": "src/parse/abc_transpose.js",
+        "to": "src/const/key-accidentals.js"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js",
+        "to": "src/parse/abc_parse_key_voice.js"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js",
+        "to": "src/parse/abc_transpose.js"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js",
+        "to": "src/parse/abc_parse_settings.js"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js",
+        "to": "src/parse/abc_parse_directive.js"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js",
+        "to": "src/parse/abc_transpose.js"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js",
+        "to": "src/parse/abc_parse_directive.js"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js",
+        "to": "src/parse/abc_parse_key_voice.js"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/parse/abc_parse_book.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/abc_parse_directive.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/abc_parse_header.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/abc_parse_music.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/abc_tokenizer.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/wrap_lines.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/chord-grid.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/data/abc_tune.js"
+      },
+      {
+        "from": "src/parse/abc_parse.js",
+        "to": "src/parse/tune-builder.js"
+      },
+      {
+        "from": "src/midi/abc_midi_create.js",
+        "to": "src/synth/abc_midi_renderer.js"
+      },
+      {
+        "from": "src/edit/abc_editor.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/edit/abc_editor.js",
+        "to": "src/synth/synth-controller.js"
+      },
+      {
+        "from": "src/edit/abc_editor.js",
+        "to": "src/synth/supports-audio.js"
+      },
+      {
+        "from": "src/edit/abc_editor.js",
+        "to": "src/api/abc_tunebook_svg.js"
+      },
+      {
+        "from": "src/edit/abc_editor.js",
+        "to": "src/edit/abc_editarea.js"
+      },
+      {
+        "from": "src/data/abc_tune.js",
+        "to": "src/parse/abc_common.js"
+      },
+      {
+        "from": "src/data/abc_tune.js",
+        "to": "src/write/helpers/spacing.js"
+      },
+      {
+        "from": "src/data/abc_tune.js",
+        "to": "src/synth/abc_midi_sequencer.js"
+      },
+      {
+        "from": "src/data/abc_tune.js",
+        "to": "src/synth/abc_midi_flattener.js"
+      },
+      {
+        "from": "src/data/abc_tune.js",
+        "to": "src/data/deline-tune.js"
+      },
+      {
+        "from": "src/const/key-accidentals.js",
+        "to": "src/const/relative-major.js"
+      },
+      {
+        "from": "src/api/tune-metrics.js",
+        "to": "src/api/abc_tunebook.js"
+      },
+      {
+        "from": "src/api/tune-metrics.js",
+        "to": "src/write/engraver-controller.js"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js",
+        "to": "src/api/abc_tunebook.js"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js",
+        "to": "src/write/engraver-controller.js"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js",
+        "to": "src/parse/abc_parse.js"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js",
+        "to": "src/parse/wrap_lines.js"
+      },
+      {
+        "from": "src/api/abc_tunebook.js",
+        "to": "src/parse/abc_parse.js"
+      },
+      {
+        "from": "src/api/abc_tunebook.js",
+        "to": "src/parse/abc_parse_book.js"
+      },
+      {
+        "from": "src/api/abc_tunebook.js",
+        "to": "src/tablatures/abc_tablatures.js"
+      },
+      {
+        "from": "src/api/abc_animation.js",
+        "to": "src/api/abc_timing_callbacks.js"
+      },
+      {
+        "from": "index.js",
+        "to": "version.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/api/abc_animation.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/api/abc_tunebook.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/abc_midi_sequencer.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/str/output.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/api/abc_tunebook_svg.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/api/tune-metrics.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/api/abc_timing_callbacks.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/write/creation/glyphs.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/create-synth.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/instrument-index-to-name.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/pitch-to-note-name.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/synth-sequence.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/create-synth-control.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/register-audio-context.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/active-audio-context.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/supports-audio.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/play-event.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/synth-controller.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/get-midi-file.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/synth/abc_midi_renderer.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/tablatures/abc_tablatures.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/edit/abc_editor.js"
+      },
+      {
+        "from": "index.js",
+        "to": "src/edit/abc_editarea.js"
+      }
+    ],
+    "functions": [
+      {
+        "from": "src/write/svg.js::constructor",
+        "to": "src/write/svg.js::createSvg"
+      },
+      {
+        "from": "src/write/svg.js::clear",
+        "to": "src/write/svg.js::createSvg"
+      },
+      {
+        "from": "src/write/svg.js::rect",
+        "to": "src/write/svg.js::constructHLine"
+      },
+      {
+        "from": "src/write/svg.js::rect",
+        "to": "src/write/svg.js::constructVLine"
+      },
+      {
+        "from": "src/write/svg.js::rect",
+        "to": "src/write/svg.js::path"
+      },
+      {
+        "from": "src/write/svg.js::text",
+        "to": "src/write/svg.js::append"
+      },
+      {
+        "from": "src/write/svg.js::richTextLine",
+        "to": "src/write/svg.js::append"
+      },
+      {
+        "from": "src/write/svg.js::guessWidth",
+        "to": "src/write/svg.js::createDummySvg"
+      },
+      {
+        "from": "src/write/svg.js::guessWidth",
+        "to": "src/write/svg.js::text"
+      },
+      {
+        "from": "src/write/svg.js::createDummySvg",
+        "to": "src/write/svg.js::createSvg"
+      },
+      {
+        "from": "src/write/svg.js::getTextSize",
+        "to": "src/write/svg.js::text"
+      },
+      {
+        "from": "src/write/svg.js::getTextSize",
+        "to": "src/write/svg.js::guessWidth"
+      },
+      {
+        "from": "src/write/svg.js::openGroup",
+        "to": "src/write/svg.js::prepend"
+      },
+      {
+        "from": "src/write/svg.js::openGroup",
+        "to": "src/write/svg.js::append"
+      },
+      {
+        "from": "src/write/svg.js::path",
+        "to": "src/write/svg.js::append"
+      },
+      {
+        "from": "src/write/svg.js::pathToBack",
+        "to": "src/write/svg.js::prepend"
+      },
+      {
+        "from": "src/write/svg.js::lineToBack",
+        "to": "src/write/svg.js::prepend"
+      },
+      {
+        "from": "src/write/renderer.js::constructor",
+        "to": "src/write/renderer.js::reset"
+      },
+      {
+        "from": "src/write/renderer.js::reset",
+        "to": "src/write/renderer.js::initVerticalSpace"
+      },
+      {
+        "from": "src/write/renderer.js::newTune",
+        "to": "src/write/renderer.js::setVerticalSpace"
+      },
+      {
+        "from": "src/write/renderer.js::newTune",
+        "to": "src/write/renderer.js::setPadding"
+      },
+      {
+        "from": "src/write/renderer.js::setPadding",
+        "to": "src/write/renderer.js::setPaddingVariable"
+      },
+      {
+        "from": "src/write/renderer.js::setVerticalSpace",
+        "to": "src/write/renderer.js::f"
+      },
+      {
+        "from": "src/write/engraver-controller.js::constructor",
+        "to": "src/write/engraver-controller.js::addSelectListener"
+      },
+      {
+        "from": "src/write/engraver-controller.js::constructor",
+        "to": "src/write/engraver-controller.js::reset"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveABC",
+        "to": "src/write/engraver-controller.js::reset"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveABC",
+        "to": "src/write/engraver-controller.js::engraveTune"
+      },
+      {
+        "from": "src/write/engraver-controller.js::getMeasureWidths",
+        "to": "src/write/engraver-controller.js::reset"
+      },
+      {
+        "from": "src/write/engraver-controller.js::getMeasureWidths",
+        "to": "src/write/engraver-controller.js::setupTune"
+      },
+      {
+        "from": "src/write/engraver-controller.js::getMeasureWidths",
+        "to": "src/write/engraver-controller.js::constructTuneElements"
+      },
+      {
+        "from": "src/write/engraver-controller.js::getMeasureWidths",
+        "to": "src/write/layout/layout.js::default"
+      },
+      {
+        "from": "src/write/engraver-controller.js::setupTune",
+        "to": "src/write/engraver-controller.js::adjustNonScaledItems"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveTune",
+        "to": "src/write/engraver-controller.js::setupTune"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveTune",
+        "to": "src/write/engraver-controller.js::constructTuneElements"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveTune",
+        "to": "src/write/layout/layout.js::default"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveTune",
+        "to": "src/write/draw/draw.js::default"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveTune",
+        "to": "src/write/engraver-controller.js::splitSvgIntoLines"
+      },
+      {
+        "from": "src/write/engraver-controller.js::engraveTune",
+        "to": "src/write/interactive/selection.js::default"
+      },
+      {
+        "from": "src/write/engraver-controller.js::splitSvgIntoLines",
+        "to": "src/write/engraver-controller.js::duplicateSvg"
+      },
+      {
+        "from": "src/write/layout/voice.js::layoutVoice",
+        "to": "src/write/layout/beam.js::default"
+      },
+      {
+        "from": "src/write/layout/voice.js::layoutVoice",
+        "to": "src/write/layout/voice.js::moveDecorations"
+      },
+      {
+        "from": "src/write/layout/voice.js::layoutVoice",
+        "to": "src/write/layout/voice.js::setLaneForChord"
+      },
+      {
+        "from": "src/write/layout/voice.js::layoutVoice",
+        "to": "src/write/layout/triplet.js::default"
+      },
+      {
+        "from": "src/write/layout/voice.js::moveDecorations",
+        "to": "src/write/layout/voice.js::yAtNote"
+      },
+      {
+        "from": "src/write/layout/voice.js::setLaneForChord",
+        "to": "src/write/layout/voice.js::placeInLane"
+      },
+      {
+        "from": "src/write/layout/voice.js::setLaneForChord",
+        "to": "src/write/layout/voice.js::setLane"
+      },
+      {
+        "from": "src/write/layout/voice.js::yAtNote",
+        "to": "src/write/layout/get-bar-y-at.js::default"
+      },
+      {
+        "from": "src/write/layout/voice-elements.js::layoutOneItem",
+        "to": "src/write/layout/voice-elements.js::getExtraWidth"
+      },
+      {
+        "from": "src/write/layout/voice-elements.js::layoutOneItem",
+        "to": "src/write/layout/voice-elements.js::getMinWidth"
+      },
+      {
+        "from": "src/write/layout/voice-elements.js::layoutOneItem",
+        "to": "src/write/layout/voice-elements.js::updateNextX"
+      },
+      {
+        "from": "src/write/layout/voice-elements.js::updateNextX",
+        "to": "src/write/layout/voice-elements.js::getSpacingUnits"
+      },
+      {
+        "from": "src/write/layout/voice-elements.js::updateIndices",
+        "to": "src/write/layout/voice-elements.js::layoutEnded"
+      },
+      {
+        "from": "src/write/layout/triplet.js::layoutTriplet",
+        "to": "src/write/layout/triplet.js::isAbove"
+      },
+      {
+        "from": "src/write/layout/triplet.js::layoutTriplet",
+        "to": "src/write/layout/triplet.js::heightAtMidpoint"
+      },
+      {
+        "from": "src/write/layout/triplet.js::layoutTriplet",
+        "to": "src/write/layout/triplet.js::xAtMidpoint"
+      },
+      {
+        "from": "src/write/layout/triplet.js::heightAtMidpoint",
+        "to": "src/write/layout/get-bar-y-at.js::default"
+      },
+      {
+        "from": "src/write/layout/staff-group.js::layoutStaffGroup",
+        "to": "src/write/layout/staff-group.js::finished"
+      },
+      {
+        "from": "src/write/layout/staff-group.js::layoutStaffGroup",
+        "to": "src/write/layout/staff-group.js::getDurationIndex"
+      },
+      {
+        "from": "src/write/layout/staff-group.js::layoutStaffGroup",
+        "to": "src/write/layout/staff-group.js::isSameStaff"
+      },
+      {
+        "from": "src/write/layout/staff-group.js::layoutStaffGroup",
+        "to": "src/write/layout/staff-group.js::checkLastBarX"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::incTop"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerVoiceElements"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerVoiceElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerAbsoluteElements"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerVoiceElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerCrescendoElements"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerVoiceElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerDynamicElements"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerVoiceElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerEndingElements"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerAbsoluteElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerTempoElement"
+      },
+      {
+        "from": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerAbsoluteElements",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::setUpperAndLowerRelativeElements"
+      },
+      {
+        "from": "src/write/layout/layout.js::layout",
+        "to": "src/write/layout/layout-in-grid.js::default"
+      },
+      {
+        "from": "src/write/layout/layout.js::layout",
+        "to": "src/write/layout/layout.js::setXSpacing"
+      },
+      {
+        "from": "src/write/layout/layout.js::layout",
+        "to": "src/write/layout/voice.js::default"
+      },
+      {
+        "from": "src/write/layout/layout.js::layout",
+        "to": "src/write/layout/set-upper-and-lower-elements.js::default"
+      },
+      {
+        "from": "src/write/layout/layout.js::setXSpacing",
+        "to": "src/write/layout/get-left-edge-of-staff.js::default"
+      },
+      {
+        "from": "src/write/layout/layout.js::setXSpacing",
+        "to": "src/write/layout/staff-group.js::default"
+      },
+      {
+        "from": "src/write/layout/layout.js::setXSpacing",
+        "to": "src/write/layout/layout.js::calcHorizontalSpacing"
+      },
+      {
+        "from": "src/write/layout/layout.js::setXSpacing",
+        "to": "src/write/layout/layout.js::centerWholeRests"
+      },
+      {
+        "from": "src/write/layout/layout-in-grid.js::layoutInGrid",
+        "to": "src/write/layout/get-left-edge-of-staff.js::default"
+      },
+      {
+        "from": "src/write/layout/layout-in-grid.js::layoutInGrid",
+        "to": "src/write/layout/layout-in-grid.js::getTotalDuration"
+      },
+      {
+        "from": "src/write/layout/get-left-edge-of-staff.js::getLeftEdgeOfStaff",
+        "to": "src/write/layout/get-left-edge-of-staff.js::addBraceSize"
+      },
+      {
+        "from": "src/write/layout/get-left-edge-of-staff.js::getLeftEdgeOfStaff",
+        "to": "src/write/layout/get-left-edge-of-staff.js::setBraceLocation"
+      },
+      {
+        "from": "src/write/layout/get-left-edge-of-staff.js::setBraceLocation",
+        "to": "src/write/layout/get-left-edge-of-staff.js::setLocation"
+      },
+      {
+        "from": "src/write/layout/beam.js::layoutBeam",
+        "to": "src/write/layout/beam.js::calcDy"
+      },
+      {
+        "from": "src/write/layout/beam.js::layoutBeam",
+        "to": "src/write/layout/beam.js::minStem"
+      },
+      {
+        "from": "src/write/layout/beam.js::layoutBeam",
+        "to": "src/write/layout/beam.js::calcYPos"
+      },
+      {
+        "from": "src/write/layout/beam.js::layoutBeam",
+        "to": "src/write/layout/beam.js::calcXPos"
+      },
+      {
+        "from": "src/write/layout/beam.js::layoutBeam",
+        "to": "src/write/layout/beam.js::createAdditionalBeams"
+      },
+      {
+        "from": "src/write/layout/beam.js::layoutBeam",
+        "to": "src/write/layout/beam.js::createStems"
+      },
+      {
+        "from": "src/write/layout/beam.js::calcYPos",
+        "to": "src/write/layout/beam.js::calcSlant"
+      },
+      {
+        "from": "src/write/layout/beam.js::createStems",
+        "to": "src/write/layout/get-bar-y-at.js::default"
+      },
+      {
+        "from": "src/write/layout/beam.js::createAdditionalBeams",
+        "to": "src/write/layout/get-bar-y-at.js::default"
+      },
+      {
+        "from": "src/write/layout/beam.js::createAdditionalBeams",
+        "to": "src/write/layout/beam.js::getDurlog"
+      },
+      {
+        "from": "src/write/layout/beam.js::createAdditionalBeams",
+        "to": "src/write/layout/beam.js::calcXPos"
+      },
+      {
+        "from": "src/write/layout/beam.js::createAdditionalBeams",
+        "to": "src/write/layout/beam.js::findNextNonRest"
+      },
+      {
+        "from": "src/write/layout/beam.js::createAdditionalBeams",
+        "to": "src/write/layout/beam.js::findPrevNonRest"
+      },
+      {
+        "from": "src/write/interactive/unhighlight.js::unhighlight",
+        "to": "src/write/helpers/set-class.js::default"
+      },
+      {
+        "from": "src/write/interactive/selection.js::getMousePosition",
+        "to": "src/write/interactive/selection.js::findElementInHistory"
+      },
+      {
+        "from": "src/write/interactive/selection.js::getMousePosition",
+        "to": "src/write/interactive/selection.js::getTarget"
+      },
+      {
+        "from": "src/write/interactive/selection.js::getMousePosition",
+        "to": "src/write/interactive/selection.js::getBestMatchCoordinates"
+      },
+      {
+        "from": "src/write/interactive/selection.js::getMousePosition",
+        "to": "src/write/interactive/selection.js::getCoord"
+      },
+      {
+        "from": "src/write/interactive/selection.js::getMousePosition",
+        "to": "src/write/interactive/selection.js::findElementByCoord"
+      },
+      {
+        "from": "src/write/interactive/selection.js::mouseDown",
+        "to": "src/write/interactive/selection.js::attachMissingTouchEventAttributes"
+      },
+      {
+        "from": "src/write/interactive/selection.js::mouseDown",
+        "to": "src/write/interactive/selection.js::getMousePosition"
+      },
+      {
+        "from": "src/write/interactive/selection.js::mouseDown",
+        "to": "src/write/interactive/selection.js::addGlobalClass"
+      },
+      {
+        "from": "src/write/interactive/selection.js::mouseMove",
+        "to": "src/write/interactive/selection.js::attachMissingTouchEventAttributes"
+      },
+      {
+        "from": "src/write/interactive/selection.js::mouseMove",
+        "to": "src/write/interactive/selection.js::getMousePosition"
+      },
+      {
+        "from": "src/write/interactive/selection.js::mouseUp",
+        "to": "src/write/interactive/selection.js::attachMissingTouchEventAttributes"
+      },
+      {
+        "from": "src/write/interactive/selection.js::mouseUp",
+        "to": "src/write/interactive/selection.js::removeGlobalClass"
+      },
+      {
+        "from": "src/write/interactive/selection.js::notifySelect",
+        "to": "src/write/interactive/create-analysis.js::default"
+      },
+      {
+        "from": "src/write/interactive/selection.js::addGlobalClass",
+        "to": "src/write/interactive/selection.js::getClassSet"
+      },
+      {
+        "from": "src/write/interactive/selection.js::addGlobalClass",
+        "to": "src/write/interactive/selection.js::setClassSet"
+      },
+      {
+        "from": "src/write/interactive/selection.js::removeGlobalClass",
+        "to": "src/write/interactive/selection.js::getClassSet"
+      },
+      {
+        "from": "src/write/interactive/selection.js::removeGlobalClass",
+        "to": "src/write/interactive/selection.js::setClassSet"
+      },
+      {
+        "from": "src/write/interactive/highlight.js::highlight",
+        "to": "src/write/helpers/set-class.js::default"
+      },
+      {
+        "from": "src/write/interactive/find-selectable-element.js::findSelectableElement",
+        "to": "src/write/interactive/create-analysis.js::default"
+      },
+      {
+        "from": "src/write/interactive/create-analysis.js::createAnalysis",
+        "to": "src/write/interactive/create-analysis.js::findNumber"
+      },
+      {
+        "from": "src/write/helpers/get-text-size.js::calc",
+        "to": "src/write/helpers/get-text-size.js::attr"
+      },
+      {
+        "from": "src/write/helpers/get-text-size.js::calc",
+        "to": "src/write/helpers/get-text-size.js::getFamily"
+      },
+      {
+        "from": "src/write/helpers/get-text-size.js::baselineToCenter",
+        "to": "src/write/helpers/get-text-size.js::calc"
+      },
+      {
+        "from": "src/write/helpers/get-text-size.js::baselineToCenter",
+        "to": "src/write/helpers/get-text-size.js::attr"
+      },
+      {
+        "from": "src/write/helpers/get-font-and-attr.js::calc",
+        "to": "src/write/helpers/get-font-and-attr.js::getFamily"
+      },
+      {
+        "from": "src/write/helpers/classes.js::constructor",
+        "to": "src/write/helpers/classes.js::reset"
+      },
+      {
+        "from": "src/write/helpers/classes.js::getCurrent",
+        "to": "src/write/helpers/classes.js::measureTotal"
+      },
+      {
+        "from": "src/write/helpers/classes.js::generate",
+        "to": "src/write/helpers/classes.js::measureTotal"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/absolute.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/voice.js::isNonSpacerRest"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/beam.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/glissando.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/crescendo.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/dynamics.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/triplet.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/ending.js::default"
+      },
+      {
+        "from": "src/write/draw/voice.js::drawVoice",
+        "to": "src/write/draw/tie.js::default"
+      },
+      {
+        "from": "src/write/draw/triplet.js::drawTriplet",
+        "to": "src/write/draw/triplet.js::drawBracket"
+      },
+      {
+        "from": "src/write/draw/triplet.js::drawTriplet",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/triplet.js::drawLine",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/triplet.js::drawLine",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/triplet.js::drawBracket",
+        "to": "src/write/draw/triplet.js::drawLine"
+      },
+      {
+        "from": "src/write/draw/triplet.js::drawBracket",
+        "to": "src/write/draw/print-path.js::default"
+      },
+      {
+        "from": "src/write/draw/tie.js::drawTie",
+        "to": "src/write/draw/tie.js::layout"
+      },
+      {
+        "from": "src/write/draw/tie.js::drawTie",
+        "to": "src/write/draw/tie.js::drawArc"
+      },
+      {
+        "from": "src/write/draw/tie.js::drawArc",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/tie.js::drawArc",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/text.js::renderText",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/tempo.js::drawTempo",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/tempo.js::drawTempo",
+        "to": "src/write/draw/relative.js::default"
+      },
+      {
+        "from": "src/write/draw/tab-line.js::printVertical",
+        "to": "src/write/draw/print-stem.js::default"
+      },
+      {
+        "from": "src/write/draw/tab-line.js::printHorizontal",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/tab-line.js::printHorizontal",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/staff.js::printStaff",
+        "to": "src/write/draw/staff-line.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-line.js::printStaffLine",
+        "to": "src/write/draw/print-line.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/staff-group.js::boxAllElements"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/debug-box.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::debugPrintGridItem",
+        "to": "src/write/draw/debug-box.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/staff-group.js::debugPrintGridItem"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/staff.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/staff-group.js::printBrace"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/voice.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/non-music.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::drawStaffGroup",
+        "to": "src/write/draw/print-stem.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::printBrace",
+        "to": "src/write/draw/brace.js::default"
+      },
+      {
+        "from": "src/write/draw/staff-group.js::boxAllElements",
+        "to": "src/write/draw/debug-box.js::default"
+      },
+      {
+        "from": "src/write/draw/sprintf.js::sprintf",
+        "to": "src/write/draw/sprintf.js::str_repeat"
+      },
+      {
+        "from": "src/write/draw/selectables.js::add",
+        "to": "src/write/draw/selectables.js::canSelect"
+      },
+      {
+        "from": "src/write/draw/selectables.js::wrapSvgEl",
+        "to": "src/write/draw/selectables.js::add"
+      },
+      {
+        "from": "src/write/draw/relative.js::drawRelativeElement",
+        "to": "src/write/draw/print-symbol.js::default"
+      },
+      {
+        "from": "src/write/draw/relative.js::drawRelativeElement",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/relative.js::drawRelativeElement",
+        "to": "src/write/draw/print-stem.js::default"
+      },
+      {
+        "from": "src/write/draw/relative.js::drawRelativeElement",
+        "to": "src/write/draw/staff-line.js::default"
+      },
+      {
+        "from": "src/write/draw/relative.js::drawRelativeElement",
+        "to": "src/write/draw/relative.js::scaleExistingElem"
+      },
+      {
+        "from": "src/write/draw/print-vertical-line.js::printVerticalLine",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/print-symbol.js::printSymbol",
+        "to": "src/write/draw/print-symbol.js::kernSymbols"
+      },
+      {
+        "from": "src/write/draw/print-symbol.js::printSymbol",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/print-stem.js::printStem",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/print-line.js::printLine",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/print-line.js::printLine",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/non-music.js::nonMusic",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/non-music.js::nonMusic",
+        "to": "src/write/draw/separator.js::default"
+      },
+      {
+        "from": "src/write/draw/horizontal-line.js::printHorizontalLine",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/group-elements.js::addPath",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawGlissando",
+        "to": "src/write/draw/glissando.js::lineLength"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawGlissando",
+        "to": "src/write/draw/glissando.js::slope"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawGlissando",
+        "to": "src/write/draw/glissando.js::getY"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawGlissando",
+        "to": "src/write/draw/glissando.js::numSquigglies"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawGlissando",
+        "to": "src/write/draw/glissando.js::drawSquiggly"
+      },
+      {
+        "from": "src/write/draw/glissando.js::getY",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/glissando.js::segment",
+        "to": "src/write/draw/glissando.js::getY"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawSquiggly",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawSquiggly",
+        "to": "src/write/draw/glissando.js::segment"
+      },
+      {
+        "from": "src/write/draw/glissando.js::drawSquiggly",
+        "to": "src/write/draw/print-path.js::default"
+      },
+      {
+        "from": "src/write/draw/ending.js::drawEnding",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/ending.js::drawEnding",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/ending.js::drawEnding",
+        "to": "src/write/draw/print-path.js::default"
+      },
+      {
+        "from": "src/write/draw/ending.js::drawEnding",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/dynamics.js::drawDynamics",
+        "to": "src/write/draw/print-symbol.js::default"
+      },
+      {
+        "from": "src/write/draw/draw.js::draw",
+        "to": "src/write/draw/non-music.js::default"
+      },
+      {
+        "from": "src/write/draw/draw.js::draw",
+        "to": "src/write/draw/chord-grid.js::default"
+      },
+      {
+        "from": "src/write/draw/draw.js::draw",
+        "to": "src/write/draw/draw.js::addStaffPadding"
+      },
+      {
+        "from": "src/write/draw/draw.js::draw",
+        "to": "src/write/draw/draw.js::engraveStaffLine"
+      },
+      {
+        "from": "src/write/draw/draw.js::draw",
+        "to": "src/write/draw/set-paper-size.js::default"
+      },
+      {
+        "from": "src/write/draw/draw.js::engraveStaffLine",
+        "to": "src/write/draw/staff-group.js::default"
+      },
+      {
+        "from": "src/write/draw/crescendo.js::drawCrescendo",
+        "to": "src/write/draw/crescendo.js::drawCurveLine"
+      },
+      {
+        "from": "src/write/draw/crescendo.js::drawCurveLine",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/crescendo.js::drawCurveLine",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/crescendo.js::drawCurveLine",
+        "to": "src/write/draw/print-path.js::default"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::anonymous",
+        "to": "src/write/draw/chord-grid.js::text"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::anonymous",
+        "to": "src/write/draw/chord-grid.js::drawRepeat"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::anonymous",
+        "to": "src/write/draw/chord-grid.js::drawMeasure"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::anonymous",
+        "to": "src/write/draw/chord-grid.js::drawAnnotations"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawPercent",
+        "to": "src/write/draw/print-symbol.js::default"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawRepeat",
+        "to": "src/write/draw/print-stem.js::default"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawRepeat",
+        "to": "src/write/draw/print-symbol.js::default"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawAnnotations",
+        "to": "src/write/draw/print-symbol.js::default"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawAnnotations",
+        "to": "src/write/draw/chord-grid.js::text"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawMeasure",
+        "to": "src/write/draw/chord-grid.js::drawSingleChord"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawMeasure",
+        "to": "src/write/draw/chord-grid.js::drawTwoChords"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawMeasure",
+        "to": "src/write/draw/chord-grid.js::drawFourChords"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::renderChord",
+        "to": "src/write/draw/chord-grid.js::text"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawSingleChord",
+        "to": "src/write/draw/chord-grid.js::drawPercent"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawSingleChord",
+        "to": "src/write/draw/chord-grid.js::renderChord"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawTwoChords",
+        "to": "src/write/draw/chord-grid.js::renderChord"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawFourChords",
+        "to": "src/write/draw/chord-grid.js::renderChord"
+      },
+      {
+        "from": "src/write/draw/chord-grid.js::drawFourChords",
+        "to": "src/write/draw/chord-grid.js::shortenChord"
+      },
+      {
+        "from": "src/write/draw/brace.js::drawBrace",
+        "to": "src/write/draw/brace.js::draw"
+      },
+      {
+        "from": "src/write/draw/brace.js::straightPath",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/brace.js::curvyPath",
+        "to": "src/write/draw/brace.js::curve"
+      },
+      {
+        "from": "src/write/draw/brace.js::curve",
+        "to": "src/write/draw/sprintf.js::default"
+      },
+      {
+        "from": "src/write/draw/brace.js::draw",
+        "to": "src/write/draw/text.js::default"
+      },
+      {
+        "from": "src/write/draw/brace.js::draw",
+        "to": "src/write/draw/brace.js::curvyPath"
+      },
+      {
+        "from": "src/write/draw/brace.js::draw",
+        "to": "src/write/draw/brace.js::straightPath"
+      },
+      {
+        "from": "src/write/draw/beam.js::drawBeam",
+        "to": "src/write/draw/beam.js::getSlope"
+      },
+      {
+        "from": "src/write/draw/beam.js::drawBeam",
+        "to": "src/write/draw/beam.js::getY"
+      },
+      {
+        "from": "src/write/draw/beam.js::drawBeam",
+        "to": "src/write/draw/beam.js::drawSingleBeam"
+      },
+      {
+        "from": "src/write/draw/beam.js::drawBeam",
+        "to": "src/write/draw/print-path.js::default"
+      },
+      {
+        "from": "src/write/draw/beam.js::drawSingleBeam",
+        "to": "src/write/draw/round-number.js::default"
+      },
+      {
+        "from": "src/write/draw/absolute.js::drawAbsolute",
+        "to": "src/write/draw/tempo.js::default"
+      },
+      {
+        "from": "src/write/draw/absolute.js::drawAbsolute",
+        "to": "src/write/draw/relative.js::default"
+      },
+      {
+        "from": "src/write/draw/absolute.js::drawAbsolute",
+        "to": "src/write/helpers/set-class.js::default"
+      },
+      {
+        "from": "src/write/creation/translate-chord.js::translateChord",
+        "to": "src/write/creation/translate-chord.js::germanNote"
+      },
+      {
+        "from": "src/write/creation/glyphs.js::Glyphs",
+        "to": "src/write/creation/glyphs.js::pathClone"
+      },
+      {
+        "from": "src/write/creation/glyphs.js::Glyphs",
+        "to": "src/write/creation/glyphs.js::pathScale"
+      },
+      {
+        "from": "src/write/creation/decoration.js::endLine",
+        "to": "src/write/creation/decoration.js::lastNote"
+      },
+      {
+        "from": "src/write/creation/decoration.js::dynamicDecoration",
+        "to": "src/write/creation/decoration.js::firstNote"
+      },
+      {
+        "from": "src/write/creation/decoration.js::createDecoration",
+        "to": "src/write/creation/decoration.js::volumeDecoration"
+      },
+      {
+        "from": "src/write/creation/decoration.js::createDecoration",
+        "to": "src/write/creation/decoration.js::dynamicDecoration"
+      },
+      {
+        "from": "src/write/creation/decoration.js::createDecoration",
+        "to": "src/write/creation/decoration.js::compoundDecoration"
+      },
+      {
+        "from": "src/write/creation/decoration.js::createDecoration",
+        "to": "src/write/creation/decoration.js::closeDecoration"
+      },
+      {
+        "from": "src/write/creation/decoration.js::createDecoration",
+        "to": "src/write/creation/decoration.js::stackedDecoration"
+      },
+      {
+        "from": "src/write/creation/decoration.js::createDecoration",
+        "to": "src/write/creation/decoration.js::leftDecoration"
+      },
+      {
+        "from": "src/write/creation/decoration.js::addCompound",
+        "to": "src/write/creation/decoration.js::lowestPitch"
+      },
+      {
+        "from": "src/write/creation/decoration.js::addCompound",
+        "to": "src/write/creation/decoration.js::highestPitch"
+      },
+      {
+        "from": "src/write/creation/decoration.js::compoundDecoration",
+        "to": "src/write/creation/decoration.js::addCompound"
+      },
+      {
+        "from": "src/write/creation/decoration.js::textDec",
+        "to": "src/write/creation/decoration.js::getPlacement"
+      },
+      {
+        "from": "src/write/creation/decoration.js::textDec",
+        "to": "src/write/creation/decoration.js::incrementPlacement"
+      },
+      {
+        "from": "src/write/creation/decoration.js::symbolDec",
+        "to": "src/write/creation/decoration.js::getPlacement"
+      },
+      {
+        "from": "src/write/creation/decoration.js::symbolDec",
+        "to": "src/write/creation/decoration.js::incrementPlacement"
+      },
+      {
+        "from": "src/write/creation/decoration.js::stackedDecoration",
+        "to": "src/write/creation/decoration.js::textDec"
+      },
+      {
+        "from": "src/write/creation/decoration.js::stackedDecoration",
+        "to": "src/write/creation/decoration.js::symbolDec"
+      },
+      {
+        "from": "src/write/creation/create-clef.js::createClef",
+        "to": "src/write/creation/create-clef.js::clefOffsets"
+      },
+      {
+        "from": "src/write/creation/add-chord.js::addChord",
+        "to": "src/write/creation/add-chord.js::chordString"
+      },
+      {
+        "from": "src/write/creation/add-chord.js::chordString",
+        "to": "src/write/creation/translate-chord.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::constructor",
+        "to": "src/write/creation/abstract-engraver.js::reset"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::pushCrossLineElems",
+        "to": "src/write/creation/abstract-engraver.js::getCurrentVoiceId"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::popCrossLineElems",
+        "to": "src/write/creation/abstract-engraver.js::getCurrentVoiceId"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCLine",
+        "to": "src/write/creation/abstract-engraver.js::containsLyrics"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCLine",
+        "to": "src/write/creation/abstract-engraver.js::restoreState"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCLine",
+        "to": "src/write/creation/abstract-engraver.js::createABCStaff"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCStaff",
+        "to": "src/write/creation/create-clef.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCStaff",
+        "to": "src/write/creation/abstract-engraver.js::addMeasureNumber"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCStaff",
+        "to": "src/write/creation/create-key-signature.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCStaff",
+        "to": "src/write/creation/create-time-signature.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCStaff",
+        "to": "src/write/creation/abstract-engraver.js::createABCVoice"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCVoice",
+        "to": "src/write/creation/abstract-engraver.js::popCrossLineElems"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCVoice",
+        "to": "src/write/creation/abstract-engraver.js::setAveragePitch"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCVoice",
+        "to": "src/write/creation/abstract-engraver.js::getBeamGroup"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCVoice",
+        "to": "src/write/creation/abstract-engraver.js::createABCElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCVoice",
+        "to": "src/write/creation/abstract-engraver.js::pushCrossLineElems"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCElement",
+        "to": "src/write/creation/abstract-engraver.js::createBeam"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCElement",
+        "to": "src/write/creation/abstract-engraver.js::createNote"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCElement",
+        "to": "src/write/creation/abstract-engraver.js::createBarLine"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCElement",
+        "to": "src/write/creation/create-time-signature.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCElement",
+        "to": "src/write/creation/create-clef.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCElement",
+        "to": "src/write/creation/create-key-signature.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createABCElement",
+        "to": "src/write/creation/abstract-engraver.js::saveState"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createBeam",
+        "to": "src/write/creation/abstract-engraver.js::createNote"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createNote",
+        "to": "src/write/creation/abstract-engraver.js::getDuration"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createNote",
+        "to": "src/write/creation/abstract-engraver.js::addRestToAbsElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createNote",
+        "to": "src/write/creation/abstract-engraver.js::addNoteToAbcElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createNote",
+        "to": "src/write/creation/abstract-engraver.js::addLyric"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createNote",
+        "to": "src/write/creation/abstract-engraver.js::addGraceNotes"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createNote",
+        "to": "src/write/creation/abstract-engraver.js::ledgerLines"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createNote",
+        "to": "src/write/creation/add-chord.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addNoteToAbcElement",
+        "to": "src/synth/pitches-to-perc.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addNoteToAbcElement",
+        "to": "src/write/creation/abstract-engraver.js::getDuration"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addNoteToAbcElement",
+        "to": "src/write/creation/abstract-engraver.js::addIfNotExist"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addNoteToAbcElement",
+        "to": "src/write/creation/create-note-head.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addNoteToAbcElement",
+        "to": "src/write/creation/abstract-engraver.js::addSlursAndTies"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addGraceNotes",
+        "to": "src/write/creation/create-note-head.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addGraceNotes",
+        "to": "src/write/creation/abstract-engraver.js::addSlursAndTies"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addGraceNotes",
+        "to": "src/write/creation/abstract-engraver.js::ledgerLines"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createBarLine",
+        "to": "src/write/creation/abstract-engraver.js::addMeasureNumber"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::createBarLine",
+        "to": "src/write/creation/add-chord.js::default"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::setAveragePitch",
+        "to": "src/write/creation/abstract-engraver.js::sortPitch"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::addRestToAbsElement",
+        "to": "src/write/creation/create-note-head.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/voice-element.js::addChild",
+        "to": "src/write/creation/elements/voice-element.js::setRange"
+      },
+      {
+        "from": "src/write/creation/elements/voice-element.js::setRange",
+        "to": "src/write/creation/elements/voice-element.js::adjustRange"
+      },
+      {
+        "from": "src/write/creation/elements/voice-element.js::setRange",
+        "to": "src/write/creation/elements/voice-element.js::setLimit"
+      },
+      {
+        "from": "src/write/creation/elements/voice-element.js::addOther",
+        "to": "src/write/creation/elements/voice-element.js::setRange"
+      },
+      {
+        "from": "src/write/creation/elements/top-text.js::constructor",
+        "to": "src/write/creation/add-text-if.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/top-text.js::constructor",
+        "to": "src/write/creation/elements/rich-text.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/tie-element.js::getYBounds",
+        "to": "src/write/creation/elements/tie-element.js::calcTieDirection"
+      },
+      {
+        "from": "src/write/creation/elements/tie-element.js::getYBounds",
+        "to": "src/write/creation/elements/tie-element.js::calcX"
+      },
+      {
+        "from": "src/write/creation/elements/tie-element.js::getYBounds",
+        "to": "src/write/creation/elements/tie-element.js::calcTieY"
+      },
+      {
+        "from": "src/write/creation/elements/tie-element.js::getYBounds",
+        "to": "src/write/creation/elements/tie-element.js::calcSlurDirection"
+      },
+      {
+        "from": "src/write/creation/elements/tie-element.js::getYBounds",
+        "to": "src/write/creation/elements/tie-element.js::calcSlurY"
+      },
+      {
+        "from": "src/write/creation/elements/tempo-element.js::constructor",
+        "to": "src/write/creation/elements/tempo-element.js::createNote"
+      },
+      {
+        "from": "src/write/creation/elements/staff-group-element.js::setHeight",
+        "to": "src/write/creation/calc-height.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/staff-group-element.js::setStaffLimits",
+        "to": "src/write/creation/elements/staff-group-element.js::setLimit"
+      },
+      {
+        "from": "src/write/creation/elements/rich-text.js::richText",
+        "to": "src/write/creation/add-text-if.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/free-text.js::constructor",
+        "to": "src/write/creation/elements/free-text.js::replaceStandaloneNewlinesForTextBlocks"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::constructor",
+        "to": "src/write/creation/elements/bottom-text.js::unalignedWords"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::constructor",
+        "to": "src/write/creation/elements/bottom-text.js::extraText"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::constructor",
+        "to": "src/write/creation/elements/bottom-text.js::footer"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::unalignedWords",
+        "to": "src/write/creation/elements/bottom-text.js::addMultiLine"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::extraText",
+        "to": "src/write/creation/elements/bottom-text.js::addSingleLine"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::extraText",
+        "to": "src/write/creation/elements/bottom-text.js::addMultiLine"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::footer",
+        "to": "src/write/creation/add-text-if.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::addSingleLine",
+        "to": "src/write/creation/elements/rich-text.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::addMultiLine",
+        "to": "src/write/creation/add-text-if.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/bottom-text.js::addMultiLine",
+        "to": "src/write/creation/elements/rich-text.js::default"
+      },
+      {
+        "from": "src/write/creation/elements/beam-element.js::setStemDirection",
+        "to": "src/write/creation/elements/beam-element.js::calcAverage"
+      },
+      {
+        "from": "src/write/creation/elements/beam-element.js::calcDir",
+        "to": "src/write/creation/elements/beam-element.js::calcAverage"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::addExtra",
+        "to": "src/write/creation/elements/absolute-element.js::_addChild"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::addHead",
+        "to": "src/write/creation/elements/absolute-element.js::addRight"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::addRight",
+        "to": "src/write/creation/elements/absolute-element.js::_addChild"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::addFixed",
+        "to": "src/write/creation/elements/absolute-element.js::_addChild"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::addFixedX",
+        "to": "src/write/creation/elements/absolute-element.js::_addChild"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::addCentered",
+        "to": "src/write/creation/elements/absolute-element.js::_addChild"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::_addChild",
+        "to": "src/write/creation/elements/absolute-element.js::pushTop"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::_addChild",
+        "to": "src/write/creation/elements/absolute-element.js::pushBottom"
+      },
+      {
+        "from": "src/write/creation/elements/absolute-element.js::_addChild",
+        "to": "src/write/creation/elements/absolute-element.js::setLimit"
+      },
+      {
+        "from": "src/tablatures/abc_tablatures.js::abcTablatures",
+        "to": "src/tablatures/instruments/tab-string.js::default"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::linkStaffAndTabs",
+        "to": "src/tablatures/render/tab-renderer.js::getParentStaffIndex"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::isMultiVoiceSingleStaff",
+        "to": "src/tablatures/render/tab-renderer.js::getStaffNumbers"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::getNextTabPos",
+        "to": "src/tablatures/render/tab-renderer.js::islastTabInStaff"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::getLyricHeight"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::initSpecialY"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::getNextTabPos"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::getLastStaff"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::isMultiVoiceSingleStaff"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::buildTabName"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::checkVoiceKeySig"
+      },
+      {
+        "from": "src/tablatures/render/tab-renderer.js::tabRenderer",
+        "to": "src/tablatures/render/tab-renderer.js::linkStaffAndTabs"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::cloneObject",
+        "to": "src/tablatures/render/tab-absolute-elements.js::isObject"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::cloneAbsolute",
+        "to": "src/tablatures/render/tab-absolute-elements.js::cloneObject"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::cloneAbsoluteAndRelatives",
+        "to": "src/tablatures/render/tab-absolute-elements.js::cloneAbsolute"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::cloneAbsoluteAndRelatives",
+        "to": "src/tablatures/render/tab-absolute-elements.js::cloneObject"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::buildGraceRelativesForRest",
+        "to": "src/tablatures/render/tab-absolute-elements.js::getXGrace"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::buildGraceRelativesForRest",
+        "to": "src/tablatures/render/tab-absolute-elements.js::buildRelativeTabNote"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::buildTabAbsolute"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::cloneAbsoluteAndRelatives"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::graceInRest"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::convertToNumber"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::buildGraceRelativesForRest"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::cloneAbsolute"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::lyricsDim"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::getXGrace"
+      },
+      {
+        "from": "src/tablatures/render/tab-absolute-elements.js::build",
+        "to": "src/tablatures/render/tab-absolute-elements.js::buildRelativeTabNote"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-string.js::render",
+        "to": "src/tablatures/render/tab-renderer.js::default"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js::constructor",
+        "to": "src/synth/note-to-midi.js::noteToMidi"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js::constructor",
+        "to": "src/synth/note-to-midi.js::midiToNote"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js::clone",
+        "to": "src/tablatures/instruments/tab-note.js::emit"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js::getAccidentalEquiv",
+        "to": "src/tablatures/instruments/tab-note.js::clone"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js::nextNote",
+        "to": "src/synth/note-to-midi.js::midiToNote"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js::prevNote",
+        "to": "src/synth/note-to-midi.js::midiToNote"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::buildPatterns",
+        "to": "src/tablatures/instruments/tab-notes.js::default"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::sameString",
+        "to": "src/tablatures/instruments/string-patterns.js::noteToNumber"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::handleChordNotes",
+        "to": "src/tablatures/instruments/string-patterns.js::toNumber"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::handleChordNotes",
+        "to": "src/tablatures/instruments/string-patterns.js::sameString"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::constructor",
+        "to": "src/synth/note-to-midi.js::noteToMidi"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::constructor",
+        "to": "src/tablatures/instruments/string-patterns.js::buildCapo"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::constructor",
+        "to": "src/tablatures/instruments/string-patterns.js::buildPatterns"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::constructor",
+        "to": "src/tablatures/instruments/string-patterns.js::buildSecond"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::notesToNumber",
+        "to": "src/tablatures/instruments/string-patterns.js::handleChordNotes"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::notesToNumber",
+        "to": "src/tablatures/instruments/string-patterns.js::toNumber"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::notesToNumber",
+        "to": "src/tablatures/instruments/string-patterns.js::invalidNumber"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::tabInfos",
+        "to": "src/tablatures/instruments/string-patterns.js::toString"
+      },
+      {
+        "from": "src/synth/synth-controller.js::control",
+        "to": "src/synth/synth-controller.js::go"
+      },
+      {
+        "from": "src/synth/synth-controller.js::load",
+        "to": "src/synth/synth-controller.js::disable"
+      },
+      {
+        "from": "src/synth/synth-controller.js::setTune",
+        "to": "src/synth/synth-controller.js::disable"
+      },
+      {
+        "from": "src/synth/synth-controller.js::setTune",
+        "to": "src/synth/synth-controller.js::pause"
+      },
+      {
+        "from": "src/synth/synth-controller.js::setTune",
+        "to": "src/synth/synth-controller.js::setProgress"
+      },
+      {
+        "from": "src/synth/synth-controller.js::setTune",
+        "to": "src/synth/synth-controller.js::restart"
+      },
+      {
+        "from": "src/synth/synth-controller.js::setTune",
+        "to": "src/synth/synth-controller.js::go"
+      },
+      {
+        "from": "src/synth/synth-controller.js::go",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/synth-controller.js::destroy",
+        "to": "src/synth/synth-controller.js::setProgress"
+      },
+      {
+        "from": "src/synth/synth-controller.js::play",
+        "to": "src/synth/synth-controller.js::runWhenReady"
+      },
+      {
+        "from": "src/synth/synth-controller.js::anonymous",
+        "to": "src/synth/synth-controller.js::_play"
+      },
+      {
+        "from": "src/synth/synth-controller.js::runWhenReady",
+        "to": "src/synth/synth-controller.js::sleep"
+      },
+      {
+        "from": "src/synth/synth-controller.js::anonymous",
+        "to": "src/synth/synth-controller.js::runWhenReady"
+      },
+      {
+        "from": "src/synth/synth-controller.js::runWhenReady",
+        "to": "src/synth/synth-controller.js::go"
+      },
+      {
+        "from": "src/synth/synth-controller.js::_play",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/synth-controller.js::anonymous",
+        "to": "src/synth/synth-controller.js::pause"
+      },
+      {
+        "from": "src/synth/synth-controller.js::randomAccess",
+        "to": "src/synth/synth-controller.js::runWhenReady"
+      },
+      {
+        "from": "src/synth/synth-controller.js::anonymous",
+        "to": "src/synth/synth-controller.js::_randomAccess"
+      },
+      {
+        "from": "src/synth/synth-controller.js::_randomAccess",
+        "to": "src/synth/synth-controller.js::seek"
+      },
+      {
+        "from": "src/synth/synth-controller.js::setWarp",
+        "to": "src/synth/synth-controller.js::destroy"
+      },
+      {
+        "from": "src/synth/synth-controller.js::setWarp",
+        "to": "src/synth/synth-controller.js::go"
+      },
+      {
+        "from": "src/synth/synth-controller.js::anonymous",
+        "to": "src/synth/synth-controller.js::setProgress"
+      },
+      {
+        "from": "src/synth/synth-controller.js::anonymous",
+        "to": "src/synth/synth-controller.js::play"
+      },
+      {
+        "from": "src/synth/synth-controller.js::anonymous",
+        "to": "src/synth/synth-controller.js::seek"
+      },
+      {
+        "from": "src/synth/synth-controller.js::onWarp",
+        "to": "src/synth/synth-controller.js::setWarp"
+      },
+      {
+        "from": "src/synth/synth-controller.js::finished",
+        "to": "src/synth/synth-controller.js::setProgress"
+      },
+      {
+        "from": "src/synth/synth-controller.js::beatCallback",
+        "to": "src/synth/synth-controller.js::setProgress"
+      },
+      {
+        "from": "src/synth/synth-controller.js::eventCallback",
+        "to": "src/synth/synth-controller.js::finished"
+      },
+      {
+        "from": "src/synth/synth-controller.js::download",
+        "to": "src/synth/synth-controller.js::getUrl"
+      },
+      {
+        "from": "src/synth/supports-audio.js::supportsAudio",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/repeats.js::addBar",
+        "to": "src/synth/repeats.js::startEndingNumbers"
+      },
+      {
+        "from": "src/synth/repeats.js::resolveRepeats",
+        "to": "src/synth/repeats.js::duplicateSpan"
+      },
+      {
+        "from": "src/synth/repeats.js::duplicateSpan",
+        "to": "src/synth/repeats.js::areKeysEqual"
+      },
+      {
+        "from": "src/synth/repeats.js::duplicateSpan",
+        "to": "src/synth/repeats.js::duplicateItem"
+      },
+      {
+        "from": "src/synth/play-event.js::playEvent",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/play-event.js::anonymous",
+        "to": "src/synth/play-event.js::doPlay"
+      },
+      {
+        "from": "src/synth/play-event.js::playEvent",
+        "to": "src/synth/play-event.js::doPlay"
+      },
+      {
+        "from": "src/synth/place-note.js::anonymous",
+        "to": "src/synth/cents-to-factor.js::default"
+      },
+      {
+        "from": "src/synth/place-note.js::oncomplete",
+        "to": "src/synth/place-note.js::copyToChannel"
+      },
+      {
+        "from": "src/synth/get-midi-file.js::callback",
+        "to": "src/midi/abc_midi_create.js::default"
+      },
+      {
+        "from": "src/synth/get-midi-file.js::callback",
+        "to": "src/synth/get-midi-file.js::generateMidiDownloadLink"
+      },
+      {
+        "from": "src/synth/get-midi-file.js::getMidiFile",
+        "to": "src/synth/get-midi-file.js::callback"
+      },
+      {
+        "from": "src/synth/download-buffer.js::downloadBuffer",
+        "to": "src/synth/download-buffer.js::bufferToWave"
+      },
+      {
+        "from": "src/synth/download-buffer.js::bufferToWave",
+        "to": "src/synth/download-buffer.js::setUint32"
+      },
+      {
+        "from": "src/synth/download-buffer.js::bufferToWave",
+        "to": "src/synth/download-buffer.js::setUint16"
+      },
+      {
+        "from": "src/synth/create-synth.js::init",
+        "to": "src/synth/register-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::init",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::init",
+        "to": "src/synth/create-synth.js::_deviceCapable"
+      },
+      {
+        "from": "src/synth/create-synth.js::next",
+        "to": "src/synth/create-synth.js::_loadBatch"
+      },
+      {
+        "from": "src/synth/create-synth.js::next",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::next",
+        "to": "src/synth/create-synth.js::next"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/create-synth.js::next"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/load-note.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/create-synth.js::_loadBatch"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/create-synth.js::stop"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/create-note-map.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/create-synth.js::_addSwing"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/create-synth.js::_setPan"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/place-note.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::resolveData",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::anonymous",
+        "to": "src/synth/create-synth.js::resolveData"
+      },
+      {
+        "from": "src/synth/create-synth.js::start",
+        "to": "src/synth/create-synth.js::_kickOffSound"
+      },
+      {
+        "from": "src/synth/create-synth.js::start",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::pause",
+        "to": "src/synth/create-synth.js::stop"
+      },
+      {
+        "from": "src/synth/create-synth.js::resume",
+        "to": "src/synth/create-synth.js::start"
+      },
+      {
+        "from": "src/synth/create-synth.js::seek",
+        "to": "src/synth/create-synth.js::stop"
+      },
+      {
+        "from": "src/synth/create-synth.js::seek",
+        "to": "src/synth/create-synth.js::_kickOffSound"
+      },
+      {
+        "from": "src/synth/create-synth.js::stop",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::download",
+        "to": "src/synth/download-buffer.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::_deviceCapable",
+        "to": "src/synth/supports-audio.js::default"
+      },
+      {
+        "from": "src/synth/create-synth.js::_kickOffSound",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::constructor",
+        "to": "src/synth/register-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::constructor",
+        "to": "src/synth/create-synth-control.js::buildDom"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::constructor",
+        "to": "src/synth/create-synth-control.js::attachListeners"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::constructor",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::setWarp",
+        "to": "src/synth/create-synth-control.js::setTempo"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::wrap",
+        "to": "src/synth/create-synth-control.js::acResumerMiddleWare"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::attachListeners",
+        "to": "src/synth/create-synth-control.js::wrap"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::acResumerMiddleWare",
+        "to": "src/synth/active-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::acResumerMiddleWare",
+        "to": "src/synth/register-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::acResumerMiddleWare",
+        "to": "src/synth/supports-audio.js::default"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::anonymous",
+        "to": "src/synth/create-synth-control.js::doNext"
+      },
+      {
+        "from": "src/synth/create-synth-control.js::acResumerMiddleWare",
+        "to": "src/synth/create-synth-control.js::doNext"
+      },
+      {
+        "from": "src/synth/chord-track.js::constructor",
+        "to": "src/synth/chord-track.js::parseGChord"
+      },
+      {
+        "from": "src/synth/chord-track.js::barEnd",
+        "to": "src/synth/chord-track.js::resolveChords"
+      },
+      {
+        "from": "src/synth/chord-track.js::barEnd",
+        "to": "src/synth/chord-track.js::timeToRealTime"
+      },
+      {
+        "from": "src/synth/chord-track.js::paramChange",
+        "to": "src/synth/chord-track.js::parseGChord"
+      },
+      {
+        "from": "src/synth/chord-track.js::finish",
+        "to": "src/synth/chord-track.js::chordTrackEmpty"
+      },
+      {
+        "from": "src/synth/chord-track.js::addTrack",
+        "to": "src/synth/chord-track.js::chordTrackEmpty"
+      },
+      {
+        "from": "src/synth/chord-track.js::interpretChord",
+        "to": "src/synth/chord-track.js::chordNotes"
+      },
+      {
+        "from": "src/synth/chord-track.js::writeNoteCustom",
+        "to": "src/synth/chord-track.js::durationRounded"
+      },
+      {
+        "from": "src/synth/chord-track.js::resolveChords",
+        "to": "src/synth/chord-track.js::expandCurrentChords"
+      },
+      {
+        "from": "src/synth/chord-track.js::resolveChords",
+        "to": "src/synth/chord-track.js::resolvePitch"
+      },
+      {
+        "from": "src/synth/chord-track.js::resolveChords",
+        "to": "src/synth/chord-track.js::writeNoteCustom"
+      },
+      {
+        "from": "src/synth/chord-track.js::processChord",
+        "to": "src/synth/chord-track.js::findChord"
+      },
+      {
+        "from": "src/synth/chord-track.js::processChord",
+        "to": "src/synth/chord-track.js::interpretChord"
+      },
+      {
+        "from": "src/synth/chord-track.js::processChord",
+        "to": "src/synth/chord-track.js::calcBeat"
+      },
+      {
+        "from": "src/synth/chord-track.js::processChord",
+        "to": "src/synth/chord-track.js::timeToRealTime"
+      },
+      {
+        "from": "src/synth/chord-track.js::resolvePitch",
+        "to": "src/synth/chord-track.js::extractNote"
+      },
+      {
+        "from": "src/synth/active-audio-context.js::activeAudioContext",
+        "to": "src/synth/register-audio-context.js::default"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::interpretTempo"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::getTrackTitle"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::addKey"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::addMeter"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::setDynamics"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::chordVoiceOffThisBar"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::interpretMeter"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::addIfDifferent"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::sequence",
+        "to": "src/synth/abc_midi_sequencer.js::insertTempoChanges"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::setDynamics",
+        "to": "src/synth/abc_midi_sequencer.js::numNotesToDecoration"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::setDynamics",
+        "to": "src/synth/abc_midi_sequencer.js::endingVolume"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::addKey",
+        "to": "src/synth/abc_midi_sequencer.js::removeNaturals"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::addKey",
+        "to": "src/synth/abc_midi_sequencer.js::addIfDifferent"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::addMeter",
+        "to": "src/synth/abc_midi_sequencer.js::interpretMeter"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::addMeter",
+        "to": "src/synth/abc_midi_sequencer.js::addIfDifferent"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setTempo",
+        "to": "src/synth/abc_midi_renderer.js::startTrack"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setTempo",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setTempo",
+        "to": "src/synth/abc_midi_renderer.js::endTrack"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setGlobalInfo",
+        "to": "src/synth/abc_midi_renderer.js::startTrack"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setGlobalInfo",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setGlobalInfo",
+        "to": "src/synth/abc_midi_renderer.js::keySignature"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setGlobalInfo",
+        "to": "src/synth/abc_midi_renderer.js::timeSignature"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setGlobalInfo",
+        "to": "src/synth/abc_midi_renderer.js::encodeString"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setGlobalInfo",
+        "to": "src/synth/abc_midi_renderer.js::endTrack"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::startTrack",
+        "to": "src/synth/abc_midi_renderer.js::setInstrument"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::endTrack",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setText",
+        "to": "src/synth/abc_midi_renderer.js::encodeString"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setInstrument",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::setChannel",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::startNote",
+        "to": "src/synth/abc_midi_renderer.js::toDurationHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::startNote",
+        "to": "src/synth/cents-to-factor.js::default"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::startNote",
+        "to": "src/synth/abc_midi_renderer.js::to7BitHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::startNote",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::endNote",
+        "to": "src/synth/abc_midi_renderer.js::toDurationHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::endNote",
+        "to": "src/synth/abc_midi_renderer.js::to7BitHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::getData",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::embed",
+        "to": "src/synth/abc_midi_renderer.js::getData"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::embed",
+        "to": "src/synth/abc_midi_renderer.js::setAttributes"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::encodeString",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::keySignature",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::timeSignature",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::toHex",
+        "to": "src/synth/abc_midi_renderer.js::encodeHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::to7BitHex",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_renderer.js::toDurationHex",
+        "to": "src/synth/abc_midi_renderer.js::toHex"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::preProcess"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::writeNote"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::setKeySignature"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::getBeatFraction"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::alignDrumToMeter"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::writeDrum"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::timeToRealTime"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::setChannel"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::normalizeDrumDefinition"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::flatten",
+        "to": "src/synth/abc_midi_flattener.js::findOctaves"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::processVolume",
+        "to": "src/synth/abc_midi_flattener.js::calcBeat"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::processVolume",
+        "to": "src/synth/abc_midi_flattener.js::getBeatFraction"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::doModifiedNotes",
+        "to": "src/synth/abc_midi_flattener.js::durationRounded"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::processVolume"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::timeToRealTime"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::processGraceNotes"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::writeGraceNotes"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::findNoteModifications"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::adjustPitch"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/pitches-to-perc.js::default"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::durationRounded"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::adjustForMicroTone"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::doModifiedNotes"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeNote",
+        "to": "src/synth/abc_midi_flattener.js::getRealDuration"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::adjustPitch",
+        "to": "src/synth/abc_midi_flattener.js::extractOctave"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::adjustPitch",
+        "to": "src/synth/abc_midi_flattener.js::extractNote"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::setKeySignature",
+        "to": "src/synth/abc_midi_flattener.js::extractNote"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::processGraceNotes",
+        "to": "src/synth/abc_midi_flattener.js::adjustPitch"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::processGraceNotes",
+        "to": "src/synth/pitches-to-perc.js::default"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::processGraceNotes",
+        "to": "src/synth/abc_midi_flattener.js::adjustForMicroTone"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::normalizeDrumDefinition",
+        "to": "src/synth/abc_midi_flattener.js::getBeatFraction"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::writeDrum",
+        "to": "src/synth/abc_midi_flattener.js::durationRounded"
+      },
+      {
+        "from": "src/str/output.js::strTranspose",
+        "to": "src/str/output.js::transposeOneTune"
+      },
+      {
+        "from": "src/str/output.js::transposeOneTune",
+        "to": "src/str/output.js::changeAllKeySigs"
+      },
+      {
+        "from": "src/str/output.js::transposeOneTune",
+        "to": "src/str/output.js::transposeVoices"
+      },
+      {
+        "from": "src/str/output.js::changeAllKeySigs",
+        "to": "src/const/relative-major.js::isLegalMode"
+      },
+      {
+        "from": "src/str/output.js::changeAllKeySigs",
+        "to": "src/str/output.js::getNewKey"
+      },
+      {
+        "from": "src/str/output.js::transposeVoices",
+        "to": "src/str/output.js::getNewKey"
+      },
+      {
+        "from": "src/str/output.js::transposeVoices",
+        "to": "src/str/output.js::transposeVoice"
+      },
+      {
+        "from": "src/str/output.js::transposeVoices",
+        "to": "src/str/output.js::createKeyAccidentals"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::setLetterDistance"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/parse/transpose-chord.js::default"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::replaceChord"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::findNotes"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::parseNote"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::transposePitch"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::replaceGrace"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::createKeyAccidentals"
+      },
+      {
+        "from": "src/str/output.js::transposeVoice",
+        "to": "src/str/output.js::getNewKey"
+      },
+      {
+        "from": "src/str/output.js::getNewKey",
+        "to": "src/const/relative-major.js::transposeKey"
+      },
+      {
+        "from": "src/str/output.js::getNewKey",
+        "to": "src/const/relative-major.js::relativeMajor"
+      },
+      {
+        "from": "src/str/output.js::getNewKey",
+        "to": "src/const/relative-major.js::relativeMode"
+      },
+      {
+        "from": "src/str/output.js::getNewKey",
+        "to": "src/const/key-accidentals.js::default"
+      },
+      {
+        "from": "src/str/output.js::transposePitch",
+        "to": "src/str/output.js::transposePitch"
+      },
+      {
+        "from": "src/str/output.js::parseNote",
+        "to": "src/str/output.js::calcAdjustment"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::wrapLines",
+        "to": "src/parse/wrap_lines.js::findLineBreaks"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::wrapLines",
+        "to": "src/parse/wrap_lines.js::addLineBreaks"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::oneTry",
+        "to": "src/parse/wrap_lines.js::clone"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::optimizeLineWidths",
+        "to": "src/parse/wrap_lines.js::oneTry"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::calcLineWraps",
+        "to": "src/parse/wrap_lines.js::fixedMeasureLineBreaks"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::calcLineWraps",
+        "to": "src/parse/wrap_lines.js::freeFormLineBreaks"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::calcLineWraps",
+        "to": "src/parse/wrap_lines.js::optimizeLineWidths"
+      },
+      {
+        "from": "src/parse/wrap_lines.js::calcLineWraps",
+        "to": "src/parse/wrap_lines.js::getRevisedTuneParams"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::closeLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::simplifyMetaText"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::containsNotes"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::wrapMusicLines"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::containsNotesStrict"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::fixTitles"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::resolveOverlays"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::voiceUseful"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::deleteVoice"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::cleanUpSlursInLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUp",
+        "to": "src/parse/tune-builder.js::getNextMusicLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::addTieToLastNote",
+        "to": "src/parse/tune-builder.js::getLastNote"
+      },
+      {
+        "from": "src/parse/tune-builder.js::appendElement",
+        "to": "src/parse/tune-builder.js::getDuration"
+      },
+      {
+        "from": "src/parse/tune-builder.js::appendElement",
+        "to": "src/parse/tune-builder.js::endBeamLast"
+      },
+      {
+        "from": "src/parse/tune-builder.js::appendElement",
+        "to": "src/parse/tune-builder.js::endBeamHere"
+      },
+      {
+        "from": "src/parse/tune-builder.js::appendElement",
+        "to": "src/parse/tune-builder.js::pushNote"
+      },
+      {
+        "from": "src/parse/tune-builder.js::appendStartingElement",
+        "to": "src/parse/tune-builder.js::closeLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::addSubtitle",
+        "to": "src/parse/tune-builder.js::pushLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::addNewPage",
+        "to": "src/parse/tune-builder.js::pushLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::addSeparator",
+        "to": "src/parse/tune-builder.js::pushLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::addText",
+        "to": "src/parse/tune-builder.js::pushLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::addCentered",
+        "to": "src/parse/tune-builder.js::pushLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::changeVoiceScale",
+        "to": "src/parse/tune-builder.js::appendElement"
+      },
+      {
+        "from": "src/parse/tune-builder.js::changeVoiceColor",
+        "to": "src/parse/tune-builder.js::appendElement"
+      },
+      {
+        "from": "src/parse/tune-builder.js::startNewLine",
+        "to": "src/parse/tune-builder.js::closeLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::startNewLine",
+        "to": "src/parse/tune-builder.js::createLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::startNewLine",
+        "to": "src/parse/tune-builder.js::startNewLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::startNewLine",
+        "to": "src/parse/tune-builder.js::createStaff"
+      },
+      {
+        "from": "src/parse/tune-builder.js::startNewLine",
+        "to": "src/parse/tune-builder.js::createVoice"
+      },
+      {
+        "from": "src/parse/tune-builder.js::startNewLine",
+        "to": "src/parse/tune-builder.js::containsNotes"
+      },
+      {
+        "from": "src/parse/tune-builder.js::startNewLine",
+        "to": "src/parse/tune-builder.js::appendElement"
+      },
+      {
+        "from": "src/parse/tune-builder.js::setBarNumberImmediate",
+        "to": "src/parse/tune-builder.js::getCurrentVoice"
+      },
+      {
+        "from": "src/parse/tune-builder.js::getCurrentVoice",
+        "to": "src/parse/tune-builder.js::getPrevMusicLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::setCurrentVoice",
+        "to": "src/parse/tune-builder.js::containsNotes"
+      },
+      {
+        "from": "src/parse/tune-builder.js::simplifyMetaText",
+        "to": "src/parse/tune-builder.js::isArrayOfStrings"
+      },
+      {
+        "from": "src/parse/tune-builder.js::resolveOverlays",
+        "to": "src/parse/tune-builder.js::findLastBar"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUpSlursInLine",
+        "to": "src/parse/tune-builder.js::addEndSlur"
+      },
+      {
+        "from": "src/parse/tune-builder.js::cleanUpSlursInLine",
+        "to": "src/parse/tune-builder.js::addStartSlur"
+      },
+      {
+        "from": "src/parse/tune-builder.js::wrapMusicLines",
+        "to": "src/parse/tune-builder.js::getNextMusicLine"
+      },
+      {
+        "from": "src/parse/tune-builder.js::pushNote",
+        "to": "src/parse/tune-builder.js::createVoice"
+      },
+      {
+        "from": "src/parse/tune-builder.js::createVoice",
+        "to": "src/parse/tune-builder.js::appendElementHelper"
+      },
+      {
+        "from": "src/parse/tune-builder.js::createStaff",
+        "to": "src/parse/tune-builder.js::setLineFont"
+      },
+      {
+        "from": "src/parse/tune-builder.js::createStaff",
+        "to": "src/parse/tune-builder.js::createVoice"
+      },
+      {
+        "from": "src/parse/tune-builder.js::createStaff",
+        "to": "src/parse/tune-builder.js::appendElementHelper"
+      },
+      {
+        "from": "src/parse/tune-builder.js::createLine",
+        "to": "src/parse/tune-builder.js::createStaff"
+      },
+      {
+        "from": "src/parse/chord-grid.js::anonymous",
+        "to": "src/parse/chord-grid.js::flattenVoices"
+      },
+      {
+        "from": "src/parse/chord-grid.js::chordGrid",
+        "to": "src/parse/chord-grid.js::collapseIdenticalEndings"
+      },
+      {
+        "from": "src/parse/chord-grid.js::chordGrid",
+        "to": "src/parse/chord-grid.js::addLineBreaks"
+      },
+      {
+        "from": "src/parse/chord-grid.js::chordGrid",
+        "to": "src/parse/chord-grid.js::addPercents"
+      },
+      {
+        "from": "src/parse/chord-grid.js::anonymous",
+        "to": "src/parse/chord-grid.js::addDecoration"
+      },
+      {
+        "from": "src/parse/chord-grid.js::anonymous",
+        "to": "src/parse/chord-grid.js::findLastChord"
+      },
+      {
+        "from": "src/parse/abc_transpose.js::keySignature",
+        "to": "src/const/key-accidentals.js::default"
+      },
+      {
+        "from": "src/parse/abc_transpose.js::chordName",
+        "to": "src/parse/transpose-chord.js::default"
+      },
+      {
+        "from": "src/parse/abc_transpose.js::note",
+        "to": "src/parse/abc_transpose.js::accidentalChange"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::skipWhiteSpace",
+        "to": "src/parse/abc_tokenizer.js::isWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::eatWhiteSpace",
+        "to": "src/parse/abc_tokenizer.js::isWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getKeyPitch",
+        "to": "src/parse/abc_tokenizer.js::skipWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getKeyPitch",
+        "to": "src/parse/abc_tokenizer.js::finished"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getMode",
+        "to": "src/parse/abc_tokenizer.js::skipWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getMode",
+        "to": "src/parse/abc_tokenizer.js::finished"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getMode",
+        "to": "src/parse/abc_tokenizer.js::skipAlpha"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getClef",
+        "to": "src/parse/abc_tokenizer.js::skipWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getClef",
+        "to": "src/parse/abc_tokenizer.js::finished"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getClef",
+        "to": "src/parse/abc_tokenizer.js::isMatch"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getToken",
+        "to": "src/parse/abc_tokenizer.js::isWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::isMatch",
+        "to": "src/parse/abc_tokenizer.js::skipWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::isMatch",
+        "to": "src/parse/abc_tokenizer.js::finished"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getKeyAccidental",
+        "to": "src/parse/abc_tokenizer.js::skipWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getKeyAccidental",
+        "to": "src/parse/abc_tokenizer.js::finished"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::tokenize",
+        "to": "src/parse/abc_tokenizer.js::getMeat"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::tokenize",
+        "to": "src/parse/abc_tokenizer.js::isLetter"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::tokenize",
+        "to": "src/parse/abc_tokenizer.js::isWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::tokenize",
+        "to": "src/parse/abc_tokenizer.js::isNumber"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getVoiceToken",
+        "to": "src/parse/abc_tokenizer.js::isWhiteSpace"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getVoiceToken",
+        "to": "src/parse/abc_tokenizer.js::translateString"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getFraction",
+        "to": "src/parse/abc_tokenizer.js::getNumber"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::theReverser",
+        "to": "src/parse/abc_tokenizer.js::getTitleNumber"
+      },
+      {
+        "from": "src/parse/abc_tokenizer.js::getBrackettedSubstring",
+        "to": "src/parse/abc_tokenizer.js::substInChord"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::letter_to_spacer"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::letter_to_chord"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::letter_to_accent"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::letter_to_grace"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::letter_to_bar"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::isFirstVoice"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::letter_to_overlay"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::letter_to_open_slurs_and_triplets"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::getCoreNote"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::isInTie"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::setIsInTie"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::addEndBeam"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::getBrokenRhythm"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::parseMusic",
+        "to": "src/parse/abc_parse_music.js::durationOfMeasure"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::letter_to_grace",
+        "to": "src/parse/abc_parse_music.js::getCoreNote"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::startNewLine",
+        "to": "src/parse/abc_parse_music.js::isFirstVoice"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::getCoreNote",
+        "to": "src/parse/abc_parse_music.js::isComplete"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::getCoreNote",
+        "to": "src/parse/abc_parse_music.js::addEndBeam"
+      },
+      {
+        "from": "src/parse/abc_parse_music.js::getCoreNote",
+        "to": "src/parse/abc_parse_music.js::getBrokenRhythm"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
+        "to": "src/parse/abc_parse_key_voice.js::normalizeAccidentals"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
+        "to": "src/parse/abc_parse_key_voice.js::calcMiddle"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
+        "to": "src/parse/abc_parse_key_voice.js::addNextTokenToStaffInfo"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
+        "to": "src/parse/abc_parse_key_voice.js::parseMiddle"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
+        "to": "src/parse/abc_parse_key_voice.js::addNextTokenToVoiceInfo"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
+        "to": "src/parse/abc_parse_key_voice.js::addNextNoteTokenToVoiceInfo"
+      },
+      {
+        "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
+        "to": "src/parse/abc_parse_key_voice.js::getNextToken"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::constructor",
+        "to": "src/parse/abc_parse_header.js::reset"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::parseFraction",
+        "to": "src/parse/abc_parse_header.js::parseNum"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::setMeter",
+        "to": "src/parse/abc_parse_header.js::parseFraction"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::resolveTempo",
+        "to": "src/parse/abc_parse_header.js::calcTempo"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_inline_header",
+        "to": "src/parse/abc_parse_header.js::setMeter"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_inline_header",
+        "to": "src/parse/abc_parse_header.js::setDefaultLength"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_inline_header",
+        "to": "src/parse/abc_parse_header.js::setTempo"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_inline_header",
+        "to": "src/parse/abc_parse_header.js::calcTempo"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_body_header",
+        "to": "src/parse/abc_parse_header.js::setMeter"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_body_header",
+        "to": "src/parse/abc_parse_header.js::setDefaultLength"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_body_header",
+        "to": "src/parse/abc_parse_header.js::setTempo"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::letter_to_body_header",
+        "to": "src/parse/abc_parse_header.js::calcTempo"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::parseHeader",
+        "to": "src/parse/abc_parse_header.js::resolveTempo"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::parseHeader",
+        "to": "src/parse/abc_parse_header.js::setDefaultLength"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::parseHeader",
+        "to": "src/parse/abc_parse_header.js::setMeter"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::parseHeader",
+        "to": "src/parse/abc_parse_header.js::setTempo"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::parseHeader",
+        "to": "src/parse/abc_parse_header.js::setTitle"
+      },
+      {
+        "from": "src/parse/abc_parse_header.js::parseHeader",
+        "to": "src/parse/abc_parse_header.js::addUserDefinition"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::getFontParameter",
+        "to": "src/parse/abc_parse_directive.js::processNumberOnly"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::getFontParameter",
+        "to": "src/parse/abc_parse_directive.js::fontTranslation"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::getChangingFont",
+        "to": "src/parse/abc_parse_directive.js::getFontParameter"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::getGlobalFont",
+        "to": "src/parse/abc_parse_directive.js::getFontParameter"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::addMultilineVarBool",
+        "to": "src/parse/abc_parse_directive.js::addMultilineVar"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::initializeFonts"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::parseStretchLast"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::addMultilineVarOneParamChoice"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::oneParameterMeasurement"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::getRequiredMeasurement"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::setScale"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::addMultilineVar"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::addMultilineVarBool"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::getFontParameter"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::getChangingFont"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::getGlobalFont"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::addContinueBar"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::addVoice"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::parseMidiCommand"
+      },
+      {
+        "from": "src/parse/abc_parse_directive.js::parseDirective",
+        "to": "src/parse/abc_parse_directive.js::interpretPercMap"
+      },
+      {
+        "from": "src/parse/abc_parse.js::addWords",
+        "to": "src/parse/abc_parse.js::addWord"
+      },
+      {
+        "from": "src/parse/abc_parse.js::addSymbols",
+        "to": "src/parse/abc_parse.js::addWord"
+      },
+      {
+        "from": "src/parse/abc_parse.js::multilineVars",
+        "to": "src/parse/abc_parse.js::addPositioning"
+      },
+      {
+        "from": "src/parse/abc_parse.js::multilineVars",
+        "to": "src/parse/abc_parse.js::addFont"
+      },
+      {
+        "from": "src/parse/abc_parse.js::parse",
+        "to": "src/parse/wrap_lines.js::wrapLines"
+      },
+      {
+        "from": "src/parse/abc_parse.js::parse",
+        "to": "src/parse/chord-grid.js::default"
+      },
+      {
+        "from": "src/midi/abc_midi_create.js::create",
+        "to": "src/synth/abc_midi_renderer.js::default"
+      },
+      {
+        "from": "src/midi/abc_midi_create.js::create",
+        "to": "src/midi/abc_midi_create.js::addNotes"
+      },
+      {
+        "from": "src/edit/abc_editor.js::constructor",
+        "to": "src/edit/abc_editor.js::gatherAbcParams"
+      },
+      {
+        "from": "src/edit/abc_editor.js::constructor",
+        "to": "src/synth/supports-audio.js::default"
+      },
+      {
+        "from": "src/edit/abc_editor.js::constructor",
+        "to": "src/edit/abc_editor.js::parseABC"
+      },
+      {
+        "from": "src/edit/abc_editor.js::constructor",
+        "to": "src/edit/abc_editor.js::modelChanged"
+      },
+      {
+        "from": "src/edit/abc_editor.js::addClassName",
+        "to": "src/edit/abc_editor.js::hasClassName"
+      },
+      {
+        "from": "src/edit/abc_editor.js::setReadOnly",
+        "to": "src/edit/abc_editor.js::addClassName"
+      },
+      {
+        "from": "src/edit/abc_editor.js::setReadOnly",
+        "to": "src/edit/abc_editor.js::removeClassName"
+      },
+      {
+        "from": "src/edit/abc_editor.js::modelChanged",
+        "to": "src/api/abc_tunebook_svg.js::default"
+      },
+      {
+        "from": "src/edit/abc_editor.js::modelChanged",
+        "to": "src/edit/abc_editor.js::redrawMidi"
+      },
+      {
+        "from": "src/edit/abc_editor.js::modelChanged",
+        "to": "src/edit/abc_editor.js::updateSelection"
+      },
+      {
+        "from": "src/edit/abc_editor.js::paramChanged",
+        "to": "src/edit/abc_editor.js::fireChanged"
+      },
+      {
+        "from": "src/edit/abc_editor.js::synthParamChanged",
+        "to": "src/edit/abc_editor.js::fireChanged"
+      },
+      {
+        "from": "src/edit/abc_editor.js::parseABC",
+        "to": "src/edit/abc_editor.js::updateSelection"
+      },
+      {
+        "from": "src/edit/abc_editor.js::fireSelectionChanged",
+        "to": "src/edit/abc_editor.js::updateSelection"
+      },
+      {
+        "from": "src/edit/abc_editor.js::setDirtyStyle",
+        "to": "src/edit/abc_editor.js::addClassName"
+      },
+      {
+        "from": "src/edit/abc_editor.js::setDirtyStyle",
+        "to": "src/edit/abc_editor.js::removeClassName"
+      },
+      {
+        "from": "src/edit/abc_editor.js::fireChanged",
+        "to": "src/edit/abc_editor.js::parseABC"
+      },
+      {
+        "from": "src/edit/abc_editor.js::timerId",
+        "to": "src/edit/abc_editor.js::modelChanged"
+      },
+      {
+        "from": "src/edit/abc_editor.js::fireChanged",
+        "to": "src/edit/abc_editor.js::isDirty"
+      },
+      {
+        "from": "src/edit/abc_editor.js::fireChanged",
+        "to": "src/edit/abc_editor.js::setDirtyStyle"
+      },
+      {
+        "from": "src/edit/abc_editor.js::setNotDirty",
+        "to": "src/edit/abc_editor.js::setDirtyStyle"
+      },
+      {
+        "from": "src/edit/abc_editor.js::pause",
+        "to": "src/edit/abc_editor.js::fireChanged"
+      },
+      {
+        "from": "src/edit/abc_editor.js::pauseMidi",
+        "to": "src/edit/abc_editor.js::redrawMidi"
+      },
+      {
+        "from": "src/edit/abc_editarea.js::setString",
+        "to": "src/edit/abc_editarea.js::getString"
+      },
+      {
+        "from": "src/data/deline-tune.js::delineTune",
+        "to": "src/data/deline-tune.js::cloneLine"
+      },
+      {
+        "from": "src/data/deline-tune.js::delineTune",
+        "to": "src/data/deline-tune.js::objEqual"
+      },
+      {
+        "from": "src/data/deline-tune.js::delineTune",
+        "to": "src/data/deline-tune.js::addMeterToVoices"
+      },
+      {
+        "from": "src/data/deline-tune.js::delineTune",
+        "to": "src/data/deline-tune.js::addKeyToVoices"
+      },
+      {
+        "from": "src/data/deline-tune.js::delineTune",
+        "to": "src/data/deline-tune.js::addClefToVoices"
+      },
+      {
+        "from": "src/data/deline-tune.js::delineTune",
+        "to": "src/data/deline-tune.js::addFontToVoices"
+      },
+      {
+        "from": "src/data/abc_tune.js::constructor",
+        "to": "src/data/abc_tune.js::reset"
+      },
+      {
+        "from": "src/data/abc_tune.js::copyTopInfo",
+        "to": "src/data/abc_tune.js::copy"
+      },
+      {
+        "from": "src/data/abc_tune.js::copyBottomInfo",
+        "to": "src/data/abc_tune.js::copy"
+      },
+      {
+        "from": "src/data/abc_tune.js::getBeatLength",
+        "to": "src/data/abc_tune.js::getMeterFraction"
+      },
+      {
+        "from": "src/data/abc_tune.js::getPickupLength",
+        "to": "src/data/abc_tune.js::getBarLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::getPickupLength",
+        "to": "src/data/abc_tune.js::computePickupLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::getBarLength",
+        "to": "src/data/abc_tune.js::getMeterFraction"
+      },
+      {
+        "from": "src/data/abc_tune.js::millisecondsPerMeasure",
+        "to": "src/data/abc_tune.js::getBpm"
+      },
+      {
+        "from": "src/data/abc_tune.js::millisecondsPerMeasure",
+        "to": "src/data/abc_tune.js::getBeatsPerMeasure"
+      },
+      {
+        "from": "src/data/abc_tune.js::getBeatsPerMeasure",
+        "to": "src/data/abc_tune.js::getBeatLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::getBeatsPerMeasure",
+        "to": "src/data/abc_tune.js::getBarLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::getMeterFraction",
+        "to": "src/data/abc_tune.js::getMeter"
+      },
+      {
+        "from": "src/data/abc_tune.js::makeVoicesArray",
+        "to": "src/data/abc_tune.js::getBpm"
+      },
+      {
+        "from": "src/data/abc_tune.js::setupEvents",
+        "to": "src/data/abc_tune.js::makeVoicesArray"
+      },
+      {
+        "from": "src/data/abc_tune.js::setupEvents",
+        "to": "src/data/abc_tune.js::getBeatLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::setupEvents",
+        "to": "src/data/abc_tune.js::addElementToEvents"
+      },
+      {
+        "from": "src/data/abc_tune.js::setupEvents",
+        "to": "src/data/abc_tune.js::makeSortedArray"
+      },
+      {
+        "from": "src/data/abc_tune.js::setupEvents",
+        "to": "src/data/abc_tune.js::addVerticalInfo"
+      },
+      {
+        "from": "src/data/abc_tune.js::setupEvents",
+        "to": "src/data/abc_tune.js::addEndPoints"
+      },
+      {
+        "from": "src/data/abc_tune.js::setupEvents",
+        "to": "src/data/abc_tune.js::addUsefulCallbackInfo"
+      },
+      {
+        "from": "src/data/abc_tune.js::addUsefulCallbackInfo",
+        "to": "src/data/abc_tune.js::millisecondsPerMeasure"
+      },
+      {
+        "from": "src/data/abc_tune.js::addEndPoints",
+        "to": "src/data/abc_tune.js::skipTies"
+      },
+      {
+        "from": "src/data/abc_tune.js::getBpm",
+        "to": "src/data/abc_tune.js::getBeatLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::getBpm",
+        "to": "src/data/abc_tune.js::getMeterFraction"
+      },
+      {
+        "from": "src/data/abc_tune.js::setTiming",
+        "to": "src/data/abc_tune.js::getBpm"
+      },
+      {
+        "from": "src/data/abc_tune.js::setTiming",
+        "to": "src/data/abc_tune.js::getBeatLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::setTiming",
+        "to": "src/data/abc_tune.js::getBarLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::setTiming",
+        "to": "src/data/abc_tune.js::getPickupLength"
+      },
+      {
+        "from": "src/data/abc_tune.js::setTiming",
+        "to": "src/data/abc_tune.js::setupEvents"
+      },
+      {
+        "from": "src/data/abc_tune.js::setUpAudio",
+        "to": "src/synth/abc_midi_sequencer.js::default"
+      },
+      {
+        "from": "src/data/abc_tune.js::setUpAudio",
+        "to": "src/synth/abc_midi_flattener.js::default"
+      },
+      {
+        "from": "src/data/abc_tune.js::deline",
+        "to": "src/data/deline-tune.js::default"
+      },
+      {
+        "from": "src/const/relative-major.js::relativeMajor",
+        "to": "src/const/relative-major.js::createKeyReverse"
+      },
+      {
+        "from": "src/const/key-accidentals.js::keyAccidentals",
+        "to": "src/const/relative-major.js::relativeMajor"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js::callback",
+        "to": "src/api/abc_tunebook_svg.js::doLineWrapping"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js::callback",
+        "to": "src/api/abc_tunebook_svg.js::renderOne"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js::doLineWrapping",
+        "to": "src/parse/wrap_lines.js::calcLineWraps"
+      },
+      {
+        "from": "src/api/abc_tunebook_svg.js::doLineWrapping",
+        "to": "src/api/abc_tunebook_svg.js::renderOne"
+      },
+      {
+        "from": "src/api/abc_tunebook.js::constructor",
+        "to": "src/parse/abc_parse_book.js::default"
+      },
+      {
+        "from": "src/api/abc_tunebook.js::parseOnly",
+        "to": "src/api/abc_tunebook.js::numberOfTunes"
+      },
+      {
+        "from": "src/api/abc_tunebook.js::parseOnly",
+        "to": "src/api/abc_tunebook.js::renderEngine"
+      },
+      {
+        "from": "src/api/abc_tunebook.js::renderEngine",
+        "to": "src/api/abc_tunebook.js::isArray"
+      },
+      {
+        "from": "src/api/abc_tunebook.js::renderEngine",
+        "to": "src/api/abc_tunebook.js::callback"
+      },
+      {
+        "from": "src/api/abc_tunebook.js::extractMeasures",
+        "to": "src/api/abc_tunebook.js::parseOnly"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::doTiming",
+        "to": "src/api/abc_timing_callbacks.js::doBeatCallback"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::doTiming",
+        "to": "src/api/abc_timing_callbacks.js::shouldStop"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::doTiming",
+        "to": "src/api/abc_timing_callbacks.js::stop"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::constructor",
+        "to": "src/api/abc_timing_callbacks.js::replaceTarget"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::replaceTarget",
+        "to": "src/api/abc_timing_callbacks.js::getLineEndTimings"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::start",
+        "to": "src/api/abc_timing_callbacks.js::setProgress"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::start",
+        "to": "src/api/abc_timing_callbacks.js::reset"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::stop",
+        "to": "src/api/abc_timing_callbacks.js::pause"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::stop",
+        "to": "src/api/abc_timing_callbacks.js::reset"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::setProgress",
+        "to": "src/api/abc_timing_callbacks.js::doBeatCallback"
+      },
+      {
+        "from": "src/api/abc_animation.js::disappearMeasuresAfter",
+        "to": "src/api/abc_animation.js::hideMeasures"
+      },
+      {
+        "from": "src/api/abc_animation.js::disappearMeasuresBefore",
+        "to": "src/api/abc_animation.js::hideMeasures"
+      },
+      {
+        "from": "src/api/abc_animation.js::measureCallback",
+        "to": "src/api/abc_animation.js::disappearMeasuresBefore"
+      },
+      {
+        "from": "src/api/abc_animation.js::measureCallback",
+        "to": "src/api/abc_animation.js::disappearMeasuresAfter"
+      },
+      {
+        "from": "src/api/abc_animation.js::setCursor",
+        "to": "src/api/abc_animation.js::getLineAndMeasure"
+      },
+      {
+        "from": "src/api/abc_animation.js::setCursor",
+        "to": "src/api/abc_animation.js::measureCallback"
+      }
+    ]
+  }
 }

@@ -69,3 +69,10 @@
 - **側錄插件免擾宣告**：於轉換後的 TypeScript 專案的 `vite.config.ts` 中註解 `vitePlugin` 側錄插件。這避免了在非型別側錄模式下，執行 `pnpm run dev` 載入 `editor.html` 時因無法連線型別伺服器而拋出 `TypeError: globalThis.__typeTracker is not a function` 的錯誤。
 - **無暇語法生成驗證**：成功以 `node dist/cli.js generate` 重新生成 `4_abcTS` 目錄檔案，證實 v1.1.9 的方法同名安全過濾已排除 `play`、`toggleLoop` 等重複宣告，並順利通過 `pnpm run build:vite` 的 TypeScript 轉譯與封裝。
 
+## [2026-06-04] v1.3.0 - 實作非同步函數呼叫關係鏈 (Call Graph) 收集與互動式視覺化
+- **進入/離開與異常容錯插樁**：於所有函數頂端/尾端插樁 `enter` / `exit` 追蹤，並使用 `try-finally` 結構確保例外拋出時呼叫棧亦能正確splice清理。
+- **非同步與 Callback 關係鏈捕捉**：升級 `tracker-client` 維護全域 `callStack`，並在 callback 建立時利用閉包儲存 `parentCaller`，於執行時暫時壓棧，成功解決跨事件迴圈與非同步回呼的呼叫鏈追蹤難題。
+- **靜態 AST 依賴掃描**：於 `scan` 階段解析 `Import` / `require` 與 `CallExpression`（包含 namespace/CJS命名空間/`this.` 本地方法），產出 `boundary-map.json` 靜態依賴圖。
+- **D3.js 互動式視覺化檢視工具**：實作 `visualize` 指令啟動 Web 伺服器，Serve 搭載 D3.js v7 的架構圖網頁。採用暗黑 glassmorphism 設計與 neon glow 霓虹發光美學，提供檔案/函數層級切換、動態霓虹實線、靜態虛線、Slider 篩選、高亮搜尋、拖曳固定、佈局儲存至 `visualizer-layout.json`、一鍵匯出 SVG 功能。
+
+

@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Call Graph 呼叫關係鏈視覺化工具</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --bg-start: #0a0f1d;
+      --bg-end: #151e3d;
+      --panel-bg: rgba(16, 22, 46, 0.65);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --accent: #00ffcc;
+      --accent-pink: #ff007f;
+      --accent-yellow: #ffd700;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    #app-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Glassmorphism Panel */
+    .control-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 360px;
+      max-height: calc(100vh - 40px);
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: linear-gradient(to right, var(--accent), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      border-left: 3px solid var(--accent);
+      padding-left: 8px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    /* Inputs & Buttons */
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 255, 204, 0.2);
+    }
+
+    button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent-pink);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), #00cca3);
+      border: none;
+      color: #050510;
+    }
+
+    button.primary:hover {
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Slider styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 255, 204, 0.8);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Switch styling */
+    .switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: .4s;
+      border-radius: 20px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--text-main);
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(16px);
+      background-color: #050510;
+    }
+
+    /* SVG Canvas Area */
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+
+    svg:active {
+      cursor: grabbing;
+    }
+
+    /* Node & Link styling */
+    .link {
+      fill: none;
+      transition: opacity 0.3s, stroke-width 0.3s;
+    }
+
+    .node {
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+
+    .node circle {
+      stroke-width: 1.5px;
+      transition: stroke-width 0.3s, filter 0.3s;
+    }
+
+    .node:hover circle {
+      stroke-width: 3px;
+      filter: url(#glow);
+    }
+
+    .node text {
+      fill: var(--text-main);
+      font-size: 11px;
+      font-weight: 500;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+
+    .node-subtitle {
+      fill: var(--text-sub);
+      font-size: 9px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+
+    /* Legend */
+    .legend-container {
+      margin-top: 5px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-sub);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: rgba(8, 12, 28, 0.95);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      color: var(--text-main);
+      pointer-events: none;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 280px;
+    }
+
+    .tooltip-title {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 2px;
+      word-break: break-all;
+    }
+
+    /* Stats Panel */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-pink);
+    }
+
+    .stat-lbl {
+      font-size: 10px;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    <div class="control-panel">
+      <div>
+        <h1>js2ts-infer</h1>
+        <div class="subtitle">Call Graph 呼叫關係鏈視覺化</div>
+      </div>
+
+      <!-- 模式切換 -->
+      <div class="form-group">
+        <div class="section-title">檢視層級</div>
+        <select id="level-select">
+          <option value="function" selected>函數級 (Function-level)</option>
+          <option value="file">檔案級 (File-level)</option>
+        </select>
+      </div>
+
+      <!-- 搜尋與過濾 -->
+      <div class="form-group">
+        <div class="section-title">搜尋與高亮</div>
+        <input type="text" id="search-input" placeholder="輸入名稱 (如 utils, calculate)..." />
+      </div>
+
+      <!-- 篩選器 -->
+      <div class="form-group">
+        <div class="section-title">關係篩選</div>
+        <div class="switch-container" style="margin-bottom: 12px;">
+          <span>顯示靜態依賴關係 (虛線)</span>
+          <label class="switch">
+            <input type="checkbox" id="static-toggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; font-size: 11px;">
+            <span>最少呼叫次數: <strong id="count-label">0</strong></span>
+          </div>
+          <input type="range" id="count-filter" min="0" max="50" value="0" />
+        </div>
+      </div>
+
+      <!-- 統計數據 -->
+      <div>
+        <div class="section-title">專案統計</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-val" id="stat-nodes">0</div>
+            <div class="stat-lbl">節點數量</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-links">0</div>
+            <div class="stat-lbl">連接數量</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 節點目錄圖例 -->
+      <div>
+        <div class="section-title">目錄圖例</div>
+        <div class="legend-container" id="legend-list">
+          <!-- 動態生成 -->
+        </div>
+      </div>
+
+      <!-- 控制按鈕 -->
+      <div class="form-group" style="margin-top: auto;">
+        <div class="btn-group">
+          <button id="reset-layout-btn">重置佈局</button>
+          <button id="export-svg-btn">匯出 SVG</button>
+        </div>
+        <button id="save-layout-btn" class="primary" style="margin-top: 10px; width: 100%;">儲存完美佈局</button>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="graph-tooltip"></div>
+  </div>
+
+  <script>
+    // 全域資料
+    let rawData = null;
+    let currentLevel = 'function';
+    let showStatic = true;
+    let minCallCount = 0;
+    let searchTerm = '';
+
+    // D3 變數
+    let svg, simulation, linkGroup, nodeGroup, zoomBehavior, gContainer;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // 目錄顏色分配
+    const dirColors = {};
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+    function getDirColor(filePath) {
+      const parts = filePath.split('/');
+      const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : 'root';
+      if (!dirColors[dir]) {
+        // 分配獨特 HSL
+        const idx = Object.keys(dirColors).length;
+        dirColors[dir] = d3.hsl((idx * 137.5) % 360, 0.85, 0.6).formatHex();
+      }
+      return dirColors[dir];
+    }
+
+    // 初始化載入
+    async function loadData() {
+      try {
+        const res = await fetch('/api/data');
+        rawData = await res.json();
+        renderGraph();
+      } catch (e) {
+        console.error('載入資料失敗', e);
+        alert('載入 Call Graph 資料失敗，請確認伺服器運作正常！');
+      }
+    }
+
+    // 建立力導向圖
+    function renderGraph() {
+      // 1. 整理 Node 與 Link
+      const { nodes, links } = buildGraphData();
+
+      // 更新統計
+      document.getElementById('stat-nodes').textContent = nodes.length;
+      document.getElementById('stat-links').textContent = links.length;
+
+      // 渲染圖例
+      renderLegend(nodes);
+
+      // 清空舊畫布
+      const container = d3.select("#canvas-container");
+      container.selectAll("*").remove();
+
+      // 建立 SVG
+      svg = container.append("svg")
+        .attr("viewBox", `0 0 ${width} ${height}`);
+
+      // Glow 濾鏡定義
+      const defs = svg.append("defs");
+      
+      const filter = defs.append("filter")
+        .attr("id", "glow")
+        .attr("x", "-20%")
+        .attr("y", "-20%")
+        .attr("width", "140%")
+        .attr("height", "140%");
+
+      filter.append("feGaussianBlur")
+        .attr("stdDeviation", "4")
+        .attr("result", "blur");
+
+      const feMerge = filter.append("feMerge");
+      feMerge.append("feMergeNode").attr("in", "blur");
+      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+      // 箭頭 marker
+      defs.append("marker")
+        .attr("id", "arrow-static")
+        .attr("viewBox", "0 0 10 10")
+        .attr("refX", 18)
+        .attr("refY", 5)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto-start-reverse")
+        .append("path")
+        .attr("d", "M 0 0 L 10 5 L 0 10 z")
+        .attr("fill", "#64748b");
+
+      defs.append("marker")
+        .attr("id", "arrow-dynamic")
+        .attr("viewBox", "0 0 10 10")
+        .attr("refX", 18)
+        .attr("refY", 5)
+        .attr("markerWidth", 7)
+        .attr("markerHeight", 7)
+        .attr("orient", "auto-start-reverse")
+        .append("path")
+        .attr("d", "M 0 0 L 10 5 L 0 10 z")
+        .attr("fill", "#00ffcc");
+
+      // 繪製容器，支援 zoom
+      gContainer = svg.append("g");
+
+      zoomBehavior = d3.zoom()
+        .scaleExtent([0.1, 8])
+        .on("zoom", (event) => {
+          gContainer.attr("transform", event.transform);
+        });
+
+      svg.call(zoomBehavior);
+
+      // 套用現有 Layout 位置
+      const savedLayout = rawData.layout || {};
+      nodes.forEach(n => {
+        if (savedLayout[n.id]) {
+          n.x = savedLayout[n.id].x;
+          n.y = savedLayout[n.id].y;
+          n.fx = savedLayout[n.id].fx;
+          n.fy = savedLayout[n.id].fy;
+        } else {
+          n.x = width / 2 + (Math.random() - 0.5) * 200;
+          n.y = height / 2 + (Math.random() - 0.5) * 200;
+        }
+      });
+
+      // 力學模擬
+      simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(130))
+        .force("charge", d3.forceManyBody().strength(-350))
+        .force("collide", d3.forceCollide().radius(d => d.radius + 18))
+        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.05));
+
+      // 繪製連線
+      linkGroup = gContainer.append("g")
+        .selectAll("path")
+        .data(links)
+        .join("path")
+        .attr("class", "link")
+        .attr("stroke", d => d.isDynamic ? "url(#dynamic-gradient)" : "#475569")
+        .attr("stroke", d => d.isDynamic ? "#00ffcc" : "#334155")
+        .attr("stroke-dasharray", d => d.isDynamic ? null : "4, 4")
+        .attr("stroke-width", d => d.isDynamic ? Math.min(2 + Math.sqrt(d.count), 8) : 1)
+        .attr("opacity", d => d.isDynamic ? 0.75 : 0.4)
+        .attr("marker-end", d => d.isDynamic ? "url(#arrow-dynamic)" : "url(#arrow-static)");
+
+      // 繪製節點
+      nodeGroup = gContainer.append("g")
+        .selectAll("g")
+        .data(nodes)
+        .join("g")
+        .attr("class", "node")
+        .call(drag(simulation));
+
+      // 節點圈圈
+      nodeGroup.append("circle")
+        .attr("r", d => d.radius)
+        .attr("fill", d => getDirColor(d.filePath))
+        .attr("stroke", d => d.fx !== undefined && d.fx !== null ? "#ff007f" : "rgba(255, 255, 255, 0.4)")
+        .attr("stroke-width", d => d.fx !== undefined && d.fx !== null ? 2.5 : 1)
+        .style("filter", d => d.isHot ? "url(#glow)" : null);
+
+      // 節點文字標籤
+      nodeGroup.append("text")
+        .attr("dx", d => d.radius + 6)
+        .attr("dy", 3)
+        .text(d => currentLevel === 'function' ? d.funcName : d.fileName);
+
+      if (currentLevel === 'function') {
+        nodeGroup.append("text")
+          .attr("class", "node-subtitle")
+          .attr("dx", d => d.radius + 6)
+          .attr("dy", 14)
+          .text(d => d.fileName);
+      }
+
+      // Tooltip 互動
+      const tooltip = document.getElementById("graph-tooltip");
+      
+      nodeGroup.on("mouseover", (event, d) => {
+        tooltip.style.display = "flex";
+        if (currentLevel === 'function') {
+          tooltip.innerHTML = `
+            <div class="tooltip-title">${d.funcName}</div>
+            <div>檔案: ${d.filePath}</div>
+            <div>累計被呼叫次數: <strong style="color:var(--accent);">${d.callCount}</strong></div>
+            ${d.fx !== undefined && d.fx !== null ? '<div style="color:var(--accent-pink); font-size:10px; margin-top:4px;">📌 佈局已固定</div>' : ''}
+          `;
+        } else {
+          tooltip.innerHTML = `
+            <div class="tooltip-title">${d.fileName}</div>
+            <div>路徑: ${d.filePath}</div>
+            <div>內部總呼叫次數: <strong style="color:var(--accent);">${d.callCount}</strong></div>
+            ${d.fx !== undefined && d.fx !== null ? '<div style="color:var(--accent-pink); font-size:10px; margin-top:4px;">📌 佈局已固定</div>' : ''}
+          `;
+        }
+        highlightConnections(d);
+      })
+      .on("mousemove", (event) => {
+        tooltip.style.left = (event.pageX + 15) + "px";
+        tooltip.style.top = (event.pageY + 15) + "px";
+      })
+      .on("mouseout", () => {
+        tooltip.style.display = "none";
+        resetHighlight();
+      })
+      .on("click", (event, d) => {
+        // 點擊切換固定/釋放
+        if (event.shiftKey) {
+          d.fx = null;
+          d.fy = null;
+          d3.select(event.currentTarget).select("circle")
+            .attr("stroke", "rgba(255, 255, 255, 0.4)")
+            .attr("stroke-width", 1);
+          simulation.alpha(0.3).restart();
+        }
+      });
+
+      // 監聽模擬更新
+      simulation.on("tick", () => {
+        // 曲線或折線連線
+        linkGroup.attr("d", d => {
+          // 繪製指向對方的二階貝氏曲線防箭頭擠壓
+          const dx = d.target.x - d.source.x;
+          const dy = d.target.y - d.source.y;
+          const dr = Math.sqrt(dx * dx + dy * dy) * 1.2;
+          return `M${d.source.x},${d.source.y} A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+        });
+
+        nodeGroup.attr("transform", d => `translate(${d.x}, ${d.y})`);
+      });
+
+      // 如果有 Search Term，執行搜尋高亮
+      if (searchTerm) {
+        applySearchHighlight();
+      }
+    }
+
+    // 拖曳控制
+    function drag(sim) {
+      function dragstarted(event, d) {
+        if (!event.active) sim.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+        d3.select(this).select("circle")
+          .attr("stroke", "#ff007f")
+          .attr("stroke-width", 2.5);
+      }
+
+      function dragended(event, d) {
+        if (!event.active) sim.alphaTarget(0);
+        // 拖曳結束不釋放 fx/fy，保留手動排版位置！
+      }
+
+      return d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
+    }
+
+    // 關聯線路高亮
+    function highlightConnections(activeNode) {
+      nodeGroup.style("opacity", d => (d.id === activeNode.id || isConnected(activeNode, d)) ? 1.0 : 0.15);
+      linkGroup.style("opacity", d => (d.source.id === activeNode.id || d.target.id === activeNode.id) ? 1.0 : 0.05);
+      linkGroup.style("stroke", d => (d.source.id === activeNode.id || d.target.id === activeNode.id) ? (d.isDynamic ? "#00ffcc" : "#64748b") : "#334155");
+    }
+
+    function resetHighlight() {
+      nodeGroup.style("opacity", 1.0);
+      linkGroup.style("opacity", d => d.isDynamic ? 0.75 : 0.4);
+      linkGroup.style("stroke", d => d.isDynamic ? "#00ffcc" : "#334155");
+      if (searchTerm) {
+        applySearchHighlight();
+      }
+    }
+
+    function isConnected(a, b) {
+      return rawData._connectedMap && rawData._connectedMap[`${a.id}::${b.id}`];
+    }
+
+    // 搜尋與高亮
+    function applySearchHighlight() {
+      const q = searchTerm.toLowerCase().trim();
+      if (!q) {
+        nodeGroup.style("opacity", 1.0);
+        linkGroup.style("opacity", d => d.isDynamic ? 0.75 : 0.4);
+        return;
+      }
+
+      nodeGroup.style("opacity", d => {
+        const matches = (currentLevel === 'function' ? d.funcName : d.fileName).toLowerCase().includes(q) || d.filePath.toLowerCase().includes(q);
+        return matches ? 1.0 : 0.15;
+      });
+
+      linkGroup.style("opacity", d => {
+        const srcMatch = (currentLevel === 'function' ? d.source.funcName : d.source.fileName).toLowerCase().includes(q);
+        const tgtMatch = (currentLevel === 'function' ? d.target.funcName : d.target.fileName).toLowerCase().includes(q);
+        return (srcMatch || tgtMatch) ? 0.8 : 0.05;
+      });
+    }
+
+    // 構建 Node 與 Link 資料集
+    function buildGraphData() {
+      const boundaryMap = rawData.boundaryMap || {};
+      const staticCallGraph = boundaryMap.staticCallGraph || { files: [], functions: [] };
+      
+      const typesObserved = rawData.typesObserved || {};
+      const dynamicCallGraph = (typesObserved.__callGraph && typesObserved.__callGraph.graph) || {};
+
+      const nodesMap = new Map();
+      const linksMap = new Map();
+
+      // 連接關係加速 Map
+      const connectedSet = new Set();
+
+      if (currentLevel === 'function') {
+        // 收集所有出現的函數與其呼叫關係
+        const addNode = (id, filePath, funcName, callCount = 0) => {
+          if (!nodesMap.has(id)) {
+            const fileName = filePath.split('/').pop();
+            nodesMap.set(id, {
+              id,
+              filePath,
+              fileName,
+              funcName,
+              callCount,
+              radius: 8,
+              isHot: false
+            });
+          } else {
+            const node = nodesMap.get(id);
+            node.callCount = Math.max(node.callCount, callCount);
+          }
+        };
+
+        // 1. 優先加入靜態 boundaries 宣告的函數
+        if (boundaryMap.boundaries) {
+          boundaryMap.boundaries.forEach(b => {
+            if (b.type === 'function') {
+              const id = `${b.filePath}::${b.exportName}`;
+              addNode(id, b.filePath, b.exportName);
+            }
+          });
+        }
+
+        // 2. 加入動態呼叫點與建立關係
+        for (const [caller, callees] of Object.entries(dynamicCallGraph)) {
+          const [callerFile, callerFunc] = caller.split('::');
+          if (!callerFile || !callerFunc) continue;
+          addNode(caller, callerFile, callerFunc);
+
+          for (const [callee, count] of Object.entries(callees)) {
+            const [calleeFile, calleeFunc] = callee.split('::');
+            if (!calleeFile || !calleeFunc) continue;
+            
+            // 累加被呼叫次數
+            addNode(callee, calleeFile, calleeFunc, count);
+
+            // 過濾小於閾值的關係
+            if (count < minCallCount) continue;
+
+            const linkId = `${caller}->${callee}`;
+            linksMap.set(linkId, {
+              source: caller,
+              target: callee,
+              count,
+              isDynamic: true
+            });
+            connectedSet.add(`${caller}::${callee}`);
+            connectedSet.add(`${callee}::${caller}`);
+          }
+        }
+
+        // 3. 加入靜態關係 (若開啟)
+        if (showStatic && staticCallGraph.functions) {
+          staticCallGraph.functions.forEach(f => {
+            const [callerFile, callerFunc] = f.from.split('::');
+            const [calleeFile, calleeFunc] = f.to.split('::');
+            if (!callerFile || !calleeFile) return;
+
+            addNode(f.from, callerFile, callerFunc || 'global');
+            addNode(f.to, calleeFile, calleeFunc || 'default');
+
+            const linkId = `${f.from}->${f.to}`;
+            if (!linksMap.has(linkId)) {
+              linksMap.set(linkId, {
+                source: f.from,
+                target: f.to,
+                count: 0,
+                isDynamic: false
+              });
+              connectedSet.add(`${f.from}::${f.to}`);
+              connectedSet.add(`${f.to}::${f.from}`);
+            }
+          });
+        }
+
+        // 計算節點半徑與是否為 Hot spot (呼叫數大於 10)
+        nodesMap.forEach(node => {
+          node.radius = 8 + Math.min(Math.sqrt(node.callCount) * 1.5, 20);
+          node.isHot = node.callCount > 10;
+        });
+
+      } else {
+        // 檔案級 (File-level)
+        const addFileNode = (filePath, callCount = 0) => {
+          if (!nodesMap.has(filePath)) {
+            const fileName = filePath.split('/').pop();
+            nodesMap.set(filePath, {
+              id: filePath,
+              filePath,
+              fileName,
+              callCount,
+              radius: 12,
+              isHot: false
+            });
+          } else {
+            const node = nodesMap.get(filePath);
+            node.callCount = Math.max(node.callCount, callCount);
+          }
+        };
+
+        // 1. 從 boundaries 收集所有檔案
+        if (boundaryMap.boundaries) {
+          boundaryMap.boundaries.forEach(b => addFileNode(b.filePath));
+        }
+
+        // 2. 解析動態呼叫，累加到檔案
+        for (const [caller, callees] of Object.entries(dynamicCallGraph)) {
+          const callerFile = caller.split('::')[0];
+          if (!callerFile) continue;
+          addFileNode(callerFile);
+
+          for (const [callee, count] of Object.entries(callees)) {
+            const calleeFile = callee.split('::')[0];
+            if (!calleeFile) continue;
+            addFileNode(calleeFile, count);
+
+            if (count < minCallCount) continue;
+            if (callerFile === calleeFile) continue; // 檔案內部呼叫不畫連線
+
+            const linkId = `${callerFile}->${calleeFile}`;
+            if (linksMap.has(linkId)) {
+              const link = linksMap.get(linkId);
+              link.count += count;
+            } else {
+              linksMap.set(linkId, {
+                source: callerFile,
+                target: calleeFile,
+                count,
+                isDynamic: true
+              });
+              connectedSet.add(`${callerFile}::${calleeFile}`);
+              connectedSet.add(`${calleeFile}::${callerFile}`);
+            }
+          }
+        }
+
+        // 3. 加入靜態檔案依賴
+        if (showStatic && staticCallGraph.files) {
+          staticCallGraph.files.forEach(f => {
+            addFileNode(f.from);
+            addFileNode(f.to);
+
+            if (f.from === f.to) return;
+            const linkId = `${f.from}->${f.to}`;
+            if (!linksMap.has(linkId)) {
+              linksMap.set(linkId, {
+                source: f.from,
+                target: f.to,
+                count: 0,
+                isDynamic: false
+              });
+              connectedSet.add(`${f.from}::${f.to}`);
+              connectedSet.add(`${f.to}::${f.from}`);
+            }
+          });
+        }
+
+        nodesMap.forEach(node => {
+          node.radius = 12 + Math.min(Math.sqrt(node.callCount) * 1.5, 25);
+          node.isHot = node.callCount > 30;
+        });
+      }
+
+      rawData._connectedMap = {};
+      connectedSet.forEach(key => {
+        rawData._connectedMap[key] = true;
+      });
+
+      return {
+        nodes: Array.from(nodesMap.values()),
+        links: Array.from(linksMap.values())
+      };
+    }
+
+    // 渲染圖例清單
+    function renderLegend(nodes) {
+      const container = document.getElementById('legend-list');
+      container.innerHTML = '';
+      
+      const dirs = new Set();
+      nodes.forEach(n => {
+        const parts = n.filePath.split('/');
+        const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : 'root';
+        dirs.add(dir);
+      });
+
+      dirs.forEach(dir => {
+        const color = getDirColor(dir + '/dummy');
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `
+          <div class="legend-color" style="background:${color};"></div>
+          <span>${dir}</span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // 事件監聽綁定
+    document.getElementById('level-select').addEventListener('change', (e) => {
+      currentLevel = e.target.value;
+      renderGraph();
+    });
+
+    document.getElementById('static-toggle').addEventListener('change', (e) => {
+      showStatic = e.target.checked;
+      renderGraph();
+    });
+
+    document.getElementById('count-filter').addEventListener('input', (e) => {
+      minCallCount = parseInt(e.target.value, 10);
+      document.getElementById('count-label').textContent = minCallCount;
+      renderGraph();
+    });
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchTerm = e.target.value;
+      applySearchHighlight();
+    });
+
+    // 重置佈局
+    document.getElementById('reset-layout-btn').addEventListener('click', () => {
+      if (confirm('是否重置所有節點的位置，重新進行力導向排版？')) {
+        rawData.layout = {}; // 清空佈局
+        renderGraph();
+      }
+    });
+
+    // 儲存佈局
+    document.getElementById('save-layout-btn').addEventListener('click', async () => {
+      const layoutData = {};
+      nodeGroup.each(d => {
+        layoutData[d.id] = {
+          x: d.x,
+          y: d.y,
+          fx: d.fx,
+          fy: d.fy
+        };
+      });
+
+      try {
+        const res = await fetch('/api/layout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(layoutData)
+        });
+        const ret = await res.json();
+        if (ret.success) {
+          rawData.layout = layoutData; // 同步記憶體
+          alert('佈局儲存成功！');
+        } else {
+          alert('儲存佈局失敗。');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('儲存佈局時連線出錯！');
+      }
+    });
+
+    // 匯出 SVG
+    document.getElementById('export-svg-btn').addEventListener('click', () => {
+      // 複製一個 SVG element 以便嵌入 CSS 樣式
+      const svgEl = svg.node().cloneNode(true);
+      
+      // 加入內嵌 CSS 樣式以保證導出的 SVG 具有相同的主視覺
+      const styles = `
+        svg { background-color: #0a0f1d; }
+        .link { stroke: #334155; fill: none; }
+        .node text { fill: #f8fafc; font-family: 'Outfit', sans-serif; font-size: 11px; }
+        .node-subtitle { fill: #94a3b8; font-size: 9px; }
+      `;
+      const styleEl = document.createElementNS("http://www.w3.org/2000/svg", "style");
+      styleEl.textContent = styles;
+      svgEl.insertBefore(styleEl, svgEl.firstChild);
+
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svgEl);
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      
+      const downloadLink = document.createElement("a");
+      downloadLink.href = svgUrl;
+      downloadLink.download = `call-graph-${currentLevel}-${Date.now()}.svg`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    });
+
+    // 視窗調整適應
+    window.addEventListener('resize', () => {
+      if (svg) {
+        svg.attr("viewBox", `0 0 ${window.innerWidth} ${window.innerHeight}`);
+      }
+    });
+
+    // 入口
+    loadData();
+  </script>
+</body>
+</html>

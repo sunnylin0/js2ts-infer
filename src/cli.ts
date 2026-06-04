@@ -7,6 +7,7 @@ import runCmd from './commands/run';
 import mergeCmd from './commands/merge';
 import generateCmd from './commands/generate';
 import reviewCmd from './commands/review';
+import visualizeCmd from './commands/visualize';
 
 const program = new Command();
 
@@ -64,6 +65,15 @@ program
   .option('-c, --config <path>', '設定檔路徑', 'js2ts.config.json')
   .action((options) => {
     reviewCmd(options);
+  });
+
+program
+  .command('visualize')
+  .description('啟動 Call Graph 呼叫關係鏈與依賴關係互動式視覺化檢視工具')
+  .option('-c, --config <path>', '設定檔路徑', 'js2ts.config.json')
+  .option('-p, --port <number>', '視覺化網頁伺服器埠號', '9003')
+  .action((options) => {
+    visualizeCmd(options);
   });
 
 program.parse(process.argv);

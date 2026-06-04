@@ -18,3 +18,22 @@
   ✓ built in 369ms
   ```
 - **開發伺服器正常重啟**：Vite 成功監聽並自動重啟開發伺服器，無任何錯誤拋出。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-04 16:54:00
+
+## 已完成的變更
+- **進入/離開與異常容錯插樁**：修改 [babel-plugin-js2ts.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/babel-plugin-js2ts.ts) 在函數頂端/尾端插入 `enter` / `exit`，並使用 `try-finally` 包裹以容錯異常中斷。
+- **非同步/Callback 關係鏈代理**：在 [tracker-client.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/tracker-client.ts) 中利用閉包擷取 `parentCaller` 並在回呼執行時壓棧，成功打通非同步與 callback 事件鏈（如 `forEach` 呼叫）。
+- **靜態 AST 依賴掃描**：在 [static-analyzer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/static-analyzer.ts) 中掃描 `Import`、`require` 與 `CallExpression`（包含具名/CJS命名空間/`this.`），產出 `boundary-map.json` 的靜態呼叫關係。
+- **D3.js 霓虹視覺化檢視工具**：實作 [commands/visualize.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/commands/visualize.ts) 背景伺服器，Serve [templates/visualizer.html](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/templates/visualizer.html)。網頁以暗黑 neon 美學渲染 D3 力學圖，支援檔案/函數層級切換、動態霓虹實線與靜態灰色虛線、Slider 篩選、高亮搜尋、手動拖曳固定與儲存佈局至 `visualizer-layout.json`、匯出 SVG。
+
+## 驗證結果
+- **3_Snake E2E 測試通過**：
+  - `boundary-map.json` 正確生成靜態 `staticCallGraph` 欄位。
+  - `types-observed.json` 正確存檔 `"__callGraph"`，其中成功包含非同步 callback 的累積呼叫次數（如 `draw` 呼叫 `anonymous` 回呼 13 次）。
+  - `visualize` 啟動 9003 連接埠後，順利在瀏覽器中操作拖曳並透過 API 成功寫入 `visualizer-layout.json` 保存佈局位置。
+

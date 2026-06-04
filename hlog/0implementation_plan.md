@@ -154,71 +154,6 @@ node ../src/cli.js review
 - **問題**：在型別生成時，原工具僅對成員方法進行遍歷，忽略了 `constructor` 本身，導致 `types-observed.json` 中已收集到的構造函式參數型別（如 `x: number, y: number, color: string`）無法注入。
 - **解決方案**：在 `generate` 階段，補上對 `cls.getConstructors()` 的遍歷與 `annotateFunction` 呼叫，使建構函式參數也能無縫標註型別。
 
----
-
-### [2026-06-04 14:35] 函數呼叫關係鏈 (Call Graph) 側錄與視覺化實作計畫
-
-此計畫旨在為 `js2ts-infer` 擴充動態與靜態呼叫關係收集器，並整合至 `types-observed.json` 中，最後提供一個內嵌的可互動拖曳 HTML/SVG 架構圖檢視工具。
-
-#### 1. 需求要點與架構設計
-- **連線粒度**：支援「檔案級依賴」與「函數級依賴」雙重模式，在 HTML 視覺化介面中可動態勾選切換。
-- **非同步與間接呼叫追蹤**：於 Runtime Tracker 中，利用全域 Mock `callStack` 追蹤呼叫來源。當函數被包裝成 callback 傳遞時，綁定當下的 caller 作為 `parentCaller`。當非同步 callback 觸發執行時，將 `parentCaller` 壓入 context 中，保證非同步與間接呼叫能正確追蹤到其發起函數。
-- **過濾機制**：僅記錄專案內部的模組與函數呼叫關係，自動過濾掉 `node_modules` 與瀏覽器原生內建 API（如 `setTimeout`、`document` 等）。
-- **頻率統計**：累加並記錄各個呼叫線路的執行次數（`count`）。
-- **靜態分析補足（潛在關係）**：結合靜態 AST 分析（掃描 `import`/`require` 導入的變數與呼叫路徑），找出「有定義但側錄期間未被執行」的潛在關係連線，在視覺化圖表中使用虛線呈現。
-- **資料儲存**：呼叫關係與現有的 `types-observed.json` 進行欄位合併。
-- **SVG 視覺化流程圖**：建立一個內嵌 HTML 頁面，使用 D3.js 繪製可互動拖曳的 SVG 力導向圖，提供搜尋、節點拖曳固定、依賴模式切換、以及匯出 SVG 檔案之功能。
-
-#### 2. 受影響之檔案與修改內容
-
-##### [MODIFY] [babel-plugin-js2ts.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/babel-plugin-js2ts.ts)
-- **進入與離開插樁**：
-  - 在進入每一個 Function 區塊最前端，插入 `globalThis.__typeTracker.enter(funcId)`。
-  - 在函數區塊的尾端，或者在 `ReturnStatement` 之前，插入對 `globalThis.__typeTracker.exit(funcId)` 的呼叫（或在 Runtime wrapper 中統一處理 exit 邏輯）。
-
-##### [MODIFY] [tracker-client.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/tracker-client.ts)
-- **全域呼叫棧管理**：
-  - 新增全域 `callStack` 陣列。
-  - 實作 `__typeTracker.enter(funcId)`：
-    - 取得 `callStack` 頂部的 caller。
-    - 若 caller 存在且為專案內部路徑，記錄一筆從 `caller` -> `funcId` 的呼叫次數，寫入 `clientDB`。
-    - 將 `funcId` 壓入 `callStack`。
-  - 實作 `__typeTracker.exit(funcId)`：
-    - 從 `callStack` 中安全彈出 `funcId`。
-- **非同步與 Callback 綁定**：
-  - 修正 `wrapFunction(trackerId, originalFn)`，在 wrap 函數時，透過閉包（Closure）捕捉當前 `callStack` 的頂部函數 `parentCaller`。
-  - 在 `wrappedFn` 執行時，先將 `parentCaller` 壓入 `callStack`，再執行 `originalFn`，執行完畢後 pop 移出，使 Callback 內部引發的後續呼叫能追蹤到非同步起點。
-
-##### [MODIFY] [static-analyzer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/static-analyzer.ts)
-- **靜態依賴掃描**：
-  - 新增 `analyzeStaticCalls(ast, relativePath)` 方法，分析 `import` 與 `require` 關係。
-  - 掃描所有 `CallExpression`。若呼叫的對象為導入模組或其屬性，記錄一筆潛在呼叫關係，標記為 `{ count: 0, isDynamic: false }`。
-  - 將靜態掃描結果輸出並與動態側錄資料在 `merge` / `generate` 階段進行融合。
-
-##### [MODIFY] [tracker-server.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/tracker-server.ts)
-- **JSON 資料合併儲存**：
-  - 在型別資料庫中新增 `"__callGraph"` 特殊鍵值，儲存扁平化的呼叫網絡對照表，格式如下：
-    ```json
-    "__callGraph": {
-      "src/fileA.js::fnX->src/fileB.js::fnY": {
-        "count": 12,
-        "isDynamic": true
-      }
-    }
-    ```
-  - 當收到 POST 的型別資料時，進行累加合併。
-
-##### [NEW] [visualizer.ts / visualizer.html](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/visualizer.ts)
-- 實作內建視覺化檢視工具：
-  - 新增指令 `js2ts-infer visual`，啟動本地伺服器並在瀏覽器中開啟 `visualizer.html`。
-  - 使用 D3.js 力導向圖繪製節點（檔案與函數）與連線（實線代表動態呼叫，虛線代表靜態潛在呼叫，粗細代表呼叫次數）。
-  - 提供 Drag 節點手動定位功能，被 Drag 的節點會固定（`fx`, `fy`）防止繼續漂移。
-  - 提供檔案層級與函數層級的切換勾選框。
-  - 提供 SVG 匯出按鈕。
-
-#### 3. 驗證與測試計畫
-- **E2E 驗證**：在 `3_Snake` 專案中啟動 `js2ts-infer run`，手動玩蛇吃幾顆食物（觸發 audio、particle 呼叫），關閉後確認 `types-observed.json` 中含有正確的 `"__callGraph"` 資料。
-- **UI 測試**：執行 `js2ts-infer visual`，在網頁上拖曳粒子爆炸與遊戲引擎節點，確認能夠自由固定位置，且切換至檔案模式後，架構圖會簡化為模組間的連線。
 
 ---
 
@@ -347,3 +282,70 @@ node ../src/cli.js review
 
 ##### [MODIFY] [src/code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
 - 在 `runGeneration` 內部的第一階段「唯讀收集」邏輯中，新增 `classMethods`、`collectedPropNames` 的過濾器，並偵測 `rightText.includes('this.')`。符合上述任一條件即跳過搬移。
+
+
+---
+
+### [2026-06-04 14:35] 函數呼叫關係鏈 (Call Graph) 側錄與視覺化實作計畫
+
+此計畫旨在為 `js2ts-infer` 擴充動態與靜態呼叫關係收集器，並整合至 `types-observed.json` 中，最後提供一個內嵌的可互動拖曳 HTML/SVG 架構圖檢視工具。
+
+#### 1. 需求要點與架構設計
+- **連線粒度**：支援「檔案級依賴」與「函數級依賴」雙重模式，在 HTML 視覺化介面中可動態勾選切換。
+- **非同步與間接呼叫追蹤**：於 Runtime Tracker 中，利用全域 Mock `callStack` 追蹤呼叫來源。當函數被包裝成 callback 傳遞時，綁定當下的 caller 作為 `parentCaller`。當非同步 callback 觸發執行時，將 `parentCaller` 壓入 context 中，保證非同步與間接呼叫能正確追蹤到其發起函數。
+- **過濾機制**：僅記錄專案內部的模組與函數呼叫關係，自動過濾掉 `node_modules` 與瀏覽器原生內建 API（如 `setTimeout`、`document` 等）。
+- **頻率統計**：累加並記錄各個呼叫線路的執行次數（`count`）。
+- **靜態分析補足（潛在關係）**：結合靜態 AST 分析（掃描 `import`/`require` 導入的變數與呼叫路徑），找出「有定義但側錄期間未被執行」的潛在關係連線，在視覺化圖表中使用虛線呈現。
+- **資料儲存**：呼叫關係與現有的 `types-observed.json` 進行欄位合併。
+- **SVG 視覺化流程圖**：建立一個內嵌 HTML 頁面，使用 D3.js 繪製可互動拖曳的 SVG 力導向圖，提供搜尋、節點拖曳固定、依賴模式切換、以及匯出 SVG 檔案之功能。
+
+#### 2. 受影響之檔案與修改內容
+
+##### [MODIFY] [babel-plugin-js2ts.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/babel-plugin-js2ts.ts)
+- **進入與離開插樁**：
+  - 在進入每一個 Function 區塊最前端，插入 `globalThis.__typeTracker.enter(funcId)`。
+  - 在函數區塊的尾端，或者在 `ReturnStatement` 之前，插入對 `globalThis.__typeTracker.exit(funcId)` 的呼叫（或在 Runtime wrapper 中統一處理 exit 邏輯）。
+
+##### [MODIFY] [tracker-client.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/tracker-client.ts)
+- **全域呼叫棧管理**：
+  - 新增全域 `callStack` 陣列。
+  - 實作 `__typeTracker.enter(funcId)`：
+    - 取得 `callStack` 頂部的 caller。
+    - 若 caller 存在且為專案內部路徑，記錄一筆從 `caller` -> `funcId` 的呼叫次數，寫入 `clientDB`。
+    - 將 `funcId` 壓入 `callStack`。
+  - 實作 `__typeTracker.exit(funcId)`：
+    - 從 `callStack` 中安全彈出 `funcId`。
+- **非同步與 Callback 綁定**：
+  - 修正 `wrapFunction(trackerId, originalFn)`，在 wrap 函數時，透過閉包（Closure）捕捉當前 `callStack` 的頂部函數 `parentCaller`。
+  - 在 `wrappedFn` 執行時，先將 `parentCaller` 壓入 `callStack`，再執行 `originalFn`，執行完畢後 pop 移出，使 Callback 內部引發的後續呼叫能追蹤到非同步起點。
+
+##### [MODIFY] [static-analyzer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/static-analyzer.ts)
+- **靜態依賴掃描**：
+  - 新增 `analyzeStaticCalls(ast, relativePath)` 方法，分析 `import` 與 `require` 關係。
+  - 掃描所有 `CallExpression`。若呼叫的對象為導入模組或其屬性，記錄一筆潛在呼叫關係，標記為 `{ count: 0, isDynamic: false }`。
+  - 將靜態掃描結果輸出並與動態側錄資料在 `merge` / `generate` 階段進行融合。
+
+##### [MODIFY] [tracker-server.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/tracker-server.ts)
+- **JSON 資料合併儲存**：
+  - 在型別資料庫中新增 `"__callGraph"` 特殊鍵值，儲存扁平化的呼叫網絡對照表，格式如下：
+    ```json
+    "__callGraph": {
+      "src/fileA.js::fnX->src/fileB.js::fnY": {
+        "count": 12,
+        "isDynamic": true
+      }
+    }
+    ```
+  - 當收到 POST 的型別資料時，進行累加合併。
+
+##### [NEW] [visualizer.ts / visualizer.html](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/visualizer.ts)
+- 實作內建視覺化檢視工具：
+  - 新增指令 `js2ts-infer visual`，啟動本地伺服器並在瀏覽器中開啟 `visualizer.html`。
+  - 使用 D3.js 力導向圖繪製節點（檔案與函數）與連線（實線代表動態呼叫，虛線代表靜態潛在呼叫，粗細代表呼叫次數）。
+  - 提供 Drag 節點手動定位功能，被 Drag 的節點會固定（`fx`, `fy`）防止繼續漂移。
+  - 提供檔案層級與函數層級的切換勾選框。
+  - 提供 SVG 匯出按鈕。
+
+#### 3. 驗證與測試計畫
+- **E2E 驗證**：在 `3_Snake` 專案中啟動 `js2ts-infer run`，手動玩蛇吃幾顆食物（觸發 audio、particle 呼叫），關閉後確認 `types-observed.json` 中含有正確的 `"__callGraph"` 資料。
+- **UI 測試**：執行 `js2ts-infer visual`，在網頁上拖曳粒子爆炸與遊戲引擎節點，確認能夠自由固定位置，且切換至檔案模式後，架構圖會簡化為模組間的連線。
