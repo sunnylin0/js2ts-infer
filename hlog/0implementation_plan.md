@@ -154,4 +154,164 @@ node ../src/cli.js review
 - **問題**：在型別生成時，原工具僅對成員方法進行遍歷，忽略了 `constructor` 本身，導致 `types-observed.json` 中已收集到的構造函式參數型別（如 `x: number, y: number, color: string`）無法注入。
 - **解決方案**：在 `generate` 階段，補上對 `cls.getConstructors()` 的遍歷與 `annotateFunction` 呼叫，使建構函式參數也能無縫標註型別。
 
+---
 
+### [2026-06-04 14:35] 函數呼叫關係鏈 (Call Graph) 側錄與視覺化實作計畫
+
+此計畫旨在為 `js2ts-infer` 擴充動態與靜態呼叫關係收集器，並整合至 `types-observed.json` 中，最後提供一個內嵌的可互動拖曳 HTML/SVG 架構圖檢視工具。
+
+#### 1. 需求要點與架構設計
+- **連線粒度**：支援「檔案級依賴」與「函數級依賴」雙重模式，在 HTML 視覺化介面中可動態勾選切換。
+- **非同步與間接呼叫追蹤**：於 Runtime Tracker 中，利用全域 Mock `callStack` 追蹤呼叫來源。當函數被包裝成 callback 傳遞時，綁定當下的 caller 作為 `parentCaller`。當非同步 callback 觸發執行時，將 `parentCaller` 壓入 context 中，保證非同步與間接呼叫能正確追蹤到其發起函數。
+- **過濾機制**：僅記錄專案內部的模組與函數呼叫關係，自動過濾掉 `node_modules` 與瀏覽器原生內建 API（如 `setTimeout`、`document` 等）。
+- **頻率統計**：累加並記錄各個呼叫線路的執行次數（`count`）。
+- **靜態分析補足（潛在關係）**：結合靜態 AST 分析（掃描 `import`/`require` 導入的變數與呼叫路徑），找出「有定義但側錄期間未被執行」的潛在關係連線，在視覺化圖表中使用虛線呈現。
+- **資料儲存**：呼叫關係與現有的 `types-observed.json` 進行欄位合併。
+- **SVG 視覺化流程圖**：建立一個內嵌 HTML 頁面，使用 D3.js 繪製可互動拖曳的 SVG 力導向圖，提供搜尋、節點拖曳固定、依賴模式切換、以及匯出 SVG 檔案之功能。
+
+#### 2. 受影響之檔案與修改內容
+
+##### [MODIFY] [babel-plugin-js2ts.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/babel-plugin-js2ts.ts)
+- **進入與離開插樁**：
+  - 在進入每一個 Function 區塊最前端，插入 `globalThis.__typeTracker.enter(funcId)`。
+  - 在函數區塊的尾端，或者在 `ReturnStatement` 之前，插入對 `globalThis.__typeTracker.exit(funcId)` 的呼叫（或在 Runtime wrapper 中統一處理 exit 邏輯）。
+
+##### [MODIFY] [tracker-client.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/tracker-client.ts)
+- **全域呼叫棧管理**：
+  - 新增全域 `callStack` 陣列。
+  - 實作 `__typeTracker.enter(funcId)`：
+    - 取得 `callStack` 頂部的 caller。
+    - 若 caller 存在且為專案內部路徑，記錄一筆從 `caller` -> `funcId` 的呼叫次數，寫入 `clientDB`。
+    - 將 `funcId` 壓入 `callStack`。
+  - 實作 `__typeTracker.exit(funcId)`：
+    - 從 `callStack` 中安全彈出 `funcId`。
+- **非同步與 Callback 綁定**：
+  - 修正 `wrapFunction(trackerId, originalFn)`，在 wrap 函數時，透過閉包（Closure）捕捉當前 `callStack` 的頂部函數 `parentCaller`。
+  - 在 `wrappedFn` 執行時，先將 `parentCaller` 壓入 `callStack`，再執行 `originalFn`，執行完畢後 pop 移出，使 Callback 內部引發的後續呼叫能追蹤到非同步起點。
+
+##### [MODIFY] [static-analyzer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/static-analyzer.ts)
+- **靜態依賴掃描**：
+  - 新增 `analyzeStaticCalls(ast, relativePath)` 方法，分析 `import` 與 `require` 關係。
+  - 掃描所有 `CallExpression`。若呼叫的對象為導入模組或其屬性，記錄一筆潛在呼叫關係，標記為 `{ count: 0, isDynamic: false }`。
+  - 將靜態掃描結果輸出並與動態側錄資料在 `merge` / `generate` 階段進行融合。
+
+##### [MODIFY] [tracker-server.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/tracker-server.ts)
+- **JSON 資料合併儲存**：
+  - 在型別資料庫中新增 `"__callGraph"` 特殊鍵值，儲存扁平化的呼叫網絡對照表，格式如下：
+    ```json
+    "__callGraph": {
+      "src/fileA.js::fnX->src/fileB.js::fnY": {
+        "count": 12,
+        "isDynamic": true
+      }
+    }
+    ```
+  - 當收到 POST 的型別資料時，進行累加合併。
+
+##### [NEW] [visualizer.ts / visualizer.html](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/visualizer.ts)
+- 實作內建視覺化檢視工具：
+  - 新增指令 `js2ts-infer visual`，啟動本地伺服器並在瀏覽器中開啟 `visualizer.html`。
+  - 使用 D3.js 力導向圖繪製節點（檔案與函數）與連線（實線代表動態呼叫，虛線代表靜態潛在呼叫，粗細代表呼叫次數）。
+  - 提供 Drag 節點手動定位功能，被 Drag 的節點會固定（`fx`, `fy`）防止繼續漂移。
+  - 提供檔案層級與函數層級的切換勾選框。
+  - 提供 SVG 匯出按鈕。
+
+#### 3. 驗證與測試計畫
+- **E2E 驗證**：在 `3_Snake` 專案中啟動 `js2ts-infer run`，手動玩蛇吃幾顆食物（觸發 audio、particle 呼叫），關閉後確認 `types-observed.json` 中含有正確的 `"__callGraph"` 資料。
+- **UI 測試**：執行 `js2ts-infer visual`，在網頁上拖曳粒子爆炸與遊戲引擎節點，確認能夠自由固定位置，且切換至檔案模式後，架構圖會簡化為模組間的連線。
+
+---
+
+### [2026-06-04 14:50] 支援目錄匯出與複製品質重構計畫
+
+為了支援將 JavaScript 專案轉換並匯出至全新目錄（例如從 `./3_Snake/` 匯出至 `./3_SnakeTS/`），避免直接修改或污染原本的開發目錄，我們規劃為 `generate` 指令擴充 `--out-dir` 參數。
+
+#### 1. 需求與行為設計
+- **參數擴充**：於 `generate` 子指令新增 `-o, --out-dir <dir>` 選項。
+- **目錄複製（無侵入式匯出）**：
+  - 當指定 `--out-dir` 時，在非 Dry Run 模式下，會先將整個來源目錄（即 `js2ts.config.json` 所在的父目錄）遞迴複製至指定的目標目錄。
+  - 複製時自動過濾 `node_modules`、`.git`、`dist`、`dist-esm`、`temp` 等無關目錄，並過濾掉目標目錄本身（若目標目錄位於來源目錄內部）。
+- **轉換與寫入**：
+  - 讀取來源目錄中的 JavaScript 檔案，以 AST 分析與型別推導生成 TypeScript 內容。
+  - 將轉換後的 `.ts` 內容寫入至目標目錄對應的相對路徑中。
+  - 刪除目標目錄中對應的被複製 `.js` 檔案，確保目標目錄中只留下轉換後的 `.ts` 檔案，不殘留 `.js` 檔。
+  - 來源目錄中的原始 `.js` 檔案將完整保留，不受影響。
+
+#### 2. 受影響之檔案與修改內容
+
+##### [MODIFY] [cli.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/cli.ts)
+- 在 `generate` 指令下新增：
+  ```typescript
+  .option('-o, --out-dir <dir>', '將重構後的結果匯出至指定目錄，不修改原始目錄')
+  ```
+
+##### [MODIFY] [commands/generate.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/commands/generate.ts)
+- 更新 `GenerateOptions` 介面，新增 `outDir?: string;` 欄位。
+
+##### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
+- 在 `runGeneration` 中，新增 `srcDir` 的解析（以 `path.dirname(configPath)` 為基準）。
+- 實作遞迴複製來源目錄至 `outDir` 的機制（過濾無關目錄）。
+- 於遍歷檔案寫入與刪除邏輯中，若指定了 `outDir`，則寫入至 `outDir` 底下對應的 `.ts`，並刪除 `outDir` 底下的 `.js`，保留來源目錄的原始檔案。
+
+#### 3. 驗證與測試計畫
+- **功能驗證**：
+  - 於 `c:\Users\ESAO_NB27\Desktop\abcTest` 執行：
+    ```bash
+    node ../abc_js2ts/dist/cli.js generate --config 3_Snake/js2ts.config.json --out-dir 3_SnakeTS --force
+    ```
+  - 確認 `3_SnakeTS` 目錄被建立，其中包含所有的 HTML、CSS、Assets 資源，且 `src/` 下的原 `.js` 檔案皆被正確重構為 `.ts`，且原 `3_Snake` 目錄下的 `.js` 檔案未被刪除。
+
+---
+
+### [2026-06-04 14:58] 修正計畫：引入 `--in-dir` 參數以支援模組化目錄重構
+
+配合您的建議，將原本使用 `--config` 定位來源目錄的設計，改為直接提供 `--in-dir` 參數。
+
+#### 1. 調整後的行為與規格
+- **指令格式**：
+  ```bash
+  npx js2ts-infer generate --in-dir ./3_Snake --out-dir ./3_SnakeTS
+  ```
+- **目錄定位與檔案讀取**：
+  - `inDir` 預設為 `process.cwd()`。
+  - 工具會自動讀取 `inDir` 底下的 `js2ts.config.json`（設定檔）、`boundary-map.json`（邊界圖）與 `types-observed.json`（型別側錄檔）。
+  - 對於前端 Vite 或 Webpack 設定檔的掃描，亦會以 `inDir` 目錄為基準。
+  - 型別資料庫的相對路徑比對鍵值（如 `src/state/states.js`），其 `relPath` 的計算基準將由 `process.cwd()` 改為 `inDir`，以確保從外部目錄執行時能正確對齊型別。
+- **目錄複製與輸出**：
+  - 若指定 `--out-dir`，會將 `inDir` 的內容（過濾 `node_modules` 等）複製到 `outDir`。
+  - 將轉換後的 `.ts` 寫入 `outDir`，並刪除 `outDir` 底下的 `.js` 檔案。
+
+#### 2. 受影響之檔案與修改內容
+
+##### [MODIFY] [cli.ts](file:///c:/Users/ESAO_NB27\Desktop/abc_js2ts/src/cli.ts)
+- 在 `generate` 指令下新增：
+  ```typescript
+  .option('-i, --in-dir <dir>', '輸入/來源專案目錄路徑', '...')
+  ```
+
+##### [MODIFY] [commands/generate.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/commands/generate.ts)
+- 更新 `GenerateOptions` 介面，新增 `inDir?: string;` 欄位。
+
+##### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
+- 調整 `processFileRefactoring` 簽章，新增 `inDir` 參數，使內部 `relPath` 計算為 `path.relative(inDir, filePath)`。
+- 於 `runGeneration` 中，根據 `options.inDir` 決定 `inDir` 絕對路徑，並調整設定檔、型別側錄檔、以及 glob 搜尋的 `cwd` 基準。
+
+---
+
+### [2026-06-04 15:20] 修正計畫：目錄複製時避免覆寫已有檔案
+
+為避免重構輸出時不慎覆寫目標目錄中已被使用者修改的既有檔案，我們調整了目錄複製與轉換的寫入機制。
+
+#### 1. 調整後的行為與規格
+- **複寫保護**：
+  - 複製來源目錄 `inDir` 至目標目錄 `outDir` 時，若目標路徑已存在同名檔案，則**跳過複製**，以保護目標目錄中的自訂修改。
+- **轉換覆蓋**：
+  - 由 AST 轉換生成的全新 `*.ts` 檔案不受複寫保護限制，寫入時會**直接覆蓋**目標目錄中的對應 `*.ts` 檔案，確保重構結果能即時更新。
+- **原始檔案安全**：
+  - 原始專案目錄 `inDir` 中的檔案完全不受影響。
+
+#### 2. 受影響之檔案與修改內容
+
+##### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
+- 調整 `fs.cpSync` 複製選項中的 `filter` 方法。
+- 若目標路徑 `destPath` 已存在，且來源路徑 `srcPath` 為檔案，則回傳 `false` 拒絕複製；目錄本身則繼續遞迴掃描，實現「增量且無害複製」。

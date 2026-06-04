@@ -7,9 +7,9 @@ import * as diff from 'diff';
 import { mergeSingleVal } from './type-merger';
 import { globSync } from 'glob';
 
-function checkGitStatus(): boolean {
+function checkGitStatus(dir: string = process.cwd()): boolean {
   try {
-    const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
+    const status = execSync('git status --porcelain', { cwd: dir, encoding: 'utf8' }).trim();
     return status === '';
   } catch (e) {
     return true;
@@ -165,11 +165,11 @@ function cleanCommentToJSDoc(comment: string): string {
   return comment.split('\n').map(line => line.replace(/^\/\/+/, '').trim()).join('\n');
 }
 
-function processFileRefactoring(filePath: string, typeDB: any, config: any): string {
+function processFileRefactoring(filePath: string, typeDB: any, config: any, inDir: string): string {
     const project = new Project();
     const originalCode = fs.readFileSync(filePath, 'utf-8');
     const sourceFile = project.createSourceFile(filePath.replace(/\.js$/, '.ts'), originalCode, { overwrite: true });
-    const relPath = path.relative(process.cwd(), filePath).replace(/\\/g, '/');
+    const relPath = path.relative(inDir, filePath).replace(/\\/g, '/');
 
     sourceFile.getInterfaces().forEach(iface => iface.remove());
 
@@ -461,7 +461,11 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any): str
   }
 
   export function runGeneration(options: any) {
-    const configPath = path.resolve(process.cwd(), options.config);
+    const inDir = options.inDir ? path.resolve(process.cwd(), options.inDir) : process.cwd();
+    const configPath = path.isAbsolute(options.config)
+      ? options.config
+      : path.resolve(inDir, options.config);
+
     let config = {
       include: ["src/**/*.js", "modules/**/*.js", "*.js"],
       exclude: ["node_modules/**", "**/dist/**", "**/*.test.js", "**/test/**"],
@@ -475,14 +479,14 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any): str
     }
 
     if (!options.force && !options.dryRun) {
-      if (!checkGitStatus()) {
+      if (!checkGitStatus(inDir)) {
         console.error(chalk.red('❌ Git 工作區有未提交的變更！請先 commit 您的變更。'));
         console.error(chalk.red('   或者使用 --force 旗標強制執行。'));
         process.exit(1);
       }
     }
 
-    const observedTypesPath = path.resolve(process.cwd(), 'types-observed.json');
+    const observedTypesPath = path.resolve(inDir, 'types-observed.json');
     let typeDB = {};
     if (fs.existsSync(observedTypesPath)) {
       try {
@@ -494,6 +498,7 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any): str
     }
 
     const files = globSync(config.include, {
+      cwd: inDir,
       ignore: config.exclude,
       nodir: true,
       absolute: true
@@ -501,16 +506,50 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any): str
 
     console.log(chalk.blue(`📝 開始重構與注入型別，共 ${files.length} 個檔案...`));
 
+    const outDir = options.outDir ? path.resolve(process.cwd(), options.outDir) : null;
+    if (outDir && !options.dryRun) {
+      if (outDir === inDir) {
+        console.error(chalk.red('❌ 輸出目錄不能與輸入目錄相同！'));
+        process.exit(1);
+      }
+      console.log(chalk.blue(`📂 正在複製來源目錄至: ${outDir}...`));
+      fs.mkdirSync(outDir, { recursive: true });
+      fs.cpSync(inDir, outDir, {
+        recursive: true,
+        filter: (srcPath) => {
+          const relative = path.relative(inDir, srcPath);
+          const parts = relative.split(path.sep);
+          if (parts.includes('node_modules') || parts.includes('.git') || parts.includes('dist') || parts.includes('dist-esm') || parts.includes('temp')) {
+            return false;
+          }
+          if (path.resolve(srcPath) === outDir || path.resolve(srcPath).startsWith(outDir + path.sep)) {
+            return false;
+          }
+          const destPath = path.join(outDir, relative);
+          if (fs.existsSync(destPath)) {
+            try {
+              if (fs.statSync(srcPath).isFile()) {
+                return false; // 已有檔案，不覆蓋
+              }
+            } catch (e) {}
+          }
+          return true;
+        }
+      });
+    }
+
     for (const absolutePath of files) {
-      const relPath = path.relative(process.cwd(), absolutePath).replace(/\\/g, '/');
+      const relPath = path.relative(inDir, absolutePath).replace(/\\/g, '/');
       const ext = path.extname(absolutePath);
-      const newExt = '.ts';
-      const dir = path.dirname(absolutePath);
-      const base = path.basename(absolutePath, ext);
-      const newPath = path.join(dir, base + newExt);
+      const newPath = outDir
+        ? path.join(outDir, relPath.slice(0, -ext.length) + '.ts')
+        : path.join(path.dirname(absolutePath), path.basename(absolutePath, ext) + '.ts');
+      const copiedJsPath = outDir
+        ? path.join(outDir, relPath)
+        : absolutePath;
 
       try {
-        const newContent = processFileRefactoring(absolutePath, typeDB, config);
+        const newContent = processFileRefactoring(absolutePath, typeDB, config, inDir);
 
         if (options.dryRun) {
           const originalContent = fs.readFileSync(absolutePath, 'utf-8');
@@ -518,9 +557,18 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any): str
           console.log(chalk.yellow(`\n--- [Dry Run Diff] ${relPath} -> ${relPath.replace(/\.js$/, '.ts')} ---`));
           console.log(fileDiff);
         } else {
+          fs.mkdirSync(path.dirname(newPath), { recursive: true });
           fs.writeFileSync(newPath, newContent, 'utf-8');
-          fs.unlinkSync(absolutePath);
-          console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
+          
+          if (outDir) {
+            if (fs.existsSync(copiedJsPath)) {
+              fs.unlinkSync(copiedJsPath);
+            }
+            console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
+          } else {
+            fs.unlinkSync(absolutePath);
+            console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
+          }
         }
       } catch (err: any) {
         console.error(chalk.red(`❌ 轉換檔案失敗: ${relPath}, 錯誤: ${err.message}`));

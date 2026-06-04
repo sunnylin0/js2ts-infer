@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Snake - 霓虹玻璃擬態貪食蛇</title>
+  <!-- 載入 Google FontsOutfit 現代字型 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body>
+  <!-- 背景發光特效裝飾 -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- 全域遊戲容器 -->
+  <div class="game-container glass-panel">
+
+    <!-- 遊戲 Logo (點擊可返回首頁) -->
+    <header class="game-header">
+      <h1 id="logo-btn" class="neon-text">NEON <span class="accent-text">SNAKE</span></h1>
+    </header>
+
+    <!-- 1. 主選單畫面 (Menu State Panel) -->
+    <main id="menu-screen" class="screen active">
+      <section class="game-intro">
+        <p class="intro-desc">歡迎來到 <span class="neon-text-small">Neon
+            Snake</span>，一個融合了現代毛玻璃（Glassmorphism）與螢光霓虹美學的極致貪食蛇遊戲。</p>
+        <div class="rules-box">
+          <h3>🎮 遊戲規則</h3>
+          <ul>
+            <li>使用 <strong>WASD</strong> 或 <strong>方向鍵</strong> 控制蛇的轉向。</li>
+            <li>按下 <strong>空白鍵 (Space)</strong> 隨時暫停或繼續遊戲。</li>
+            <li>吃下螢光粉紅色的食物以獲得分數並增長蛇身。</li>
+            <li>撞到外牆或自己的身體將會結束遊戲。</li>
+            <li>行動端支援<strong>螢幕滑動手勢</strong>或點擊下方的<strong>虛擬 D-Pad</strong>。</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 玩家設定與模式選擇 -->
+      <section class="setup-section">
+        <div class="input-group">
+          <label for="player-name">輸入玩家名稱</label>
+          <input type="text" id="player-name" placeholder="請輸入您的名字..." maxlength="15" value="Player 1">
+        </div>
+        <div class="mode-select">
+          <h3>選擇難度開始遊戲</h3>
+          <div class="difficulty-buttons">
+            <button class="btn btn-easy" data-difficulty="easy">
+              <span class="btn-title">簡單</span>
+              <span class="btn-meta">40x40 | 100ms</span>
+            </button>
+            <button class="btn btn-medium" data-difficulty="medium">
+              <span class="btn-title">中等</span>
+              <span class="btn-meta">60x60 | 80ms</span>
+            </button>
+            <button class="btn btn-hard" data-difficulty="hard">
+              <span class="btn-title">困難</span>
+              <span class="btn-meta">60x60 | 60ms</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 排行榜區塊 -->
+      <section class="leaderboard-section">
+        <h3 class="neon-text-small">🏆 分數排行</h3>
+        <div class="leaderboard-tabs">
+          <button class="tab-btn active" data-tab="easy">簡單</button>
+          <button class="tab-btn" data-tab="medium">中等</button>
+          <button class="tab-btn" data-tab="hard">困難</button>
+        </div>
+        <div class="table-container">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th width="15%">排名</th>
+                <th width="35%">玩家</th>
+                <th width="25%">分數</th>
+                <th width="25%">時間</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-rows">
+              <!-- 排行榜資料會動態插入 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- 2. 遊戲進行畫面 (Playing/Paused/GameOver Canvas Section) -->
+    <main id="game-screen" class="screen">
+      <!-- 頂部即時分數與時間狀態 -->
+      <div class="game-hud">
+        <div class="hud-item">
+          <span class="hud-label">玩家</span>
+          <span id="hud-player" class="hud-value">-</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">得分</span>
+          <span id="hud-score" class="hud-value neon-green-text">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">時間</span>
+          <span id="hud-time" class="hud-value neon-pink-text">00:00</span>
+        </div>
+      </div>
+
+      <!-- SVG 遊戲繪製畫布 -->
+      <div class="canvas-wrapper">
+        <svg id="game-canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+          <!-- 這裡會動態插入 SVG filter 與元素 -->
+        </svg>
+
+        <!-- 2.3 遊戲暫停覆蓋層 -->
+        <div id="pause-overlay" class="overlay">
+          <div class="overlay-content">
+            <h2 class="neon-text">GAME PAUSED</h2>
+            <p>按下 [空白鍵] 或點擊下方按鈕繼續</p>
+            <div class="overlay-buttons">
+              <button id="resume-btn" class="btn btn-primary">繼續遊戲</button>
+              <button id="pause-home-btn" class="btn btn-secondary">返回主頁</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.2 遊戲結束覆蓋層 -->
+        <div id="game-over-overlay" class="overlay">
+          <div class="overlay-content">
+            <h2 class="neon-text alert-text">GAME OVER</h2>
+            <p id="game-over-msg">你撞牆了！</p>
+            <div class="score-summary">
+              <div>最終得分：<span id="final-score" class="accent-text">0</span></div>
+              <div>遊戲時間：<span id="final-time" class="accent-text">00:00</span></div>
+            </div>
+            <div class="overlay-buttons">
+              <button id="restart-btn" class="btn btn-primary">再玩一次</button>
+              <button id="game-over-home-btn" class="btn btn-secondary">返回主頁</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 虛擬 D-Pad 行動端控制器 -->
+      <div class="mobile-controls">
+        <div class="d-pad">
+          <button id="dpad-up" class="dpad-btn up">▲</button>
+          <button id="dpad-left" class="dpad-btn left">◀</button>
+          <div class="dpad-center"></div>
+          <button id="dpad-right" class="dpad-btn right">▶</button>
+          <button id="dpad-down" class="dpad-btn down">▼</button>
+        </div>
+        <button id="mobile-pause-btn" class="btn-pause-circle">⏸</button>
+      </div>
+    </main>
+
+  </div>
+
+  <footer class="app-footer">
+    <p>Powered by Vite + Web Audio API | Antigravity Engine</p>
+  </footer>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

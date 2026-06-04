@@ -49,6 +49,8 @@ program
 program
   .command('generate')
   .description('結合靜態與動態型別，執行型別雙向傳播並注入原始碼')
+  .option('-i, --in-dir <dir>', '輸入/來源專案目錄路徑')
+  .option('-o, --out-dir <dir>', '將重構後的結果匯出至指定目錄，不修改原始目錄')
   .option('-c, --config <path>', '設定檔路徑', 'js2ts.config.json')
   .option('-d, --dry-run', '輸出變更的 Diff Log，不實際修改檔案', false)
   .option('-f, --force', '強制執行，忽略 Git 工作區未提交檢查', false)

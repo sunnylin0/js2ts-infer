@@ -1,0 +1,61 @@
+{
+  "classes": {
+    "SoundSynthesizer": "src/audio.js",
+    "MenuState": "src/state/states.js",
+    "PlayingState": "src/state/states.js",
+    "PausedState": "src/state/states.js",
+    "GameOverState": "src/state/states.js",
+    "GameState": "src/state/gameState.js",
+    "Snake": "src/engine/snake.js",
+    "Particle": "src/engine/particles.js",
+    "ParticleSystem": "src/engine/particles.js",
+    "GameEngine": "src/engine/gameEngine.js"
+  },
+  "boundaries": [
+    {
+      "filePath": "src/audio.js",
+      "exportName": "SoundSynthesizer",
+      "type": "class"
+    },
+    {
+      "filePath": "src/state/states.js",
+      "exportName": "MenuState",
+      "type": "class"
+    },
+    {
+      "filePath": "src/state/states.js",
+      "exportName": "PlayingState",
+      "type": "class"
+    },
+    {
+      "filePath": "src/state/states.js",
+      "exportName": "PausedState",
+      "type": "class"
+    },
+    {
+      "filePath": "src/state/states.js",
+      "exportName": "GameOverState",
+      "type": "class"
+    },
+    {
+      "filePath": "src/state/gameState.js",
+      "exportName": "GameState",
+      "type": "class"
+    },
+    {
+      "filePath": "src/engine/snake.js",
+      "exportName": "Snake",
+      "type": "class"
+    },
+    {
+      "filePath": "src/engine/particles.js",
+      "exportName": "ParticleSystem",
+      "type": "class"
+    },
+    {
+      "filePath": "src/engine/gameEngine.js",
+      "exportName": "GameEngine",
+      "type": "class"
+    }
+  ]
+}
