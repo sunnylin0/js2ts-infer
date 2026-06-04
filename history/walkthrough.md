@@ -37,3 +37,25 @@
   - `types-observed.json` 正確存檔 `"__callGraph"`，其中成功包含非同步 callback 的累積呼叫次數（如 `draw` 呼叫 `anonymous` 回呼 13 次）。
   - `visualize` 啟動 9003 連接埠後，順利在瀏覽器中操作拖曳並透過 API 成功寫入 `visualizer-layout.json` 保存佈局位置。
 
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-04 17:26:00
+
+## 已完成的變更
+- **雙階段靜態類別依賴掃描**：於 `static-analyzer.ts` 中改以兩階段遍歷，解決了 Class 定義分散在不同檔案時的類別識別時序問題，精確產出 `staticCallGraph.classes`（例如 `PlayingState -> Snake`）。
+- **執行期類別方法 ID 前綴追蹤**：修改 `babel-plugin-js2ts.ts` 的 `getFunctionName` 為類別方法與類別欄位 ArrowFunction 加入 `ClassName.` 前綴（例如 `ParticleSystem.spawn`），完美區分了不同類別中的同名方法，並由 `tracker-client.ts` 動態回傳。
+- **自動清洗介面點號防錯**：更新 `code-generator.ts`，在對齊新方法名稱的同時，自動清洗生成的 interface 名稱中的點號（例如 `Particle.constructor` 轉為 `ParticleconstructorSvgShape`），徹底排除 TypeScript 的 interface 語法編譯錯誤。
+- **「類別級」視覺化模式**：在 `templates/visualizer.html` 中實作「類別級 (Class-level)」檢視功能，藉由將 `filePath::ClassName.method` 切割出類別名，成功聚合並渲染類別層級的動態霓虹連線與靜態灰色虛線。
+
+## 驗證結果
+- **3_Snake 靜態掃描與執行期側錄通過**：
+  - 靜態依賴 `staticCallGraph.classes` 正確記錄 10 個類別依賴鏈。
+  - 執行期產出的 `types-observed.json` 的 `__callGraph` 的 `graph` 中，動態呼叫鏈已成功帶有類別前綴。
+- **型別生成轉換 TS 通過**：
+  - 執行 `dist/cli.js generate` 重構 `3_SnakeTS` 成功，並且生成的 TypeScript 檔案中 interface 名稱皆無語法點號，順利通過 TS 編譯。
+- **視覺化 API 成功回應**：
+  - 啟動伺服器後，API `/api/data` 正確傳回包含類別映射、呼叫鏈與佈局的資料，D3 霓虹視覺化架構圖能正常載入與繪製。
+
+

@@ -90,9 +90,13 @@ export function analyzeProject(config: any) {
   const boundaries: any[] = [];
   const staticCallGraph = {
     files: [] as { from: string, to: string }[],
-    functions: [] as { from: string, to: string }[]
+    functions: [] as { from: string, to: string }[],
+    classes: [] as { from: string, to: string }[]
   };
 
+  const parsedFiles: { relativePath: string; absolutePath: string; ast: any }[] = [];
+
+  // 第一階段：讀取並解析所有檔案的 AST，建立 Class 名冊與邊界
   for (const absolutePath of files) {
     const relativePath = path.relative(process.cwd(), absolutePath).replace(/\\/g, '/');
     let code: string;
@@ -121,76 +125,16 @@ export function analyzeProject(config: any) {
       continue;
     }
 
+    parsedFiles.push({ relativePath, absolutePath, ast });
+
     // @ts-ignore
     const traverseFn = typeof traverse === 'function' ? traverse : (traverse as any).default;
 
-    const fileImports: Record<string, { sourceFile: string, exportName: string }> = {};
-    const fileLocalFunctions = new Set<string>();
-
     traverseFn(ast, {
-      ImportDeclaration(astPath: any) {
-        const sourceVal = astPath.node.source.value;
-        const resolved = resolveImportPath(absolutePath, sourceVal, files);
-        if (resolved) {
-          staticCallGraph.files.push({ from: relativePath, to: resolved });
-          astPath.node.specifiers.forEach((spec: any) => {
-            if (spec.type === 'ImportSpecifier') {
-              fileImports[spec.local.name] = { sourceFile: resolved, exportName: spec.imported.name };
-            } else if (spec.type === 'ImportDefaultSpecifier') {
-              fileImports[spec.local.name] = { sourceFile: resolved, exportName: 'default' };
-            } else if (spec.type === 'ImportNamespaceSpecifier') {
-              fileImports[spec.local.name] = { sourceFile: resolved, exportName: '*' };
-            }
-          });
-        }
-      },
-
-      VariableDeclarator(astPath: any) {
-        const id = astPath.node.id;
-        const init = astPath.node.init;
-
-        if (init && init.type === 'CallExpression' && init.callee.type === 'Identifier' && init.callee.name === 'require') {
-          if (init.arguments.length > 0 && init.arguments[0].type === 'StringLiteral') {
-            const sourceVal = init.arguments[0].value;
-            const resolved = resolveImportPath(absolutePath, sourceVal, files);
-            if (resolved) {
-              staticCallGraph.files.push({ from: relativePath, to: resolved });
-              if (id.type === 'Identifier') {
-                fileImports[id.name] = { sourceFile: resolved, exportName: '*' };
-              } else if (id.type === 'ObjectPattern') {
-                id.properties.forEach((prop: any) => {
-                  if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.value.type === 'Identifier') {
-                    fileImports[prop.value.name] = { sourceFile: resolved, exportName: prop.key.name };
-                  }
-                });
-              }
-            }
-          }
-        }
-
-        if (id.type === 'Identifier' && init && (init.type === 'FunctionExpression' || init.type === 'ArrowFunctionExpression')) {
-          fileLocalFunctions.add(id.name);
-        }
-      },
-
-      FunctionDeclaration(astPath: any) {
-        if (astPath.node.id) {
-          fileLocalFunctions.add(astPath.node.id.name);
-        }
-      },
-
       ClassDeclaration(astPath: any) {
         if (astPath.node.id) {
           classes[astPath.node.id.name] = relativePath;
-          fileLocalFunctions.add(astPath.node.id.name);
         }
-        
-        // 收集 Class 內部的 Method 名稱
-        astPath.node.body.body.forEach((member: any) => {
-          if (member.type === 'ClassMethod' && member.key && member.key.type === 'Identifier') {
-            fileLocalFunctions.add(member.key.name);
-          }
-        });
       },
       
       ExportNamedDeclaration(astPath: any) {
@@ -309,8 +253,82 @@ export function analyzeProject(config: any) {
         }
       }
     });
+  }
 
-    // 第二階段遍歷：收集 CallExpression
+  // 第二階段：再度掃描各 AST，分析依賴關係（此時已具備完整的 Class 名冊）
+  for (const { relativePath, absolutePath, ast } of parsedFiles) {
+    const fileImports: Record<string, { sourceFile: string, exportName: string }> = {};
+    const fileLocalFunctions = new Set<string>();
+
+    // @ts-ignore
+    const traverseFn = typeof traverse === 'function' ? traverse : (traverse as any).default;
+
+    traverseFn(ast, {
+      ImportDeclaration(astPath: any) {
+        const sourceVal = astPath.node.source.value;
+        const resolved = resolveImportPath(absolutePath, sourceVal, files);
+        if (resolved) {
+          staticCallGraph.files.push({ from: relativePath, to: resolved });
+          astPath.node.specifiers.forEach((spec: any) => {
+            if (spec.type === 'ImportSpecifier') {
+              fileImports[spec.local.name] = { sourceFile: resolved, exportName: spec.imported.name };
+            } else if (spec.type === 'ImportDefaultSpecifier') {
+              fileImports[spec.local.name] = { sourceFile: resolved, exportName: 'default' };
+            } else if (spec.type === 'ImportNamespaceSpecifier') {
+              fileImports[spec.local.name] = { sourceFile: resolved, exportName: '*' };
+            }
+          });
+        }
+      },
+
+      VariableDeclarator(astPath: any) {
+        const id = astPath.node.id;
+        const init = astPath.node.init;
+
+        if (init && init.type === 'CallExpression' && init.callee.type === 'Identifier' && init.callee.name === 'require') {
+          if (init.arguments.length > 0 && init.arguments[0].type === 'StringLiteral') {
+            const sourceVal = init.arguments[0].value;
+            const resolved = resolveImportPath(absolutePath, sourceVal, files);
+            if (resolved) {
+              staticCallGraph.files.push({ from: relativePath, to: resolved });
+              if (id.type === 'Identifier') {
+                fileImports[id.name] = { sourceFile: resolved, exportName: '*' };
+              } else if (id.type === 'ObjectPattern') {
+                id.properties.forEach((prop: any) => {
+                  if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.value.type === 'Identifier') {
+                    fileImports[prop.value.name] = { sourceFile: resolved, exportName: prop.key.name };
+                  }
+                });
+              }
+            }
+          }
+        }
+
+        if (id.type === 'Identifier' && init && (init.type === 'FunctionExpression' || init.type === 'ArrowFunctionExpression')) {
+          fileLocalFunctions.add(id.name);
+        }
+      },
+
+      FunctionDeclaration(astPath: any) {
+        if (astPath.node.id) {
+          fileLocalFunctions.add(astPath.node.id.name);
+        }
+      },
+
+      ClassDeclaration(astPath: any) {
+        if (astPath.node.id) {
+          fileLocalFunctions.add(astPath.node.id.name);
+        }
+        
+        astPath.node.body.body.forEach((member: any) => {
+          if (member.type === 'ClassMethod' && member.key && member.key.type === 'Identifier') {
+            fileLocalFunctions.add(member.key.name);
+          }
+        });
+      }
+    });
+
+    // 收集 CallExpression 關係 (檔案與函數層級)
     traverseFn(ast, {
       CallExpression(astPath: any) {
         const callee = astPath.node.callee;
@@ -360,6 +378,41 @@ export function analyzeProject(config: any) {
         }
       }
     });
+
+    // 收集 Class-to-Class 靜態依賴關係
+    traverseFn(ast, {
+      ClassDeclaration(classPath: any) {
+        const className = classPath.node.id ? classPath.node.id.name : null;
+        if (!className) return;
+        const classId = `${relativePath}::${className}`;
+
+        classPath.traverse({
+          NewExpression(subPath: any) {
+            if (subPath.node.callee.type === 'Identifier') {
+              const targetName = subPath.node.callee.name;
+              if (classes[targetName]) {
+                const targetId = `${classes[targetName]}::${targetName}`;
+                if (targetId !== classId) {
+                  staticCallGraph.classes.push({ from: classId, to: targetId });
+                }
+              }
+            }
+          },
+          CallExpression(subPath: any) {
+            const callee = subPath.node.callee;
+            if (callee.type === 'MemberExpression' && callee.object.type === 'Identifier') {
+              const targetName = callee.object.name;
+              if (classes[targetName]) {
+                const targetId = `${classes[targetName]}::${targetName}`;
+                if (targetId !== classId) {
+                  staticCallGraph.classes.push({ from: classId, to: targetId });
+                }
+              }
+            }
+          }
+        });
+      }
+    });
   }
 
   // 去重處理
@@ -393,12 +446,23 @@ export function analyzeProject(config: any) {
     }
   }
 
+  const uniqueStaticClasses: { from: string, to: string }[] = [];
+  const visitedClasses = new Set<string>();
+  for (const c of staticCallGraph.classes) {
+    const key = `${c.from}->${c.to}`;
+    if (!visitedClasses.has(key)) {
+      visitedClasses.add(key);
+      uniqueStaticClasses.push(c);
+    }
+  }
+
   return {
     classes,
     boundaries: uniqueBoundaries,
     staticCallGraph: {
       files: uniqueStaticFiles,
-      functions: uniqueStaticFuncs
+      functions: uniqueStaticFuncs,
+      classes: uniqueStaticClasses
     }
   };
 }

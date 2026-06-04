@@ -356,12 +356,12 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
       cls.getMethods().forEach(method => {
         const fnName = method.getName();
         if (typeof method.removeReturnType === 'function') method.removeReturnType();
-        annotateFunction(method, fnName, relPath, typeDB, interfacesToDeclare, config);
+        annotateFunction(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config);
       });
 
       // 3.5 標註建構函式
       cls.getConstructors().forEach(ctor => {
-        annotateFunction(ctor, 'constructor', relPath, typeDB, interfacesToDeclare, config);
+        annotateFunction(ctor, `${cls.getName()}.constructor`, relPath, typeDB, interfacesToDeclare, config);
       });
     });
 
@@ -397,7 +397,8 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
       const record = typeDB[trackerId];
 
       if (record && record.callCount >= confidenceThreshold) {
-        const baseName = `${fnName.charAt(0).toUpperCase()}${fnName.slice(1)}${paramName.charAt(0).toUpperCase()}${paramName.slice(1)}`;
+        const sanitizedFnName = fnName.replace(/\./g, '');
+        const baseName = `${sanitizedFnName.charAt(0).toUpperCase()}${sanitizedFnName.slice(1)}${paramName.charAt(0).toUpperCase()}${paramName.slice(1)}`;
         const typeStr = resolveParameterType(record, baseName, interfacesToDeclare);
 
         if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
@@ -413,7 +414,8 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
     const returnTrackerId = `${relPath}::${fnName}::return`;
     const returnRecord = typeDB[returnTrackerId];
     if (returnRecord && returnRecord.callCount >= confidenceThreshold) {
-      const baseName = `${fnName.charAt(0).toUpperCase()}${fnName.slice(1)}Return`;
+      const sanitizedFnName = fnName.replace(/\./g, '');
+      const baseName = `${sanitizedFnName.charAt(0).toUpperCase()}${sanitizedFnName.slice(1)}Return`;
       const typeStr = resolveParameterType(returnRecord, baseName, interfacesToDeclare);
 
       if (typeof fnNode.setReturnType === 'function' && !fnNode.getReturnTypeNode()) {

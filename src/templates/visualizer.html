@@ -381,6 +381,7 @@
         <div class="section-title">檢視層級</div>
         <select id="level-select">
           <option value="function" selected>函數級 (Function-level)</option>
+          <option value="class">類別級 (Class-level)</option>
           <option value="file">檔案級 (File-level)</option>
         </select>
       </div>
@@ -617,9 +618,9 @@
       nodeGroup.append("text")
         .attr("dx", d => d.radius + 6)
         .attr("dy", 3)
-        .text(d => currentLevel === 'function' ? d.funcName : d.fileName);
+        .text(d => currentLevel === 'function' ? d.funcName : (currentLevel === 'class' ? d.className : d.fileName));
 
-      if (currentLevel === 'function') {
+      if (currentLevel === 'function' || currentLevel === 'class') {
         nodeGroup.append("text")
           .attr("class", "node-subtitle")
           .attr("dx", d => d.radius + 6)
@@ -637,6 +638,13 @@
             <div class="tooltip-title">${d.funcName}</div>
             <div>檔案: ${d.filePath}</div>
             <div>累計被呼叫次數: <strong style="color:var(--accent);">${d.callCount}</strong></div>
+            ${d.fx !== undefined && d.fx !== null ? '<div style="color:var(--accent-pink); font-size:10px; margin-top:4px;">📌 佈局已固定</div>' : ''}
+          `;
+        } else if (currentLevel === 'class') {
+          tooltip.innerHTML = `
+            <div class="tooltip-title">${d.className}</div>
+            <div>定義檔案: ${d.filePath}</div>
+            <div>類別總呼叫次數: <strong style="color:var(--accent);">${d.callCount}</strong></div>
             ${d.fx !== undefined && d.fx !== null ? '<div style="color:var(--accent-pink); font-size:10px; margin-top:4px;">📌 佈局已固定</div>' : ''}
           `;
         } else {
@@ -760,7 +768,7 @@
     // 構建 Node 與 Link 資料集
     function buildGraphData() {
       const boundaryMap = rawData.boundaryMap || {};
-      const staticCallGraph = boundaryMap.staticCallGraph || { files: [], functions: [] };
+      const staticCallGraph = boundaryMap.staticCallGraph || { files: [], functions: [], classes: [] };
       
       const typesObserved = rawData.typesObserved || {};
       const dynamicCallGraph = (typesObserved.__callGraph && typesObserved.__callGraph.graph) || {};
@@ -770,6 +778,17 @@
 
       // 連接關係加速 Map
       const connectedSet = new Set();
+
+      const getClassIdOfFunc = (funcId) => {
+        const parts = funcId.split('::');
+        if (parts.length < 2) return null;
+        const [filePath, funcName] = parts;
+        if (funcName.includes('.')) {
+          const className = funcName.split('.')[0];
+          return `${filePath}::${className}`;
+        }
+        return null;
+      };
 
       if (currentLevel === 'function') {
         // 收集所有出現的函數與其呼叫關係
@@ -857,6 +876,100 @@
         nodesMap.forEach(node => {
           node.radius = 8 + Math.min(Math.sqrt(node.callCount) * 1.5, 20);
           node.isHot = node.callCount > 10;
+        });
+
+      } else if (currentLevel === 'class') {
+        // 類別級 (Class-level)
+        const addClassNode = (classId, filePath, className, callCount = 0) => {
+          if (!nodesMap.has(classId)) {
+            nodesMap.set(classId, {
+              id: classId,
+              filePath,
+              className,
+              fileName: filePath.split('/').pop(),
+              callCount,
+              radius: 10,
+              isHot: false
+            });
+          } else {
+            const node = nodesMap.get(classId);
+            node.callCount = Math.max(node.callCount, callCount);
+          }
+        };
+
+        // 1. 優先加入靜態 classes
+        if (boundaryMap.classes) {
+          for (const [clsName, fPath] of Object.entries(boundaryMap.classes)) {
+            addClassNode(`${fPath}::${clsName}`, fPath, clsName);
+          }
+        }
+
+        // 2. 解析動態呼叫，累加到類別關係
+        for (const [caller, callees] of Object.entries(dynamicCallGraph)) {
+          const callerClassId = getClassIdOfFunc(caller);
+          if (!callerClassId) continue;
+          
+          const parts = callerClassId.split('::');
+          addClassNode(callerClassId, parts[0], parts[1]);
+
+          for (const [callee, count] of Object.entries(callees)) {
+            const calleeClassId = getClassIdOfFunc(callee);
+            if (!calleeClassId) continue;
+            
+            const calleeParts = calleeClassId.split('::');
+            addClassNode(calleeClassId, calleeParts[0], calleeParts[1]);
+
+            // 更新被呼叫 class 的累計次數
+            const targetNode = nodesMap.get(calleeClassId);
+            if (targetNode) {
+              targetNode.callCount += count;
+            }
+
+            if (count < minCallCount) continue;
+            if (callerClassId === calleeClassId) continue; // 類別內部調用不畫連線
+
+            const linkId = `${callerClassId}->${calleeClassId}`;
+            if (linksMap.has(linkId)) {
+              linksMap.get(linkId).count += count;
+            } else {
+              linksMap.set(linkId, {
+                source: callerClassId,
+                target: calleeClassId,
+                count,
+                isDynamic: true
+              });
+              connectedSet.add(`${callerClassId}::${calleeClassId}`);
+              connectedSet.add(`${calleeClassId}::${callerClassId}`);
+            }
+          }
+        }
+
+        // 3. 加入靜態類別依賴
+        if (showStatic && staticCallGraph.classes) {
+          staticCallGraph.classes.forEach(c => {
+            if (c.from === c.to) return;
+            const partsFrom = c.from.split('::');
+            const partsTo = c.to.split('::');
+            addClassNode(c.from, partsFrom[0], partsFrom[1]);
+            addClassNode(c.to, partsTo[0], partsTo[1]);
+
+            const linkId = `${c.from}->${c.to}`;
+            if (!linksMap.has(linkId)) {
+              linksMap.set(linkId, {
+                source: c.from,
+                target: c.to,
+                count: 0,
+                isDynamic: false
+              });
+              connectedSet.add(`${c.from}::${c.to}`);
+              connectedSet.add(`${c.to}::${c.from}`);
+            }
+          });
+        }
+
+        nodesMap.forEach(node => {
+          node.radius = 10 + Math.min(Math.sqrt(node.callCount) * 1.5, 22);
+          node.isHot = node.callCount > 15;
         });
 
       } else {

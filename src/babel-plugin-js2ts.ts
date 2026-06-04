@@ -39,15 +39,24 @@ export default function (babel: any) {
   const { types: t } = babel;
 
   function getFunctionName(pathNode: any): string {
+    if (pathNode.isClassMethod()) {
+      const classDecl = pathNode.findParent((p: any) => p.isClassDeclaration());
+      const className = classDecl && classDecl.node.id ? classDecl.node.id.name : 'UnknownClass';
+      if (t.isIdentifier(pathNode.node.key)) {
+        return `${className}.${pathNode.node.key.name}`;
+      }
+      return `${className}.computed_method`;
+    }
+
+    const parentProp = pathNode.findParent((p: any) => p.isClassProperty?.() || p.isClassPrivateProperty?.() || p.node.type === 'ClassProperty' || p.node.type === 'ClassPrivateProperty' || p.node.type === 'PropertyDefinition');
+    if (parentProp && t.isIdentifier(parentProp.node.key)) {
+      const classDecl = parentProp.findParent((p: any) => p.isClassDeclaration());
+      const className = classDecl && classDecl.node.id ? classDecl.node.id.name : 'UnknownClass';
+      return `${className}.${parentProp.node.key.name}`;
+    }
+
     if (pathNode.node.id) {
       return pathNode.node.id.name;
-    }
-    
-    if (pathNode.isClassMethod()) {
-      if (t.isIdentifier(pathNode.node.key)) {
-        return pathNode.node.key.name;
-      }
-      return 'computed_method';
     }
 
     if (pathNode.isObjectMethod()) {

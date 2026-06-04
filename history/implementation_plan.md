@@ -74,3 +74,62 @@
 2. 執行 `run` 指令，開啟瀏覽器操作，檢查 `types-observed.json` 是否有 `__callGraph` 的累加次數。
 3. 執行 `visualize` 啟動視覺化伺服器，驗證拖曳固定、佈局儲存、圖表切換、SVG 匯出。
 
+---
+
+# 實作類別級 (Class-level) 關係鏈收集與視覺化
+
+**時間戳記**：2026-06-04 17:15:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **類別方法與建構子追蹤命名優化**：
+>    - 在 `babel-plugin-js2ts.ts` 中，將 Class Method 及 Class Field 箭頭函數的追蹤 ID 自動加上 `ClassName.` 前綴。
+> 2. **型別注入相容性修正**：
+>    - 同步更新 `code-generator.ts` 中 Class Method 的型別標註對齊 `ClassName.methodName` 規格。
+>    - 清洗標註參數所產生的 interface 名稱，移去點號字元，避免 TS 語法錯誤。
+> 3. **類別級靜態與動態分析**：
+>    - 靜態分析：在 `static-analyzer.ts` 採用雙階段掃描，提取 `ClassDeclaration` AST 中的 `NewExpression` 與 `CallExpression`（靜態方法調用），輸出 `staticCallGraph.classes`。
+>    - 動態分析：在視覺化頁面，整合 `types-observed.json` 中 `__callGraph` 的 `filePath::ClassName.methodName` 呼叫次數，將其映射至對應的 Class 節點。
+> 4. **檢視層級擴充**：
+>    - 於 `visualizer.html` 檢視層級新增「類別級 (Class-level)」選項。
+
+## 開放問題
+無。
+
+## 預期變更
+
+### 1. 核心收集與重構層
+- **[MODIFY] [babel-plugin-js2ts.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/babel-plugin-js2ts.ts)**: 修改 `getFunctionName`，在處理類別方法與類別欄位 ArrowFunction 時自動加上 `ClassName.` 前綴。
+- **[MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)**: 標註方法時傳遞 `fnName` 為 `${cls.getName()}.${fnName}`，並在 `annotateFunction` 內對 interface name 的 `baseName` 進行 `replace(/\./g, '')` 處理。
+
+### 2. 靜態分析與視覺化層
+- **[MODIFY] [static-analyzer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/static-analyzer.ts)**: 擴充為雙階段掃描以確實識別並記錄類別依賴，輸出 `staticCallGraph.classes`。
+- **[MODIFY] [templates/visualizer.html](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/templates/visualizer.html)**: 新增「類別級 (Class-level)」選項與對應的 `buildGraphData` 節點及連線對應邏輯。
+
+## 驗證計畫
+### 本地測試
+1. 執行 `scan` 驗證 `boundary-map.json` 是否正確生成 `staticCallGraph.classes`。
+2. 執行 `run` 驗證 `types-observed.json` 中動態呼叫鏈是否加上 Class 前綴。
+3. 執行 `generate` 驗證型別標註生成無錯，且 interface 名稱合法。
+4. 執行 `visualize` 驗證「類別級」視覺化顯示正確，並能與動態實線、靜態虛線無縫整合。
+
+---
+
+# 實作類別級 (Class-level) 關係鏈收集與視覺化 - 執行成果
+
+**時間戳記**：2026-06-04 17:26:00
+
+## 影響檔案
+- `src/static-analyzer.ts`
+- `src/babel-plugin-js2ts.ts`
+- `src/code-generator.ts`
+- `src/templates/visualizer.html`
+
+## 執行與部署計畫成果
+1. **靜態分析**：雙階段 AST 掃描順利提取專案內之 Class 關係，輸出至 `boundary-map.json` 的 `staticCallGraph.classes` 欄位。
+2. **動態側錄**：`babel-plugin-js2ts.ts` 的 `getFunctionName` 與 `tracker-client.ts` 均能對類別方法/建構函式精確補上 `ClassName.` 前綴（例如 `ParticleSystem.spawn`），並存檔於 `types-observed.json` 中之 `__callGraph` 的 `graph` 鍵內。
+3. **型別注入與清洗**：對齊重構後的型別標註規格，並於 `code-generator.ts` 自動清洗 interface 名稱中的點號，避免語法錯誤（已將 `Particle.constructor` 清洗為 `ParticleconstructorSvgShape`）。
+4. **互動式視覺化**：於檢視層級新增「類別級 (Class-level)」選單與聚合繪製邏輯，D3.js 關係圖繪製流暢。
+
+
+
