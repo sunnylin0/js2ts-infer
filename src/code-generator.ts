@@ -57,6 +57,13 @@ function mergeObjectShapesArray(shapes: any[]): any {
   return combined;
 }
 
+function formatInterfaceKey(key: string): string {
+  if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+    return key;
+  }
+  return JSON.stringify(key);
+}
+
 function shapeToInterfaceBody(shape: any, depth = 1): string {
   const indent = '  '.repeat(depth);
   let body = '';
@@ -83,7 +90,8 @@ function shapeToInterfaceBody(shape: any, depth = 1): string {
       finalType = typeStr;
     }
 
-    body += `${indent}${key}${isOptional ? '?' : ''}: ${finalType};\n`;
+    const formattedKey = formatInterfaceKey(key);
+    body += `${indent}${formattedKey}${isOptional ? '?' : ''}: ${finalType};\n`;
   }
 
   body += `${indent}[key: string]: any;\n`;
@@ -122,7 +130,11 @@ function resolveParameterType(record: any, baseName: string, interfacesToDeclare
     finalType = `(${finalType}) | null`;
   }
 
-  return finalType.replace(/\[object Object\]/g, '{ [key: string]: any }');
+  let result = finalType.replace(/\[object Object\]/g, '{ [key: string]: any }');
+  while (result.includes('<>')) {
+    result = result.replace(/<>/g, '<any>');
+  }
+  return result;
 }
 
 function safeAddProperty(cls: any, propName: string, typeStr: string = 'any') {
@@ -188,6 +200,7 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
     });
 
     sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration).forEach(cls => {
+      const classMethods = new Set(cls.getMethods().map((m: any) => m.getName()));
       // 1. 收集 Class 中所有 `this.xxx` 賦值
       const properties = new Set<string>();
       cls.getDescendantsOfKind(SyntaxKind.BinaryExpression).forEach(expr => {
@@ -215,6 +228,8 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
         const statements = ctor.getStatements();
         const propertiesToMigrate: { propName: string; rightText: string; commentText: string }[] = [];
 
+        const collectedPropNames = new Set<string>();
+
         // 第一階段：唯讀收集
         statements.forEach((stmt: any) => {
           if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
@@ -229,6 +244,21 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
                 if (propAccess.getExpression().getText() === 'this') {
                   const propName = propAccess.getName();
                   const rightText = right.getText();
+
+                  // 1. 避免與 Class 方法同名衝突
+                  if (classMethods.has(propName)) {
+                    return;
+                  }
+
+                  // 2. 避免重複宣告
+                  if (collectedPropNames.has(propName)) {
+                    return;
+                  }
+
+                  // 3. 避免依賴 `this.` (實例屬性或方法引用，在 class properties 階段可能尚未初始化)
+                  if (rightText.includes('this.')) {
+                    return;
+                  }
 
                   // 檢查是否含有對 constructor 參數或內部變數的參照
                   let isSafe = true;
@@ -256,6 +286,7 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
                       commentText = leadingCommentRanges.map((r: any) => r.getText()).join('\n');
                     }
 
+                    collectedPropNames.add(propName);
                     propertiesToMigrate.push({
                       propName,
                       rightText,
@@ -316,7 +347,7 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
 
       // 2. 自動在頂部補上未宣告的屬性
       properties.forEach(prop => {
-        if (!existingProps.has(prop)) {
+        if (!existingProps.has(prop) && !classMethods.has(prop)) {
           safeAddProperty(cls, prop, 'any');
         }
       });

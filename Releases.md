@@ -57,3 +57,15 @@
 ## [2026-06-04] v1.1.7 - 目錄複製非覆寫與轉換 TS 覆寫機制
 - **目錄複製防覆蓋保護**：優化 `generate` 的 `outDir` 複製邏輯，若目標目錄已存在同名檔案則拒絕覆蓋，保護自訂設定或修改。
 - **轉換後的 TS 覆蓋**：全新生成的 `*.ts` 檔案不受防覆蓋保護限制，照常直接寫入並覆蓋，確保型別注入內容即時更新。
+
+## [2026-06-04] v1.1.8 - 移除 Node 22 require-module 禁用旗標以支援 Vite 8
+- **支援 Vite 8 載入與運行**：在 `run` 命令中，針對 Node.js >= 22 移除原先被注入的 `--no-experimental-require-module` 啟動旗標。這解決了 Vite 8 (ESM only) 被 `vite.config.js` 同步 `require()` 載入時拋出 `ERR_REQUIRE_ESM` 的問題，實現開發伺服器的完美啟動。
+
+## [2026-06-04] v1.1.9 - 提升 Class Fields 屬性搬移安全性
+- **加強構造屬性搬移安全**：在 AST 處理器提取 `this.xxx` 賦值句到類別成員宣告時，自動排除與 Class Method 同名（如 `.bind(this)`）、重複宣告、以及右側包含實例依賴 `this.` 的表達式。這解決了 `4_abc662` 中 `play`、`toggleLoop` 和 `clientClickListener` 引發的語法重複宣告錯誤，讓 TS 代碼能順利通過 Vite 8 (Rolldown) 的 Parse 分析。
+
+## [2026-06-04] v1.2.0 - 修正空泛型清洗與側錄干擾阻斷
+- **型別清洗防禦機制**：於 `resolveParameterType` 傳回型別時，加入遞迴清洗機制，自動將 `Array<Array<Array<>>>` 等髒資料轉換為合法的 `Array<Array<Array<any>>>`，徹底消除 OXC/Vite 解析 TypeScript 的語法崩潰問題。
+- **側錄插件免擾宣告**：於轉換後的 TypeScript 專案的 `vite.config.ts` 中註解 `vitePlugin` 側錄插件。這避免了在非型別側錄模式下，執行 `pnpm run dev` 載入 `editor.html` 時因無法連線型別伺服器而拋出 `TypeError: globalThis.__typeTracker is not a function` 的錯誤。
+- **無暇語法生成驗證**：成功以 `node dist/cli.js generate` 重新生成 `4_abcTS` 目錄檔案，證實 v1.1.9 的方法同名安全過濾已排除 `play`、`toggleLoop` 等重複宣告，並順利通過 `pnpm run build:vite` 的 TypeScript 轉譯與封裝。
+

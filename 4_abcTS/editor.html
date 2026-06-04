@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="examples-styles.css" />
+
+  <title>Basic Editor</title>
+  <!-- 在開發模式 (http/https) 下使用 Vite 動態載入 ESM index.js 享用 HMR -->
+  <script type="module">
+    if (window.location.protocol !== 'file:') {
+      import('./index.ts').then((module) => {
+        window.ABCJS = module.default || module;
+        initEditor();
+      });
+    }
+  </script>
+
+  <!-- 在本地 file:// 協定下，載入 Vite 打包出來的單一 UMD 檔案以規避 CORS 限制 -->
+  <script type="text/javascript">
+    if (window.location.protocol === 'file:') {
+      const script = document.createElement('script');
+      script.src = './dist/abcjs-basic.js';
+      script.onload = () => {
+        initEditor();
+      };
+      document.head.appendChild(script);
+    }
+
+    function initEditor() {
+      if (window.ABCJS) {
+        new window.ABCJS.Editor("abc", {
+          canvas_id: "paper",
+          warnings_id: "warnings",
+          abcjsParams: {}
+        });
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <header>
+    <h1>abcjs editor</h1>
+  </header>
+  <div class="container">
+    <textarea id="abc" cols="80" rows="50" spellcheck="false">
+X: 1
+T: Cooley's
+M: 4/4
+L: 1/8
+R: reel
+K: Emin
+|:D2|EB{c}BA B2 EB|~B2 AB dBAG|FDAD BDAD|FDAD dAFD|
+EBBA B2 EB|B2 AB defg|afe^c dBAF|DEFD E2:|
+|:gf|eB B2 efge|eB B2 gedB|A2 FA DAFA|A2 FA defg|
+eB B2 eBgB|eB B2 defg|afe^c dBAF|DEFD E2:|
+    </textarea>
+
+    <div id="warnings"></div>
+    <hr>
+    <div id="paper"></div>
+  </div>
+</body>
+
+</html>

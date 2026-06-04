@@ -116,3 +116,14 @@ node ../src/cli.js review
 - **轉換後的 TS 檔照常覆寫**：轉換產生的全新 `*.ts` 檔案不受此複寫保護影響，會直接寫入並覆蓋，確保型別注入的即時更新。
 - **E2E 驗證成功**：在 `3_SnakeTS/package.json` 中手動加入測試 description，重新執行轉換指令，確認 package.json 未被覆蓋，且 `src/` 底下的所有 `*.ts` 檔案仍成功被轉換並覆寫更新。
 
+## ⚡ 2026-06-04 更新：解決 Vite 8/Node 22 啟動錯誤 (v1.1.8)
+- **移除 --no-experimental-require-module 限制**：針對 Node.js >= 22 移除環境變數中的限制旗標，以允許 Node 載入 Vite 8 (ESM only) 的依賴，防止在讀取 CommonJS 格式的設定檔時引發 `ERR_REQUIRE_ESM` 崩潰。
+- **E2E 驗證成功**：在 `4_abc662` 中成功執行 `js2ts-infer run "pnpm run dev"` 並啟動 Vite 伺服器，且能在瀏覽器中順利載入 `http://localhost:5174/editor.html`。
+
+## ⚡ 2026-06-04 更新：提升 Class Fields 屬性搬移安全性 (v1.1.9)
+- **避免重複宣告與 Method 衝突**：
+  - 加強 `src/code-generator.ts` 中的 AST 分析器，在將建構函式中的 `this.xxx` 賦值語句提取至類別頂層屬性宣告時，如果檢測到該類別已包含名為 `xxx` 的原型方法（如 `this.play = this.play.bind(this)`），或是該變數已被宣告過，則**跳過搬移**。
+  - 對於包含實例對象引用（`this.`，如 `this.abcjsParams.clickListener`）的右側表達式，因為依賴構造函式中的實例動態狀態，也**跳過搬移**。
+- **E2E 驗證成功**：
+  - 成功重新生成 `4_abcTS` 目錄。原先因為 `play` 重複宣告、`toggleLoop` 重複宣告以及 `clientClickListener` 衝突導致的 Vite (Rolldown) Parse Error 徹底解決，`pnpm run dev` 正常啟動無任何報錯，且在 `http://localhost:5174/editor.html` 中順利渲染運作。
+

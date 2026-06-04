@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
 import commonjs from 'vite-plugin-commonjs';
 import path from 'path';
-import { vitePlugin } from '../src/plugins.js';
+// import { vitePlugin } from '../src/plugins.js';
 
 export default defineConfig({
   plugins: [
     commonjs(),
-    vitePlugin({ port: 9002 })
+    // vitePlugin({ port: 9002 })
   ],
   build: {
     // 禁用 CSS 代碼拆分，讓樣式跟著打包，或獨立為單一 css

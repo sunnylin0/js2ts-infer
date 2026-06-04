@@ -1,0 +1,1174 @@
+{
+  "classes": {
+    "Svg": "src/write/svg.js",
+    "Renderer": "src/write/renderer.js",
+    "EngraverController": "src/write/engraver-controller.js",
+    "VoiceElement": "src/write/creation/elements/voice-element.js",
+    "GetTextSize": "src/write/helpers/get-text-size.js",
+    "GetFontAndAttr": "src/write/helpers/get-font-and-attr.js",
+    "Classes": "src/write/helpers/classes.js",
+    "TabLine": "src/write/draw/tab-line.js",
+    "Selectables": "src/write/draw/selectables.js",
+    "Group": "src/write/draw/group-elements.js",
+    "Decoration": "src/write/creation/decoration.js",
+    "AbstractEngraver": "src/write/creation/abstract-engraver.js",
+    "TripletElem": "src/write/creation/elements/triplet-element.js",
+    "TopText": "src/write/creation/elements/top-text.js",
+    "TieElem": "src/write/creation/elements/tie-element.js",
+    "TempoElement": "src/write/creation/elements/tempo-element.js",
+    "Subtitle": "src/write/creation/elements/subtitle.js",
+    "StaffGroupElement": "src/write/creation/elements/staff-group-element.js",
+    "Separator": "src/write/creation/elements/separator.js",
+    "RelativeElement": "src/write/creation/elements/relative-element.js",
+    "GlissandoElem": "src/write/creation/elements/glissando-element.js",
+    "FreeText": "src/write/creation/elements/free-text.js",
+    "EndingElem": "src/write/creation/elements/ending-element.js",
+    "DynamicDecoration": "src/write/creation/elements/dynamic-decoration.js",
+    "CrescendoElem": "src/write/creation/elements/crescendo-element.js",
+    "BraceElem": "src/write/creation/elements/brace-element.js",
+    "BottomText": "src/write/creation/elements/bottom-text.js",
+    "BeamElem": "src/write/creation/elements/beam-element.js",
+    "AbsoluteElement": "src/write/creation/elements/absolute-element.js",
+    "TabAbsoluteElements": "src/tablatures/render/tab-absolute-elements.js",
+    "PluginInstance": "src/tablatures/instruments/tab-string.js",
+    "TabNote": "src/tablatures/instruments/tab-note.js",
+    "StringTablature": "src/tablatures/instruments/string-tablature.js",
+    "StringPatterns": "src/tablatures/instruments/string-patterns.js",
+    "SynthSequence": "src/synth/synth-sequence.js",
+    "SynthController": "src/synth/synth-controller.js",
+    "Repeats": "src/synth/repeats.js",
+    "CreateSynth": "src/synth/create-synth.js",
+    "CreateSynthControl": "src/synth/create-synth-control.js",
+    "ChordTrack": "src/synth/chord-track.js",
+    "MidiSequencer": "src/synth/abc_midi_sequencer.js",
+    "Midi": "src/synth/abc_midi_renderer.js",
+    "MidiFlattener": "src/synth/abc_midi_flattener.js",
+    "TuneBuilder": "src/parse/tune-builder.js",
+    "Tokenizer": "src/parse/abc_tokenizer.js",
+    "ParseHeader": "src/parse/abc_parse_header.js",
+    "Parse": "src/parse/abc_parse.js",
+    "Editor": "src/edit/abc_editor.js",
+    "EditArea": "src/edit/abc_editarea.js",
+    "Tune": "src/data/abc_tune.js",
+    "TuneBook": "src/api/abc_tunebook.js",
+    "TimingCallbacks": "src/api/abc_timing_callbacks.js"
+  },
+  "boundaries": [
+    {
+      "filePath": "src/write/svg.js",
+      "exportName": "Svg",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/renderer.js",
+      "exportName": "Renderer",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/engraver-controller.js",
+      "exportName": "EngraverController",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/voice.js",
+      "exportName": "layoutVoice",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/voice-elements.js",
+      "exportName": "VoiceElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/triplet.js",
+      "exportName": "layoutTriplet",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/to-time-and-staff-based.js",
+      "exportName": "toTimeAndStaffBased",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/staff-group.js",
+      "exportName": "layoutStaffGroup",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/set-upper-and-lower-elements.js",
+      "exportName": "setUpperAndLowerElements",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/layout.js",
+      "exportName": "layout",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/layout-in-grid.js",
+      "exportName": "layoutInGrid",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/get-left-edge-of-staff.js",
+      "exportName": "getLeftEdgeOfStaff",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/get-bar-y-at.js",
+      "exportName": "getBarYAt",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/layout/beam.js",
+      "exportName": "layoutBeam",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/interactive/unhighlight.js",
+      "exportName": "unhighlight",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/interactive/selection.js",
+      "exportName": "setupSelection",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/interactive/highlight.js",
+      "exportName": "highlight",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/interactive/find-selectable-element.js",
+      "exportName": "findSelectableElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/interactive/create-analysis.js",
+      "exportName": "createAnalysis",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/helpers/spacing.js",
+      "exportName": "spacing",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/helpers/set-class.js",
+      "exportName": "setClass",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/helpers/get-text-size.js",
+      "exportName": "GetTextSize",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/helpers/get-font-and-attr.js",
+      "exportName": "GetFontAndAttr",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/helpers/classes.js",
+      "exportName": "Classes",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/voice.js",
+      "exportName": "drawVoice",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/triplet.js",
+      "exportName": "drawTriplet",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/tie.js",
+      "exportName": "drawTie",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/text.js",
+      "exportName": "renderText",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/tempo.js",
+      "exportName": "drawTempo",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/tab-line.js",
+      "exportName": "TabLine",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/staff.js",
+      "exportName": "printStaff",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/staff-line.js",
+      "exportName": "printStaffLine",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/staff-group.js",
+      "exportName": "drawStaffGroup",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/sprintf.js",
+      "exportName": "sprintf",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/set-paper-size.js",
+      "exportName": "setPaperSize",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/separator.js",
+      "exportName": "drawSeparator",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/selectables.js",
+      "exportName": "Selectables",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/round-number.js",
+      "exportName": "roundNumber",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/relative.js",
+      "exportName": "drawRelativeElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/print-vertical-line.js",
+      "exportName": "printVerticalLine",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/print-symbol.js",
+      "exportName": "printSymbol",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/print-stem.js",
+      "exportName": "printStem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/print-path.js",
+      "exportName": "printPath",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/print-line.js",
+      "exportName": "printLine",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/non-music.js",
+      "exportName": "nonMusic",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/horizontal-line.js",
+      "exportName": "printHorizontalLine",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/group-elements.js",
+      "exportName": "elementGroup",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/glissando.js",
+      "exportName": "drawGlissando",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/ending.js",
+      "exportName": "drawEnding",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/dynamics.js",
+      "exportName": "drawDynamics",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/draw.js",
+      "exportName": "draw",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/debug-box.js",
+      "exportName": "printDebugBox",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/crescendo.js",
+      "exportName": "drawCrescendo",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/chord-grid.js",
+      "exportName": "drawChordGrid",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/brace.js",
+      "exportName": "drawBrace",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/beam.js",
+      "exportName": "drawBeam",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/draw/absolute.js",
+      "exportName": "drawAbsolute",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/translate-chord.js",
+      "exportName": "translateChord",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/glyphs.js",
+      "exportName": "Glyphs",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/decoration.js",
+      "exportName": "Decoration",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/create-time-signature.js",
+      "exportName": "createTimeSignature",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/create-note-head.js",
+      "exportName": "createNoteHead",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/create-key-signature.js",
+      "exportName": "createKeySignature",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/create-clef.js",
+      "exportName": "createClef",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/calc-height.js",
+      "exportName": "calcHeight",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/add-text-if.js",
+      "exportName": "addTextIf",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/add-chord.js",
+      "exportName": "addChord",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/abstract-engraver.js",
+      "exportName": "AbstractEngraver",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/voice-element.js",
+      "exportName": "VoiceElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/triplet-element.js",
+      "exportName": "TripletElem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/top-text.js",
+      "exportName": "TopText",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/tie-element.js",
+      "exportName": "TieElem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/tempo-element.js",
+      "exportName": "TempoElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/subtitle.js",
+      "exportName": "Subtitle",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/staff-group-element.js",
+      "exportName": "StaffGroupElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/separator.js",
+      "exportName": "Separator",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/rich-text.js",
+      "exportName": "richText",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/relative-element.js",
+      "exportName": "RelativeElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/glissando-element.js",
+      "exportName": "GlissandoElem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/free-text.js",
+      "exportName": "FreeText",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/ending-element.js",
+      "exportName": "EndingElem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/dynamic-decoration.js",
+      "exportName": "DynamicDecoration",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/crescendo-element.js",
+      "exportName": "CrescendoElem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/brace-element.js",
+      "exportName": "BraceElem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/bottom-text.js",
+      "exportName": "BottomText",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/beam-element.js",
+      "exportName": "BeamElem",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/write/creation/elements/absolute-element.js",
+      "exportName": "AbsoluteElement",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/abc_tablatures.js",
+      "exportName": "abcTablatures",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/render/tab-renderer.js",
+      "exportName": "tabRenderer",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/render/tab-absolute-elements.js",
+      "exportName": "TabAbsoluteElements",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/instruments/tab-string.js",
+      "exportName": "PluginInstance",
+      "type": "class"
+    },
+    {
+      "filePath": "src/tablatures/instruments/tab-string.js",
+      "exportName": "AbcStringTab",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/instruments/tab-notes.js",
+      "exportName": "tabNotes",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/instruments/tab-note.js",
+      "exportName": "TabNote",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/instruments/string-tablature.js",
+      "exportName": "StringTablature",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/tablatures/instruments/string-patterns.js",
+      "exportName": "StringPatterns",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/synth-sequence.js",
+      "exportName": "SynthSequence",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/synth-controller.js",
+      "exportName": "SynthController",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/supports-audio.js",
+      "exportName": "supportsAudio",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/sounds-cache.js",
+      "exportName": "soundsCache",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/repeats.js",
+      "exportName": "Repeats",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/register-audio-context.js",
+      "exportName": "registerAudioContext",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/play-event.js",
+      "exportName": "playEvent",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/place-note.js",
+      "exportName": "placeNote",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/pitches-to-perc.js",
+      "exportName": "pitchesToPerc",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/pitch-to-note-name.js",
+      "exportName": "pitchToNoteName",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/note-to-midi.js",
+      "exportName": "noteToMidi",
+      "type": "function"
+    },
+    {
+      "filePath": "src/synth/note-to-midi.js",
+      "exportName": "midiToNote",
+      "type": "function"
+    },
+    {
+      "filePath": "src/synth/load-note.js",
+      "exportName": "getNote",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/instrument-index-to-name.js",
+      "exportName": "instrumentIndexToName",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/get-midi-file.js",
+      "exportName": "getMidiFile",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/download-buffer.js",
+      "exportName": "downloadBuffer",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/create-synth.js",
+      "exportName": "CreateSynth",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/create-synth-control.js",
+      "exportName": "CreateSynthControl",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/create-note-map.js",
+      "exportName": "createNoteMap",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/chord-track.js",
+      "exportName": "ChordTrack",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/cents-to-factor.js",
+      "exportName": "centsToFactor",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/active-audio-context.js",
+      "exportName": "activeAudioContext",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/abc_midi_sequencer.js",
+      "exportName": "MidiSequencer",
+      "type": "class"
+    },
+    {
+      "filePath": "src/synth/abc_midi_sequencer.js",
+      "exportName": "sequence",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/abc_midi_renderer.js",
+      "exportName": "rendererFactory",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/abc_midi_flattener.js",
+      "exportName": "MidiFlattener",
+      "type": "class"
+    },
+    {
+      "filePath": "src/synth/abc_midi_flattener.js",
+      "exportName": "flatten",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/images/reset.svg.js",
+      "exportName": "svg",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/images/play.svg.js",
+      "exportName": "svg",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/images/pause.svg.js",
+      "exportName": "svg",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/images/loop.svg.js",
+      "exportName": "svg",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/synth/images/loading.svg.js",
+      "exportName": "svg",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/str/output.js",
+      "exportName": "strTranspose",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/plugin/greasemonkey.js",
+      "exportName": "abcjs_is_user_script",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/wrap_lines.js",
+      "exportName": "wrapLines",
+      "type": "function"
+    },
+    {
+      "filePath": "src/parse/wrap_lines.js",
+      "exportName": "calcLineWraps",
+      "type": "function"
+    },
+    {
+      "filePath": "src/parse/tune-builder.js",
+      "exportName": "TuneBuilder",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/transpose-chord.js",
+      "exportName": "transposeChordName",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/chord-grid.js",
+      "exportName": "chordGrid",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/all-notes.js",
+      "exportName": "allNotes",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_transpose.js",
+      "exportName": "transpose",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_tokenizer.js",
+      "exportName": "Tokenizer",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "legalAccents",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "volumeDecorations",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "dynamicDecorations",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "accentPseudonyms",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "accentDynamicPseudonyms",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "nonDecorations",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "durations",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "pitches",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "rests",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "accMap",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_settings.js",
+      "exportName": "tripletQ",
+      "type": "unknown"
+    },
+    {
+      "filePath": "src/parse/abc_parse_music.js",
+      "exportName": "MusicParser",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_parse_key_voice.js",
+      "exportName": "parseKeyVoice",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_parse_header.js",
+      "exportName": "ParseHeader",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_parse_directive.js",
+      "exportName": "parseDirective",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_parse_book.js",
+      "exportName": "bookParser",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_parse.js",
+      "exportName": "Parse",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/parse/abc_common.js",
+      "exportName": "parseCommon",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/midi/abc_midi_create.js",
+      "exportName": "create",
+      "type": "function",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/edit/abc_editor.js",
+      "exportName": "Editor",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/edit/abc_editarea.js",
+      "exportName": "EditArea",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/data/deline-tune.js",
+      "exportName": "delineTune",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/data/abc_tune.js",
+      "exportName": "Tune",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/const/relative-major.js",
+      "exportName": "isLegalMode",
+      "type": "function"
+    },
+    {
+      "filePath": "src/const/relative-major.js",
+      "exportName": "relativeMajor",
+      "type": "function"
+    },
+    {
+      "filePath": "src/const/relative-major.js",
+      "exportName": "relativeMode",
+      "type": "function"
+    },
+    {
+      "filePath": "src/const/relative-major.js",
+      "exportName": "transposeKey",
+      "type": "function"
+    },
+    {
+      "filePath": "src/const/key-accidentals.js",
+      "exportName": "keyAccidentals",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/api/tune-metrics.js",
+      "exportName": "tuneMetrics",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/api/abc_tunebook_svg.js",
+      "exportName": "renderAbc",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/api/abc_tunebook.js",
+      "exportName": "numberOfTunes",
+      "type": "function"
+    },
+    {
+      "filePath": "src/api/abc_tunebook.js",
+      "exportName": "TuneBook",
+      "type": "class"
+    },
+    {
+      "filePath": "src/api/abc_tunebook.js",
+      "exportName": "parseOnly",
+      "type": "function"
+    },
+    {
+      "filePath": "src/api/abc_tunebook.js",
+      "exportName": "renderEngine",
+      "type": "function"
+    },
+    {
+      "filePath": "src/api/abc_tunebook.js",
+      "exportName": "extractMeasures",
+      "type": "function"
+    },
+    {
+      "filePath": "src/api/abc_tunebook.js",
+      "exportName": "tunebook",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/api/abc_timing_callbacks.js",
+      "exportName": "TimingCallbacks",
+      "type": "class",
+      "isDefault": true
+    },
+    {
+      "filePath": "src/api/abc_animation.js",
+      "exportName": "animation",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "vite.config.js",
+      "exportName": "default",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "version.js",
+      "exportName": "version",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "version",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "animation",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "tuneBook",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "renderAbc",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "tuneMetrics",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "TimingCallbacks",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "strTranspose",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "CreateSynth",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "SynthController",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "SynthSequence",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "CreateSynthControl",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "Editor",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "EditArea",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "abcTablatures",
+      "type": "unknown"
+    },
+    {
+      "filePath": "index.js",
+      "exportName": "abcjs",
+      "type": "unknown",
+      "isDefault": true
+    }
+  ]
+}

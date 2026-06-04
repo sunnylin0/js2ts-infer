@@ -315,3 +315,35 @@ node ../src/cli.js review
 ##### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
 - 調整 `fs.cpSync` 複製選項中的 `filter` 方法。
 - 若目標路徑 `destPath` 已存在，且來源路徑 `srcPath` 為檔案，則回傳 `false` 拒絕複製；目錄本身則繼續遞迴掃描，實現「增量且無害複製」。
+
+---
+
+### [2026-06-04 15:40] 修正計畫：移除 `--no-experimental-require-module` 啟動旗標以支援 Vite 8
+
+#### 1. 調整後的行為與規格
+- 針對 Node.js >= 22，不再主動於環境變數 `NODE_OPTIONS` 中注入 `--no-experimental-require-module`。
+- 這可使 Node.js 能正常利用原生的 `require(esm)` 機制，在 Vite 8 啟動並載入舊版 CommonJS 設定檔或混和模組時，成功 `require()` 其所依賴的 ES 模組，避免拋出 `ERR_REQUIRE_ESM` 錯誤。
+
+#### 2. 受影響之檔案與修改內容
+
+##### [MODIFY] [src/commands/run.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/commands/run.ts)
+- 刪除對 `major >= 22` 注入 `--no-experimental-require-module` 的邏輯程式碼。
+
+---
+
+### [2026-06-04 15:55] 修正計畫：加強建構函式屬性搬移 (Class Fields Codemod) 的安全過濾機制
+
+針對重構 `4_abc662` 時產生的類別宣告語法衝突，加強屬性搬移時的安全分析。
+
+#### 1. 調整後的行為與規格
+- **避免同名衝突**：
+  - 若 `this.xxx` 的屬性名稱與 Class 中已定義的 Method 相同（例如 `this.play = this.play.bind(this)`），則**不進行搬移**，防止產生重覆宣告的 TS 編譯與解析錯誤。
+- **避免重複宣告**：
+  - 若構造函式中對 `this.xxx` 進行了多次賦值（例如先 initialized 為 `null`，之後再 assigned 為其他值），則**僅搬移第一次賦值宣告**，其餘留在 constructor 內部。
+- **避免依賴未初始化實例狀態**：
+  - 若右側表達式 `yyy` 含有 `this.`（如 `this.abcjsParams.clickListener`），由於這類賦值往往依賴建構函式執行期間的實例動態狀態（在 class properties 階段尚未建立），因此**不進行搬移**。
+
+#### 2. 受影響之檔案與修改內容
+
+##### [MODIFY] [src/code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
+- 在 `runGeneration` 內部的第一階段「唯讀收集」邏輯中，新增 `classMethods`、`collectedPropNames` 的過濾器，並偵測 `rightText.includes('this.')`。符合上述任一條件即跳過搬移。

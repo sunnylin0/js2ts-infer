@@ -120,10 +120,6 @@ export default async function run(command: string, options: RunOptions): Promise
     nodeOptions = ` --require "${loaderHookCjs}" --experimental-loader "file:///${loaderHookEsm}"`;
   }
   
-  if (major >= 22) {
-    nodeOptions += ' --no-experimental-require-module';
-  }
-  
   const env = {
     ...process.env,
     NODE_OPTIONS: (process.env.NODE_OPTIONS || '') + nodeOptions

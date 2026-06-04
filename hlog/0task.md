@@ -47,3 +47,16 @@
 ### [2026-06-04 15:20] 任務：增量目錄複製與型別覆寫保護
 - [x] 於 `src/code-generator.ts` 的 `fs.cpSync` 篩選器中新增 `destPath` 存在性檢查，避免覆寫目標目錄中已有的檔案。
 - [x] 驗證重構後轉換生成的 `*.ts` 仍可正確覆寫並更新目標目錄中的型別宣告。
+
+---
+
+### [2026-06-04 15:40] 任務：支援 Vite 8 運行 (解決 ERR_REQUIRE_ESM)
+- [x] 於 `src/commands/run.ts` 移除 Node.js >= 22 的 `--no-experimental-require-module` 注入。
+- [x] 重新編譯專案並在 `4_abc662` 中驗證 `js2ts-infer run "pnpm run dev"` 成功啟動 Vite 開發伺服器。
+- [x] 成功引導在瀏覽器中打開 `http://localhost:5174/editor.html`。
+
+---
+
+### [2026-06-04 15:55] 任務：提升 Class Fields 屬性搬移安全性
+- [x] 於 `src/code-generator.ts` 的唯讀收集階段，排除同名 Method、重複聲明、以及依賴 `this.` 的表達式。
+- [x] 重新生成 `4_abcTS` 並成功以 `pnpm run dev` 啟動且無任何 Parse Error。
