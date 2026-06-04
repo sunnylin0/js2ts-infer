@@ -1,0 +1,953 @@
+{
+  "src/main.js::anonymous::var::engine": {
+    "observedTypes": [
+      "GameEngine"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/state/states.js::constructor::param::game": {
+    "observedTypes": [
+      "GameEngine"
+    ],
+    "objectShapes": [],
+    "callCount": 21
+  },
+  "src/state/gameState.js::constructor::param::game": {
+    "observedTypes": [
+      "GameEngine"
+    ],
+    "objectShapes": [],
+    "callCount": 21
+  },
+  "src/engine/gameEngine.js::start::param::initialState": {
+    "observedTypes": [
+      "MenuState"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/engine/gameEngine.js::initGlobalEvents::var::logo": {
+    "observedTypes": [
+      "HTMLHeadingElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/engine/gameEngine.js::initGlobalEvents::var::dpadButtons": {
+    "observedTypes": [
+      "Array<{ [key: string]: any }>"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/engine/gameEngine.js::anonymous::param::btnInfo": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "id": "string",
+        "dir": "string"
+      }
+    ],
+    "callCount": 8
+  },
+  "src/engine/gameEngine.js::anonymous::var::btnEl": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 8
+  },
+  "src/engine/gameEngine.js::anonymous::var::handleDpadInput": {
+    "observedTypes": [],
+    "objectShapes": [],
+    "callCount": 8
+  },
+  "src/engine/gameEngine.js::initGlobalEvents::var::canvasWrapper": {
+    "observedTypes": [
+      "HTMLDivElement"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/engine/gameEngine.js::changeState::param::newState": {
+    "observedTypes": [
+      "MenuState",
+      "PlayingState",
+      "GameOverState"
+    ],
+    "objectShapes": [],
+    "callCount": 21
+  },
+  "src/engine/gameEngine.js::showScreen::param::activeScreenId": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 14
+  },
+  "src/engine/gameEngine.js::showScreen::var::screens": {
+    "observedTypes": [
+      "NodeList"
+    ],
+    "objectShapes": [],
+    "callCount": 14
+  },
+  "src/engine/gameEngine.js::anonymous::param::screen": {
+    "observedTypes": [
+      "HTMLElement"
+    ],
+    "objectShapes": [],
+    "callCount": 28
+  },
+  "src/state/states.js::enter::var::nameInput": {
+    "observedTypes": [
+      "HTMLInputElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::loadLeaderboard::var::listContainer": {
+    "observedTypes": [
+      "HTMLTableSectionElement"
+    ],
+    "objectShapes": [],
+    "callCount": 14
+  },
+  "src/state/states.js::loadLeaderboard::var::rawScores": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 14
+  },
+  "src/state/states.js::loadLeaderboard::var::scores": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "easy": "Array<{ [key: string]: any }>",
+        "medium": "Array<{ [key: string]: any }>"
+      },
+      {
+        "easy": "Array<{ [key: string]: any }>",
+        "medium": "Array<{ [key: string]: any }>",
+        "hard": "Array<{ [key: string]: any }>"
+      }
+    ],
+    "callCount": 14
+  },
+  "src/state/states.js::loadLeaderboard::var::modeScores": {
+    "observedTypes": [
+      "Array<{ [key: string]: any }>",
+      "Array<any>"
+    ],
+    "objectShapes": [],
+    "callCount": 14
+  },
+  "src/state/states.js::anonymous::param::entry": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "playerName": "string",
+        "score": "number",
+        "playTime": "number",
+        "date": "string"
+      }
+    ],
+    "callCount": 32
+  },
+  "src/state/states.js::anonymous::param::index": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 11740
+  },
+  "src/state/states.js::anonymous::var::rank": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 32
+  },
+  "src/state/states.js::anonymous::var::rankBadge": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 32
+  },
+  "src/state/states.js::anonymous::var::row": {
+    "observedTypes": [
+      "HTMLTableRowElement"
+    ],
+    "objectShapes": [],
+    "callCount": 32
+  },
+  "src/state/states.js::formatTime::param::seconds": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 88
+  },
+  "src/state/states.js::formatTime::var::min": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 88
+  },
+  "src/state/states.js::formatTime::var::sec": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 88
+  },
+  "src/state/states.js::formatTime::return": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 88
+  },
+  "src/state/states.js::setupListeners::var::diffButtons": {
+    "observedTypes": [
+      "NodeList"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::anonymous::param::btn": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 72
+  },
+  "src/state/states.js::setupListeners::var::tabButtons": {
+    "observedTypes": [
+      "NodeList"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/gameEngine.js::start::var::loop": {
+    "observedTypes": [],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/engine/gameEngine.js::start::var::loop::cb_param::0": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 6429
+  },
+  "src/state/gameState.js::update::param::timestamp": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 3336
+  },
+  "src/engine/gameEngine.js::start::var::loop::cb_return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 6429
+  },
+  "src/state/states.js::onclick::param::e": {
+    "observedTypes": [
+      "PointerEvent"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "src/state/states.js::onclick::var::difficulty": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "src/state/states.js::onclick::var::nameInput": {
+    "observedTypes": [
+      "HTMLInputElement"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "src/state/states.js::onclick::var::name": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "src/audio.js::playCoin::var::now": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 16
+  },
+  "src/audio.js::playCoin::var::osc": {
+    "observedTypes": [
+      "OscillatorNode"
+    ],
+    "objectShapes": [],
+    "callCount": 16
+  },
+  "src/audio.js::playCoin::var::gain": {
+    "observedTypes": [
+      "GainNode"
+    ],
+    "objectShapes": [],
+    "callCount": 16
+  },
+  "src/engine/gameEngine.js::setDifficulty::param::diff": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 4
+  },
+  "src/state/states.js::exit::var::diffButtons": {
+    "observedTypes": [
+      "NodeList"
+    ],
+    "objectShapes": [],
+    "callCount": 5
+  },
+  "src/state/states.js::anonymous::return": {
+    "observedTypes": [
+      "null",
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 67
+  },
+  "src/state/states.js::exit::var::tabButtons": {
+    "observedTypes": [
+      "NodeList"
+    ],
+    "objectShapes": [],
+    "callCount": 5
+  },
+  "src/state/states.js::initSvgCanvas::var::svg": {
+    "observedTypes": [
+      "SVGSVGElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::initSvgCanvas::var::defs": {
+    "observedTypes": [
+      "SVGDefsElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::constructor::param::gridW": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::constructor::param::gridH": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::constructor::var::midX": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::constructor::var::midY": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/particles.js::constructor::param::svgCanvas": {
+    "observedTypes": [
+      "SVGSVGElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::spawnFood::var::attempts": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 16
+  },
+  "src/state/states.js::spawnFood::var::maxAttempts": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 16
+  },
+  "src/state/states.js::setupListeners::var::pauseBtn": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::update::param::timestamp": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 3093
+  },
+  "src/engine/particles.js::update::var::i": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 3093
+  },
+  "src/state/states.js::update::var::elapsed": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 3093
+  },
+  "src/state/states.js::draw::var::svg": {
+    "observedTypes": [
+      "SVGSVGElement"
+    ],
+    "objectShapes": [],
+    "callCount": 3086
+  },
+  "src/state/states.js::draw::var::defs": {
+    "observedTypes": [
+      "SVGDefsElement"
+    ],
+    "objectShapes": [],
+    "callCount": 3086
+  },
+  "src/state/states.js::draw::var::foodEl": {
+    "observedTypes": [
+      "SVGRectElement"
+    ],
+    "objectShapes": [],
+    "callCount": 3086
+  },
+  "src/state/states.js::anonymous::param::seg": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 11708
+  },
+  "src/state/states.js::anonymous::var::isHead": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 11708
+  },
+  "src/state/states.js::anonymous::var::segEl": {
+    "observedTypes": [
+      "SVGRectElement"
+    ],
+    "objectShapes": [],
+    "callCount": 11708
+  },
+  "src/engine/snake.js::move::var::head": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 595
+  },
+  "src/engine/snake.js::move::var::newHead": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 595
+  },
+  "src/engine/snake.js::move::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 595
+  },
+  "src/state/states.js::update::var::head": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 595
+  },
+  "src/engine/snake.js::checkSelfCollision::var::head": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 588
+  },
+  "src/engine/snake.js::checkSelfCollision::var::i": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 588
+  },
+  "src/engine/snake.js::checkSelfCollision::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 588
+  },
+  "src/engine/gameEngine.js::anonymous::param::e": {
+    "observedTypes": [
+      "KeyboardEvent"
+    ],
+    "objectShapes": [],
+    "callCount": 63
+  },
+  "src/state/states.js::handleInput::param::e": {
+    "observedTypes": [
+      "KeyboardEvent"
+    ],
+    "objectShapes": [],
+    "callCount": 45
+  },
+  "src/engine/snake.js::handleKeydown::param::e": {
+    "observedTypes": [
+      "KeyboardEvent"
+    ],
+    "objectShapes": [],
+    "callCount": 45
+  },
+  "src/engine/snake.js::handleKeydown::var::dir": {
+    "observedTypes": [
+      "null"
+    ],
+    "objectShapes": [],
+    "callCount": 45
+  },
+  "src/engine/snake.js::pushDirection::param::dirName": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 45
+  },
+  "src/engine/snake.js::pushDirection::var::targetDirVector": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 45
+  },
+  "src/engine/snake.js::pushDirection::var::referenceDir": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 45
+  },
+  "src/engine/snake.js::pushDirection::var::isOpposite": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 45
+  },
+  "src/engine/snake.js::move::var::nextDir": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 45
+  },
+  "src/engine/snake.js::move::var::actualCurrentDir": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 45
+  },
+  "src/engine/snake.js::move::var::isOpposite": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 45
+  },
+  "src/engine/particles.js::spawn::param::x": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 9
+  },
+  "src/engine/particles.js::spawn::param::y": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 9
+  },
+  "src/engine/particles.js::spawn::param::color": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 9
+  },
+  "src/engine/particles.js::spawn::var::count": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 9
+  },
+  "src/engine/particles.js::spawn::var::i": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 9
+  },
+  "src/engine/particles.js::constructor::param::svg": {
+    "observedTypes": [
+      "SVGSVGElement"
+    ],
+    "objectShapes": [],
+    "callCount": 131
+  },
+  "src/engine/particles.js::constructor::param::x": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 131
+  },
+  "src/engine/particles.js::constructor::param::y": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 131
+  },
+  "src/engine/particles.js::constructor::param::color": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 131
+  },
+  "src/engine/particles.js::constructor::var::angle": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 131
+  },
+  "src/engine/particles.js::constructor::var::speed": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 131
+  },
+  "src/engine/particles.js::anonymous::param::p": {
+    "observedTypes": [
+      "Particle"
+    ],
+    "objectShapes": [],
+    "callCount": 4398
+  },
+  "src/engine/particles.js::anonymous::return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 4398
+  },
+  "src/engine/particles.js::update::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 4398
+  },
+  "src/engine/particles.js::update::var::isDead": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 4398
+  },
+  "src/state/states.js::triggerDeath::param::message": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/audio.js::playExplosion::var::now": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/audio.js::playExplosion::var::osc": {
+    "observedTypes": [
+      "OscillatorNode"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/audio.js::playExplosion::var::gain": {
+    "observedTypes": [
+      "GainNode"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::constructor::param::score": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::constructor::param::playTime": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::constructor::param::deathMessage": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::exit::var::pauseBtn": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/gameEngine.js::showOverlay::param::overlayId": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/gameEngine.js::showOverlay::var::overlay": {
+    "observedTypes": [
+      "HTMLDivElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::saveToLeaderboard::var::rawScores": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::saveToLeaderboard::var::scores": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "easy": "Array<{ [key: string]: any }>",
+        "medium": "Array<{ [key: string]: any }>"
+      },
+      {
+        "easy": "Array<{ [key: string]: any }>",
+        "medium": "Array<{ [key: string]: any }>",
+        "hard": "Array<{ [key: string]: any }>"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/state/states.js::saveToLeaderboard::var::mode": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::saveToLeaderboard::var::newRecord": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "playerName": "string",
+        "score": "number",
+        "playTime": "number",
+        "date": "string"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/state/states.js::anonymous::param::a": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "playerName": "string",
+        "score": "number",
+        "playTime": "number",
+        "date": "string"
+      }
+    ],
+    "callCount": 37
+  },
+  "src/state/states.js::anonymous::param::b": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "playerName": "string",
+        "score": "number",
+        "playTime": "number",
+        "date": "string"
+      }
+    ],
+    "callCount": 37
+  },
+  "src/state/states.js::update::return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/gameEngine.js::hideOverlay::param::overlayId": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/gameEngine.js::hideOverlay::var::overlay": {
+    "observedTypes": [
+      "HTMLDivElement"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/state/states.js::onclick::param::b": {
+    "observedTypes": [
+      "HTMLButtonElement"
+    ],
+    "objectShapes": [],
+    "callCount": 21
+  },
+  "src/state/states.js::onclick::return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 21
+  },
+  "src/state/states.js::loadLeaderboard::return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/state/gameState.js::handleInput::param::e": {
+    "observedTypes": [
+      "KeyboardEvent"
+    ],
+    "objectShapes": [],
+    "callCount": 18
+  },
+  "src/audio.js::playPause::var::now": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "src/audio.js::playPause::var::frequencies": {
+    "observedTypes": [
+      "Array<number>"
+    ],
+    "objectShapes": [],
+    "callCount": 1
+  },
+  "src/audio.js::anonymous::param::freq": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/audio.js::anonymous::var::osc": {
+    "observedTypes": [
+      "OscillatorNode"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  },
+  "src/audio.js::anonymous::var::gain": {
+    "observedTypes": [
+      "GainNode"
+    ],
+    "objectShapes": [],
+    "callCount": 2
+  }
+}

@@ -1,0 +1,12 @@
+class Separator {
+    constructor(spaceAbove, lineLength, spaceBelow) {
+        this.rows = [];
+        this.rows = [];
+        if (spaceAbove)
+            this.rows.push({ move: spaceAbove });
+        this.rows.push({ separator: lineLength, absElemType: "separator" });
+        if (spaceBelow)
+            this.rows.push({ move: spaceBelow });
+    }
+}
+export default Separator;

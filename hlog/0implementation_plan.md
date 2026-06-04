@@ -98,8 +98,28 @@
       ex: `npx js2ts-infer run "node 2_MathCal/main.js"`
       # 或使用 pnpm
       ex: `npx js2ts-infer run "pnpm dev"`
-  4. `npx js2ts-infer generate` 生成 TS 檔案，並以 `tsc --noEmit` 驗證其可編譯性。
-  5. `npx js2ts-infer review` 審閱剩餘的 `any`。
+  4. `npx js2ts-infer merge types-observed.json --out merged-types.json` 合併多端型別。
+  5. `npx js2ts-infer generate` 生成 TS 檔案，並以 `tsc --noEmit` 驗證其可編譯性。
+  6. `npx js2ts-infer review` 審閱剩餘的 `any`。
+
+
+# 1. 於目錄初始化設定檔
+node ../src/cli.js init
+
+# 2. 靜態分析 Export 邊界，產生 boundary-map.json
+node ../src/cli.js scan
+
+# 3. 背景啟動伺服器，執行測試並側錄型別，生成 types-observed.json
+node ../src/cli.js run "node test-run.mjs"
+
+# 4. 合併多端型別
+node ../src/cli.js merge types-observed.json --out merged-types.json
+
+# 5. 型別注入與重構 (.js -> .ts / CJS -> ESM)
+node ../src/cli.js generate --force
+
+# 6. 開啟終端互動式 review 補完與介面重新命名
+node ../src/cli.js review
 
 ---
 
