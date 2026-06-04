@@ -8,7 +8,77 @@ interface RunOptions {
   config: string;
 }
 
+function checkFrontendConfig(): boolean {
+  const cwd = process.cwd();
+  const pkgPath = path.join(cwd, 'package.json');
+  if (!fs.existsSync(pkgPath)) return true;
+
+  try {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+    const hasVite = 'vite' in deps;
+    const hasWebpack = 'webpack' in deps;
+    let isValid = true;
+
+    if (hasVite) {
+      const viteConfigFiles = [
+        'vite.config.js',
+        'vite.config.ts',
+        'vite.config.cjs',
+        'vite.config.mjs',
+        'vite.config.mts'
+      ];
+      const found = viteConfigFiles.find(f => fs.existsSync(path.join(cwd, f)));
+      if (!found) {
+        console.error(chalk.red(
+          `\n❌ [錯誤] 偵測到此專案為 Vite 專案，但未在根目錄找到 vite.config.* 設定檔。\n` +
+          `👉 請建立 vite.config.cjs 並配置 vitePlugin 以啟用前端型別插樁，否則將無法收集瀏覽器端的型別。\n`
+        ));
+        isValid = false;
+      } else {
+        const content = fs.readFileSync(path.join(cwd, found), 'utf-8');
+        if (!content.includes('vitePlugin')) {
+          console.error(chalk.red(
+            `\n❌ [錯誤] 偵測到此專案已配置 ${found}，但內容似乎沒有啟用 vitePlugin 插件。\n` +
+            `👉 請確保已在 plugins 陣列中加入 vitePlugin()。\n`
+          ));
+          isValid = false;
+        }
+      }
+    }
+
+    if (hasWebpack) {
+      const webpackConfigFiles = [
+        'webpack.config.js',
+        'webpack.config.ts',
+        'webpack.config.cjs',
+        'webpack.config.mjs'
+      ];
+      const found = webpackConfigFiles.find(f => fs.existsSync(path.join(cwd, f)));
+      if (found) {
+        const content = fs.readFileSync(path.join(cwd, found), 'utf-8');
+        if (!content.includes('webpackLoader') && !content.includes('js2ts-loader')) {
+          console.error(chalk.red(
+            `\n❌ [錯誤] 偵測到此專案已配置 ${found}，但內容似乎沒有啟用 webpackLoader。\n` +
+            `👉 請確保在 module.rules 中設定了對應的 loader 以便收集瀏覽器端型別。\n`
+          ));
+          isValid = false;
+        }
+      }
+    }
+    return isValid;
+  } catch (e) {
+    return true;
+  }
+}
+
 export default async function run(command: string, options: RunOptions): Promise<void> {
+  if (!checkFrontendConfig()) {
+    process.exit(1);
+  }
+
+  
   const configPath = path.resolve(process.cwd(), options.config);
   
   let config: any = {
@@ -82,7 +152,16 @@ export default async function run(command: string, options: RunOptions): Promise
     
     const typesObservedPath = path.resolve(process.cwd(), 'types-observed.json');
     if (fs.existsSync(typesObservedPath)) {
-      console.log(chalk.green(`✔ 型別側錄成功！已存檔至: ${typesObservedPath}`));
+      try {
+        const data = JSON.parse(fs.readFileSync(typesObservedPath, 'utf-8'));
+        if (Object.keys(data).length === 0) {
+          console.log(chalk.yellow(`⚠ 未偵測到任何型別。如果您是前端專案，請確保已開啟瀏覽器操作網頁，且已正確載入 vitePlugin / webpackLoader。`));
+        } else {
+          console.log(chalk.green(`✔ 型別側錄成功！已存檔至: ${typesObservedPath}`));
+        }
+      } catch (e) {
+        console.log(chalk.green(`✔ 型別側錄成功！已存檔至: ${typesObservedPath}`));
+      }
     } else {
       console.log(chalk.yellow(`⚠ 未偵測到任何型別。請確認代碼是否有被執行且符合包含範圍。`));
     }

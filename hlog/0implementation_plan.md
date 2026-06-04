@@ -94,6 +94,24 @@
 - 於 `1_todo`、`2_MathCal` 或 `3_Snake` 測試專案上執行：
   1. `npx js2ts-infer init` 驗證設定檔生成（TC-001）。
   2. `npx js2ts-infer scan` 生成 `boundary-map.json`。
-  3. `npx js2ts-infer run <test-command>` 側錄型別。
+  3. `npx js2ts-infer run <test-command>` 側錄型別的入口。
+      ex: `npx js2ts-infer run "node 2_MathCal/main.js"`
+      # 或使用 pnpm
+      ex: `npx js2ts-infer run "pnpm dev"`
   4. `npx js2ts-infer generate` 生成 TS 檔案，並以 `tsc --noEmit` 驗證其可編譯性。
   5. `npx js2ts-infer review` 審閱剩餘的 `any`。
+
+---
+
+## 偵測未配置前端插件之設計 (新增)
+
+為了解決前端專案 (Vite / Webpack) 忘記配置 `vitePlugin` 或 `webpackLoader` 導致側錄落空的問題，於 `run` 指令啟動前與結束後新增以下檢查機制：
+
+### 1. 靜態設定檔掃描
+在 `js2ts-infer run` 啟動前，若 `package.json` 中宣告有 `vite` 或 `webpack` 依賴：
+- 檢查根目錄是否包含 `vite.config.*` 或 `webpack.config.*`。
+- 若不存在，或檔案內容中未包含 `vitePlugin`、`webpackLoader` 等關鍵字，即印出顯眼的錯誤並中斷程式執行。
+
+### 2. 運行時空資料警告
+若指令執行結束時產出的 `types-observed.json` 為空，且偵測到前端框架，則提示使用者確認是否正確開啟網頁進行操作，以利觸發側錄。
+
