@@ -116,9 +116,12 @@ node ../src/cli.js run "node test-run.mjs"
 node ../src/cli.js merge types-observed.json --out merged-types.json
 
 # 5. 型別注入與重構 (.js -> .ts / CJS -> ESM)
-node ../src/cli.js generate --force
+node ../src/cli.js generate -i ./source -o ./target --force
 
-# 6. 開啟終端互動式 review 補完與介面重新命名
+# 6. 關係鏈與依賴關係互動式視覺化檢視工具
+node ../src/cli.js visualize
+
+# 7. 開啟終端互動式 review 補完與介面重新命名
 node ../src/cli.js review
 
 ---

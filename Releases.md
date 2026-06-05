@@ -98,3 +98,19 @@
 
 ## [2026-06-05] v1.4.3 - 於 generate 中排除轉譯 `vite.config` 與 `webpack.config`
 - **設定檔轉譯排除過濾**：升級 `generate` 的程式碼生成器（`src/code-generator.ts`）。在遍歷待重構的檔案列表時，自動過濾並跳過所有檔名主體為 `vite.config` 或 `webpack.config` 的設定檔案（例如 `vite.config.js`、`webpack.config.js` 等）。這能確保在重構專案時，前端的各類建置設定檔可原樣完整保留且不會被不當重構為 `.ts` 檔案，有效避免建置管線因副檔名改變而中斷。
+
+---
+
+## [2026-06-05] v1.4.4 - 支援利用既有 `*.d.ts` 宣告檔進行精準重構
+- **自動載入宣告檔**：於 `src/code-generator.ts` 的 `runGeneration` 階段全域載入專案內所有 `*.d.ts` 宣告檔。
+- **Class 屬性對齊型別**：當 Class 在重構時，自動比對專案中同名 interface，並將 Class 屬性型別覆寫為宣告檔中定義的精確型別（例如將 `engraver` 標註為 `EngraverController`、`lines` 標註為 `Lines[]` 等）。
+- **方法參數與傳回值對齊**：升級 `annotateFunction` 支援 `dtsInterface`。若宣告檔中含有對應方法簽章，則優先對齊參數與傳回值型別，否則回退到側錄推導。
+
+---
+
+## [2026-06-05] v1.4.5 - 實作 AST 型別正反向傳播與自動延伸機制
+- **正向傳播 (區域變數與方法傳回值)**：利用 `TypeChecker` 取得 initializer 與 method return type 推導型別，自動標記方法內部的局部變數（如 `line: AbcJS4.Lines`、`staff: AbcJS4.Staff`）與方法傳回值（如 `getElementFromChar(char): AbcJS4.Voice`）。
+- **反向傳播 (方法參數)**：分析 Class 內部方法的調用引數，反向將引數的推導型別寫入被呼叫方法的參數上（如將 `lines` 標註為 `Lines[]`）。
+- **保留命名空間前綴**：修正型別清理機制保留 `AbcJS4.` 前綴，保證在非 namespace 檔案中能全域識別型別並 100% 通過 TypeScript 編譯。
+
+

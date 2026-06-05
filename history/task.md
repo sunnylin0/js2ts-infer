@@ -84,4 +84,65 @@
   - [x] 修改 `src/code-generator.ts`，對檔名包含 `vite.config.` 與 `webpack.config.` 的檔案直接予以跳過
   - [x] 重新編譯專案並執行測試，驗證 `vite.config.js` 確實未被轉譯且安全保留原樣
 
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-05 13:40:00
+
+- [x] 支援讀取與利用 `*.d.ts` 宣告檔型別進行精準重構
+  - [x] 於 `src/code-generator.ts` 中調整 `runGeneration`：在全域建立單一 `Project` 實例，並載入所有 `*.d.ts` 宣告檔
+  - [x] 修改 `processFileRefactoring` 以共享全域 `project`，並在結束時移除該 `SourceFile`
+  - [x] 實作 `findInterfaceInProject` 以根據 Class 名稱檢索同名 Interface
+  - [x] 實作 `getPropertyTypeString` 輔助函數安全取得屬性型別
+  - [x] 在 `processFileRefactoring` 中，利用同名 interface 對齊 Class properties 型別（包含新宣告與搬移的屬性）
+  - [x] 升級 `annotateFunction` 支援 `dtsInterface`，以優先對齊方法參數與傳回值型別
+  - [x] 執行 `pnpm run build` 重新編譯重構工具
+  - [x] 對 `4_abc662` 執行 `generate` 測試，驗證 `4_abcTS` 中的屬性與方法型別是否正確對齊 `index.d.ts` 中的定義
+  - [x] 驗證轉換後的 `4_abcTS` 能否順利通過編譯與 Vite 開發伺服器啟動
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-05 14:18:00
+
+- [x] 實作 AST 型別正反向傳播與自動延伸機制
+  - [x] 於 `src/code-generator.ts` 中實作 `getCleanTypeText` 函數
+  - [x] 於 `processFileRefactoring` 的 Class 處理後半段，加入「區域變數正向型別傳播」
+  - [x] 加入「方法參數反向型別傳播 (this.method 呼叫分析)」
+  - [x] 加入「方法傳回型別推導與自動標註」
+  - [x] 執行 `pnpm run build` 重新編譯工具
+  - [x] 執行重構 `generate` 產生新版 `4_abcTS`
+  - [x] 檢查並驗證 `4_abcTS/src/data/abc_tune.ts` 中的變數與方法型別是否正確延伸（如 `getElementFromChar`、`computePickupLength` 等）
+  - [x] 驗證轉換後的 `4_abcTS` 能夠通過 Vite 開發與打包建置
+
+
+
+---
+
+## [2026-06-05] 技術問答 - 提升型別準確率之架構與方案評估
+- [x] 設計與規劃提升型別準確率的混合架構與執行順序
+
+- [x] 提供基於編譯器診斷 (Feedback Loop)、鴨子型別特徵比對與 LLM 語意推測之具體實作方案
+
+---
+
+## [2026-06-05] 設計規格 - TSC 編譯錯誤反饋循環與 AI 自我修正設計方案
+- [x] 撰寫並發佈 [tsc_feedback_loop_design.md](file:///C:/Users/ESAO_NB27/.gemini/antigravity-ide/brain/f4337bbd-b924-4968-94b9-c9c8e279b171/tsc_feedback_loop_design.md) 設計細節文件
+
+- [x] 設計 TSC 錯誤代碼過濾、上下文提取窗口、Prompt 結構及 AST 補丁套用與收斂機制
+
+- [x] 整理並美化 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 中最佳架構順序與實現細節的 Markdown 格式
+- [x] 補齊設計文件中 1.5 節的「理由」與「實作方式」內容
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-05 15:05:00
+
+- [x] 釐清 `tsc_feedback_loop_design.md` 設計方案之專案整合步驟（對齊於「步驟 5. generate」）
+- [x] 評估並確認型別地圖字典建立不應置於 `scan` 階段而應在 `generate` 階段
+- [x] 整合並發佈完整的 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 設計細節文件，詳述 generate 階段五大重構流程細節
 

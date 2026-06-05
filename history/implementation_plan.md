@@ -172,5 +172,132 @@
 - 於 `src/code-generator.ts` 的 `files` 遍歷中加入檔名過濾。
 - 對於主檔名是 `vite.config` 或 `webpack.config` 的檔案直接執行 `continue` 跳過，不進行 TS 語法標註與轉譯重寫，保留原樣。
 
+---
 
+# 支援讀取與利用 `*.d.ts` 宣告檔型別進行精準重構
+
+**時間戳記**：2026-06-05 13:45:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **載入 `*.d.ts` 宣告檔**：
+>    - 工具在 `js2ts-infer generate` 時，應自動掃描專案目錄內所有 `*.d.ts`（例如 `4_abc662/type/index.d.ts`）並載入至 ts-morph 專案。
+> 2. **精準型別對齊與替換**：
+>    - 重構 Class（如 `Tune`、`EngraverController`）時，若在宣告檔中找到同名 interface，其屬性及方法型別應優先使用 `.d.ts` 中定義的精確型別（例如將 `engraver: any` 轉換成 `engraver: EngraverController`），避免產出大量 `any`。
+> 3. **安全回退與容錯**：
+>    - 當宣告檔無定義或為 `any` 時，安全回退至動態側錄（`typeDB`）推導邏輯。
+
+## 開放問題
+無。
+
+## 預期變更
+
+### js2ts-infer 重構工具
+
+#### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
+- **載入型別定義**：重構 `runGeneration` 以在全域維護單一 `Project`，並在啟動時透過 `globSync` 搜尋並使用 `project.addSourceFileAtPath` 載入專案內所有的 `*.d.ts` 檔案。
+- **共享 Project 實例**：將全域 `project` 作為參數傳遞給 `processFileRefactoring`。在每次檔案處理完畢後，呼叫 `project.removeSourceFile(sourceFile)` 以防殘留。
+- **介面尋找與屬性型別覆寫**：
+  - 實作 `findInterfaceInProject` 輔助函數，遍歷專案內所有 Interface 定義以查找與 Class 同名的 Interface。
+  - 在 Class 處理 of 最後階段，遍歷 Class 所有 properties（包含搬移或新宣告的屬性），若同名 Interface 中存在精確型別定義，則將其原本的 `any` 覆寫為宣告檔定義型別。
+- **方法參數與傳回值對齊**：
+  - 升級 `annotateFunction` 支援 `dtsInterface`。
+  - 當方法在同名 Interface 中有對應的 MethodSignature 或 FunctionType 定義時，其參數型別與傳回值型別優先與宣告檔中的型別對齊；否則安全回退至側錄推導。
+
+## 驗證計畫
+### 本地測試
+1. 於工具根目錄執行 `pnpm run build` 編譯最新 CLI。
+2. 執行重構生成指令，覆蓋 `4_abcTS`：
+   ```bash
+   node dist/cli.js generate -i .\4_abc662 -o .\4_abcTS -f
+   ```
+3. 檢查產出之 `4_abcTS/src/data/abc_tune.ts` 與 `4_abcTS/src/write/engraver-controller.ts` 的型別生成正確性，確保 `engraver`、`renderer`、`staffgroups` 等屬性已被正確標註為 `EngraverController`、`Renderer`、`StaffGroupElement[]` 等精準型別而非 `any`。
+
+---
+
+# 實作 AST 型別正反向傳播與自動延伸機制
+
+**時間戳記**：2026-06-05 14:15:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **區域變數型別正向傳播**：
+>    - 依據 Class 已知屬性（例如 `lines: Lines[]`），透過 ts-morph 取得區域變數初始化運算式的推導型別，自動為方法內部的局部變數（例如 `var line: Lines`、`var staff: Staff` 等）加上精確型別標註。
+> 2. **方法參數型別反向傳播**：
+>    - 掃描 Class 內部的呼叫表達式（例如 `this.computePickupLength(this.lines, barLength)`），取得引數的推導型別，並自動為被呼叫方法的對應參數（例如 `computePickupLength` 的 `lines` 參數）標註型別。
+> 3. **方法傳回值型別傳播**：
+>    - 透過 AST 分析方法的推導傳回型別，自動標註方法的回傳值型別（例如 `getElementFromChar(char): Voice | null`）。
+
+## 開放問題
+無。
+
+## 預期變更
+
+### js2ts-infer 重構工具
+
+#### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
+- **型別清理輔助函數**：實作 `getCleanTypeText`，只保留合法、非 inline 且非 any 的型別名稱，並過濾掉命名空間字尾與 inline object 雜訊。
+- **正向傳播 (區域變數)**：在重構 Class 屬性後，遍歷所有方法的區域變數宣告，藉由 `decl.getInitializer()?.getType()` 獲取並標註其型別。
+- **反向傳播 (參數型別)**：遍歷 Class 中的 `CallExpression`（以 `this.` 呼叫的方法），將引數的推導型別傳遞給被呼叫方法的參數。
+- **傳回值傳播**：遍歷 Class 的所有方法，藉由 `method.getReturnType()` 取得方法的推導傳回型別並對齊。
+
+## 驗證計畫
+### 本地測試
+1. 於工具根目錄執行 `pnpm run build` 編譯最新 CLI。
+2. 執行重構生成指令，覆蓋 `4_abcTS`：
+   ```bash
+   node dist/cli.js generate -i .\4_abc662 -o .\4_abcTS -f
+   ```
+3. 檢查產出之 `4_abcTS/src/data/abc_tune.ts`，確認 `getElementFromChar`、`computePickupLength`、`getMeter` 等方法及其內部的 `line`、`staff`、`voice` 等局部變數是否被成功標註上正確的 `Voice`、`Lines`、`Staff`、`Voice[]` 型別，並確認 `getMeter(): Meter` 及 `getElementFromChar(): Voice | null` 傳回值型別。
+
+
+---
+
+## [2026-06-05] 技術問答 - 提升型別準確率之架構與方案評估
+
+### 評估目標
+探討如何整合既有 `*.d.ts`、靜態分析與動態側錄，並提出能夠突破現行限制、提升重構型別準確率的延伸方案。
+
+### 影響層面
+- 概念性設計評估，無直接程式碼變更。
+- 後續 `code-generator` 或 `js2ts-infer` 的演進方向。
+
+---
+
+## [2026-06-05] 設計規格 - TSC 編譯錯誤反饋循環與 AI 自我修正設計方案
+
+### 評估目標
+整合 TypeScript Compiler 診斷與 AI 修正模組，設計一個能夠自我收斂並消除編譯錯誤的重構管線。
+
+
+### 影響層面
+- 提出完整的 JSON Schema 供 LLM 重構使用。
+- 說明編譯錯誤代碼（如 TS2322, TS2339 等）與 AST 節點位置的對應與 Patch 應用。
+
+- 修改並格式化 v2 設計規格文件中的注入架構四步驟。
+- 補充並完備 1.5 節中關於 TSC 反饋循環自我修正的理由與實作摘要。
+
+---
+
+# 規劃 `generate` 階段型別注入完整設計方案
+
+**時間戳記**：2026-06-05 15:05:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. 釐清設計規格中「讀取既有宣告檔建立型別地圖」應置於何處。
+> 2. 彙整 `v2/tsc_feedback_loop_design.md`，詳列完整的 `generate` 階段執行流程細節。
+
+## 開放問題
+無。
+
+## 預期變更
+### 重構工具說明文件
+
+#### [MODIFY] [tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md)
+- 合併原本的 TSC 反饋循環設計，並將第一到第四階段（宣告檔載入、JSDoc與靜態分析、AST正反向傳播、動態側錄兜底）的實作細節進行完整補全，形成 generate 階段的終極型別重構設計方案。
+
+## 驗證計畫
+### 本地測試
+1. 檢查 `v2/tsc_feedback_loop_design.md` 內容完整性與 Markdown 語法格式。
 

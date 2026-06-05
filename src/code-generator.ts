@@ -137,6 +137,46 @@ function resolveParameterType(record: any, baseName: string, interfacesToDeclare
   return result;
 }
 
+function getCleanTypeText(type: any): string {
+  let text = type.getText();
+
+  // 排除複雜的 inline object 或者是 import 等型別
+  if (text.includes('import(') || text.includes('{') || text.includes('typeof') || text.includes('=>') || text.includes('prototype')) {
+    return '';
+  }
+
+  // 排除 some basic cases
+  if (text === 'any' || text === 'null' || text === 'undefined' || text === 'unknown') {
+    return '';
+  }
+
+  return text;
+}
+
+function findInterfaceInProject(project: Project, name: string): any {
+  for (const sourceFile of project.getSourceFiles()) {
+    const interfaces = sourceFile.getDescendantsOfKind(SyntaxKind.InterfaceDeclaration);
+    const matched = interfaces.find(i => i.getName() === name);
+    if (matched) return matched;
+  }
+  return undefined;
+}
+
+function getPropertyTypeString(prop: any): string {
+  const type = prop.getType();
+  if (type) {
+    const typeStr = type.getText();
+    if (!typeStr.includes('import(')) {
+      return typeStr;
+    }
+  }
+  const typeNode = prop.getTypeNode();
+  if (typeNode) {
+    return typeNode.getText();
+  }
+  return 'any';
+}
+
 function safeAddProperty(cls: any, propName: string, typeStr: string = 'any') {
   try {
     cls.insertProperty(0, {
@@ -177,8 +217,7 @@ function cleanCommentToJSDoc(comment: string): string {
   return comment.split('\n').map(line => line.replace(/^\/\/+/, '').trim()).join('\n');
 }
 
-function processFileRefactoring(filePath: string, typeDB: any, config: any, inDir: string): string {
-  const project = new Project();
+function processFileRefactoring(filePath: string, typeDB: any, config: any, inDir: string, project: Project): string {
   const originalCode = fs.readFileSync(filePath, 'utf-8');
   const sourceFile = project.createSourceFile(filePath.replace(/\.js$/, '.ts'), originalCode, { overwrite: true });
   const relPath = path.relative(inDir, filePath).replace(/\\/g, '/');
@@ -200,6 +239,8 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
   });
 
   sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration).forEach(cls => {
+    const className = cls.getName();
+    const dtsInterface = className ? findInterfaceInProject(project, className) : undefined;
     const classMethods = new Set(cls.getMethods().map((m: any) => m.getName()));
     // 1. 收集 Class 中所有 `this.xxx` 賦值
     const properties = new Set<string>();
@@ -301,9 +342,18 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
 
       // 第二階段：執行修改（一次性批量插入屬性宣告，包含將註解轉換為 JSDoc 注入，避免 Node 失效錯誤）
       const propertiesStructures = propertiesToMigrate.map(item => {
+        let propType: string | undefined = undefined;
+        if (dtsInterface) {
+          const dtsProp = dtsInterface.getProperty(item.propName);
+          if (dtsProp) {
+            propType = getPropertyTypeString(dtsProp);
+          }
+        }
+
         const struct: any = {
           name: item.propName,
           initializer: item.rightText,
+          type: propType,
           hasQuestionToken: false
         };
         if (item.commentText) {
@@ -348,7 +398,14 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
     // 2. 自動在頂部補上未宣告的屬性
     properties.forEach(prop => {
       if (!existingProps.has(prop) && !classMethods.has(prop)) {
-        safeAddProperty(cls, prop, 'any');
+        let propType = 'any';
+        if (dtsInterface) {
+          const dtsProp = dtsInterface.getProperty(prop);
+          if (dtsProp) {
+            propType = getPropertyTypeString(dtsProp);
+          }
+        }
+        safeAddProperty(cls, prop, propType);
       }
     });
 
@@ -356,12 +413,81 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
     cls.getMethods().forEach(method => {
       const fnName = method.getName();
       if (typeof method.removeReturnType === 'function') method.removeReturnType();
-      annotateFunction(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config);
+      annotateFunction(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config, dtsInterface);
     });
 
     // 3.5 標註建構函式
     cls.getConstructors().forEach(ctor => {
-      annotateFunction(ctor, `${cls.getName()}.constructor`, relPath, typeDB, interfacesToDeclare, config);
+      annotateFunction(ctor, `${cls.getName()}.constructor`, relPath, typeDB, interfacesToDeclare, config, dtsInterface);
+    });
+
+    // 4. 對齊既有屬性的型別與 dts 中的定義
+    // 4. 對齊既有屬性的型別與 dts 中的定義
+    if (dtsInterface) {
+      cls.getProperties().forEach(prop => {
+        const propName = prop.getName();
+        const dtsProp = dtsInterface.getProperty(propName);
+        if (dtsProp) {
+          const dtsTypeStr = getPropertyTypeString(dtsProp);
+          const currentType = prop.getTypeNode()?.getText() || '';
+          if (!currentType || currentType === 'any' || currentType.includes('any')) {
+            prop.setType(dtsTypeStr);
+          }
+        }
+      });
+    }
+
+    // 5. 區域變數型別正向傳播
+    cls.getMethods().forEach(method => {
+      method.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach(decl => {
+        if (!decl.getTypeNode()) {
+          const init = decl.getInitializer();
+          if (init) {
+            const type = init.getType();
+            const typeText = getCleanTypeText(type);
+            if (typeText) {
+              decl.setType(typeText);
+            }
+          }
+        }
+      });
+    });
+
+    // 6. 方法參數反向傳播 (透過類別內部的 this.method(...) 呼叫)
+    cls.getDescendantsOfKind(SyntaxKind.CallExpression).forEach(call => {
+      const expr = call.getExpression();
+      if (expr.getKind() === SyntaxKind.PropertyAccessExpression) {
+        const propAccess = expr as any;
+        if (propAccess.getExpression().getText() === 'this') {
+          const methodName = propAccess.getName();
+          const targetMethod = cls.getMethod(methodName);
+          if (targetMethod) {
+            const args = call.getArguments();
+            const params = targetMethod.getParameters();
+            args.forEach((arg, idx) => {
+              const param = params[idx];
+              if (param && !param.getTypeNode()) {
+                const argType = arg.getType();
+                const argTypeText = getCleanTypeText(argType);
+                if (argTypeText) {
+                  param.setType(argTypeText);
+                }
+              }
+            });
+          }
+        }
+      }
+    });
+
+    // 7. 方法傳回值型別推導與傳播
+    cls.getMethods().forEach(method => {
+      if (!method.getReturnTypeNode()) {
+        const returnType = method.getReturnType();
+        const returnTypeText = getCleanTypeText(returnType);
+        if (returnTypeText) {
+          method.setReturnType(returnTypeText);
+        }
+      }
     });
   });
 
@@ -384,42 +510,104 @@ function processFileRefactoring(filePath: string, typeDB: any, config: any, inDi
     }
   }
 
-  return sourceFile.getFullText();
+  const newContent = sourceFile.getFullText();
+  project.removeSourceFile(sourceFile);
+  return newContent;
 }
 
-function annotateFunction(fnNode: any, fnName: string, relPath: string, typeDB: any, interfacesToDeclare: Record<string, string>, config: any) {
+function annotateFunction(
+  fnNode: any,
+  fnName: string,
+  relPath: string,
+  typeDB: any,
+  interfacesToDeclare: Record<string, string>,
+  config: any,
+  dtsInterface?: any
+) {
   const confidenceThreshold = config.confidenceThreshold || 5;
-
   const params = fnNode.getParameters();
-  params.forEach((param: any) => {
-    const paramName = param.getName();
-    const trackerId = `${relPath}::${fnName}::param::${paramName}`;
-    const record = typeDB[trackerId];
 
-    if (record && record.callCount >= confidenceThreshold) {
-      const sanitizedFnName = fnName.replace(/\./g, '');
-      const baseName = `${sanitizedFnName.charAt(0).toUpperCase()}${sanitizedFnName.slice(1)}${paramName.charAt(0).toUpperCase()}${paramName.slice(1)}`;
-      const typeStr = resolveParameterType(record, baseName, interfacesToDeclare);
-
-      if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
-        param.setType(typeStr);
+  const shortFnName = fnName.includes('.') ? fnName.split('.').pop()! : fnName;
+  let dtsMethodOrType: any = undefined;
+  if (dtsInterface && shortFnName) {
+    dtsMethodOrType = dtsInterface.getMethod(shortFnName);
+    if (!dtsMethodOrType) {
+      const dtsProp = dtsInterface.getProperty(shortFnName);
+      if (dtsProp) {
+        const typeNode = dtsProp.getTypeNode();
+        if (typeNode && (typeNode.getKind() === SyntaxKind.FunctionType || typeNode.getKind() === SyntaxKind.TypeLiteral)) {
+          dtsMethodOrType = typeNode;
+        }
       }
-    } else if (record && record.callCount > 0) {
+    }
+  }
+
+  params.forEach((param: any, paramIdx: number) => {
+    const paramName = param.getName();
+
+    let dtsParamTypeStr: string | undefined = undefined;
+    if (dtsMethodOrType) {
+      if (dtsMethodOrType.getKind() === SyntaxKind.MethodSignature || dtsMethodOrType.getKind() === SyntaxKind.FunctionType) {
+        const dtsParams = dtsMethodOrType.getParameters();
+        const dtsParam = dtsParams.find((p: any) => p.getName() === paramName) || dtsParams[paramIdx];
+        if (dtsParam) {
+          const typeNode = dtsParam.getTypeNode();
+          if (typeNode) {
+            dtsParamTypeStr = typeNode.getText();
+          }
+        }
+      }
+    }
+
+    if (dtsParamTypeStr && dtsParamTypeStr !== 'any') {
       if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
-        param.setType('/* @inferred-low-confidence */ any');
+        param.setType(dtsParamTypeStr);
+      }
+    } else {
+      const trackerId = `${relPath}::${fnName}::param::${paramName}`;
+      const record = typeDB[trackerId];
+
+      if (record && record.callCount >= confidenceThreshold) {
+        const sanitizedFnName = fnName.replace(/\./g, '');
+        const baseName = `${sanitizedFnName.charAt(0).toUpperCase()}${sanitizedFnName.slice(1)}${paramName.charAt(0).toUpperCase()}${paramName.slice(1)}`;
+        const typeStr = resolveParameterType(record, baseName, interfacesToDeclare);
+
+        if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
+          param.setType(typeStr);
+        }
+      } else if (record && record.callCount > 0) {
+        if (!param.getTypeNode() && paramName.indexOf('{') === -1) {
+          param.setType('/* @inferred-low-confidence */ any');
+        }
       }
     }
   });
 
-  const returnTrackerId = `${relPath}::${fnName}::return`;
-  const returnRecord = typeDB[returnTrackerId];
-  if (returnRecord && returnRecord.callCount >= confidenceThreshold) {
-    const sanitizedFnName = fnName.replace(/\./g, '');
-    const baseName = `${sanitizedFnName.charAt(0).toUpperCase()}${sanitizedFnName.slice(1)}Return`;
-    const typeStr = resolveParameterType(returnRecord, baseName, interfacesToDeclare);
+  let dtsReturnTypeStr: string | undefined = undefined;
+  if (dtsMethodOrType) {
+    if (dtsMethodOrType.getKind() === SyntaxKind.MethodSignature || dtsMethodOrType.getKind() === SyntaxKind.FunctionType) {
+      const returnTypeNode = dtsMethodOrType.getReturnTypeNode();
+      if (returnTypeNode) {
+        dtsReturnTypeStr = returnTypeNode.getText();
+      }
+    }
+  }
 
+  if (dtsReturnTypeStr && dtsReturnTypeStr !== 'any' && dtsReturnTypeStr !== 'void') {
     if (typeof fnNode.setReturnType === 'function' && !fnNode.getReturnTypeNode()) {
-      fnNode.setReturnType(typeStr);
+      fnNode.setReturnType(dtsReturnTypeStr);
+    }
+  } else {
+    const returnTrackerId = `${relPath}::${fnName}::return`;
+    const returnRecord = typeDB[returnTrackerId];
+    if (returnRecord && returnRecord.callCount >= confidenceThreshold) {
+      const sanitizedFnName = fnName.replace(/\./g, '');
+      const baseName = `${sanitizedFnName.charAt(0).toUpperCase()}${sanitizedFnName.slice(1)}Return`;
+      const typeStr = resolveParameterType(returnRecord, baseName, interfacesToDeclare);
+
+      if (typeof fnNode.setReturnType === 'function' && !fnNode.getReturnTypeNode()) {
+        fnNode.setReturnType(typeStr);
+      }
     }
   }
 }
@@ -539,6 +727,19 @@ export function runGeneration(options: any) {
 
   console.log(chalk.blue(`📝 開始重構與注入型別，共 ${files.length} 個檔案...`));
 
+  // 載入所有的 d.ts
+  const project = new Project();
+  const dtsFiles = globSync('**/*.d.ts', {
+    cwd: inDir,
+    ignore: config.exclude,
+    nodir: true,
+    absolute: true
+  });
+  console.log(chalk.blue(`📂 正在加載 ${dtsFiles.length} 個 *.d.ts 宣告檔...`));
+  for (const dtsFile of dtsFiles) {
+    project.addSourceFileAtPath(dtsFile);
+  }
+
   const outDir = options.outDir ? path.resolve(process.cwd(), options.outDir) : null;
   if (outDir && !options.dryRun) {
     if (outDir === inDir) {
@@ -588,7 +789,7 @@ export function runGeneration(options: any) {
       : absolutePath;
 
     try {
-      const newContent = processFileRefactoring(absolutePath, typeDB, config, inDir);
+      const newContent = processFileRefactoring(absolutePath, typeDB, config, inDir, project);
 
       if (options.dryRun) {
         const originalContent = fs.readFileSync(absolutePath, 'utf-8');

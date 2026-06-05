@@ -48,3 +48,49 @@
 
 - **設定檔轉譯排除過濾**：升級 `generate` 的程式碼生成器（`src/code-generator.ts`）。在遍歷待重構的檔案列表時，自動過濾並跳過所有檔名主體為 `vite.config` 或 `webpack.config` 的設定檔案（例如 `vite.config.js`、`webpack.config.js` 等）。這能確保在重構專案時，前端的各類建置設定檔可原樣完整保留且不會被不當重構為 `.ts` 檔案，有效避免建置管線因副檔名改變而中斷。
 
+---
+
+## [2026-06-05] v1.4.4 - 支援利用既有 `*.d.ts` 宣告檔進行精準重構
+
+- **自動載入宣告檔**：於 `src/code-generator.ts` 的 `runGeneration` 階段全域載入專案內所有 `*.d.ts` 宣告檔。
+- **Class 屬性對齊型別**：當 Class 在重構時，自動比對專案中同名 interface，並將 Class 屬性型別覆寫為宣告檔中定義的精確型別（例如將 `engraver` 標註為 `EngraverController`、`lines` 標註為 `Lines[]` 等）。
+- **方法參數與傳回值對齊**：升級 `annotateFunction` 支援 `dtsInterface`。若宣告檔中含有對應方法簽章，則優先對齊參數與傳回值型別，否則回退到側錄推導。
+
+---
+
+## [2026-06-05] v1.4.5 - 實作 AST 型別正反向傳播與自動延伸機制
+
+- **正向傳播 (區域變數與方法傳回值)**：利用 `TypeChecker` 取得 initializer 與 method return type 推導型別，自動標記方法內部的局部變數（如 `line: AbcJS4.Lines`、`staff: AbcJS4.Staff`）與方法傳回值（如 `getElementFromChar(char): AbcJS4.Voice`）。
+- **反向傳播 (方法參數)**：分析 Class 內部方法的調用引數，反向將引數的推導型別寫入被呼叫方法的參數上（如將 `lines` 標註為 `Lines[]`）。
+- **保留命名空間前綴**：修正型別清理機制保留 `AbcJS4.` 前綴，保證在非 namespace 檔案中能全域識別型別並 100% 通過 TypeScript 編譯。
+
+
+---
+
+## [2026-06-05] 技術問答 - 提升加入型別準確率的架構順序與方案
+
+- **架構順序定義**：釐清並設計「靜態地圖奠基 -> JSDoc與靜態推導 -> AST 正反向傳播 -> 動態側錄兜底」的重構管線流程。
+
+- **延伸方案提出**：
+  1. **TSC 編譯錯誤反饋循環 (Feedback Loop)**：利用 `tsc` 編譯錯誤診斷動態修正 union / optional 型別。
+  2. **鴨子型別結構特徵比對**：將動態側錄的物件屬性與 `*.d.ts` 定義的 Interface 計算相似度進行精準對齊。
+  3. **LLM 語意型別推測**：針對剩餘的 Stubborn `any` 以 LLM 補丁輔助推導。
+
+---
+
+## [2026-06-05] 設計規格 - TSC 編譯錯誤反饋循環與 AI 自我修正設計方案
+
+- **發佈設計規格文件**：建立 [tsc_feedback_loop_design.md](file:///C:/Users/ESAO_NB27/.gemini/antigravity-ide/brain/f4337bbd-b924-4968-94b9-c9c8e279b171/tsc_feedback_loop_design.md)，詳細記錄五階段重構管線、TSC 診斷擷取程式碼、Prompt 工程設計、Patch 套用以及循環收斂控制機制。
+
+
+- **整理 v2 版本設計文件**：將詳細的注入架構與四個步驟（讀取既有宣告檔、JSDoc提取與靜態初步推導、AST正反向傳播、動態側錄兜底）重新整理，以結構化標題與項目符號對齊，寫入並更新至 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 中。
+
+- **補充第 1.5 節設計細節**：於 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md#L32-L35) 補完「第五步：TSC 編譯錯誤反饋循環與 AI 自我修正」的具體理由與實作方式摘要，完備全套注入流程規劃。
+
+---
+
+## [2026-06-05] 技術規劃 - 定位型別對齊與發佈完整重構設計方案
+
+- **釐清載入時機與定位**：分析並確認「讀取宣告檔建立型別地圖」應置於 `generate` 階段，不屬於 `scan` 階段，保證 `scan` 的效能與職責單一。
+- **發佈完整 `generate` 設計規格**：合併整理並在 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 中完整發佈 `generate` 階段的五大注入與修正流程。
+

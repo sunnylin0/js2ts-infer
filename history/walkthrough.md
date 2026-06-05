@@ -103,3 +103,88 @@
 
 ## 驗證結果
 - **E2E 生成測試成功**：執行 `js2ts-infer generate` 重新生成 `4_abcTS`。輸出日誌中無 any 對設定檔之轉譯寫入，且於 `4_abcTS` 目錄下檢查發現 `vite.config.js` 完好地保持原樣且副檔名未變，證實排除成功。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-05 13:42:00
+
+## 已完成的變更
+- **自動化載入 *.d.ts 宣告檔**：修改 [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)，在 `runGeneration` 中全域維護單一 `Project` 實例，在啟動時自動掃描輸入目錄下的所有 `*.d.ts` 宣告檔，並載入至專案中進行型別解析。
+- **Class 屬性精確型別覆寫**：在重構 Class 欄位時，尋找專案中同名 interface 的定義（例如 `interface Tune` 與 `interface EngraverController`），提取精準型別以替換原本重構時產生的 `any`。
+- **方法參數與傳回值型別對齊**：升級 `annotateFunction` 函數以支援同名 interface 中對應的方法或函數型別屬性，優先將方法的參數及傳回值對齊宣告檔定義，否則回退到側錄推導。
+- **檔案處理防衝突**：在每個檔案處理完畢後呼叫 `project.removeSourceFile(sourceFile)` 以清理 AST 緩存。
+
+## 驗證結果
+- **E2E 生成測試成功**：
+  - 順利執行 `node dist/cli.js generate -i .\4_abc662\ -o .\4_abcTS\ -f`。
+  - 檢查 `4_abcTS/src/data/abc_tune.ts`，證實 `engraver` 欄位型別已正確標註為 `EngraverController`；`lines` 欄位標註為 `Lines[]`；`meter` 標註為 `Meter` 等精準型別，不再是 `any`。
+  - 檢查 `4_abcTS/src/write/engraver-controller.ts`，證實 `renderer` 被標註為 `Renderer`；`staffgroups` 被標註為 `StaffGroupElement[]` 等精準型別。
+- **專案建置成功**：在 `4_abcTS` 目錄下執行 `pnpm run build:vite` 通過，無任何型別錯誤。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-05 14:25:00
+
+## 已完成的變更
+- **AST 型別正反向傳播機制**：於 [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts) 實作型別延伸系統：
+  - **保留命名空間前綴**：修改 `getPropertyTypeString` 與 `getCleanTypeText`，保留 `AbcJS4.` 前綴。這使得 TypeScript 能夠在非 namespace 檔案中，全域識別來自 `index.d.ts` 的 `AbcJS4.Lines`、`AbcJS4.Staff` 等類型。
+  - **區域變數正向傳播**：遍歷方法內的 `VariableDeclaration`，透過 initializer 的 `getType()` 推導並為局部變數標記型別（如 `var line: AbcJS4.Lines`、`var staff: AbcJS4.Staff`）。
+  - **參數反向傳播**：分析 `this.methodName(...)` 調用中的引數型別，反向將引數的推導型別寫入被呼叫方法的參數上。
+  - **方法傳回值正向標註**：透過 `method.getReturnType()` 推導回傳值型別並予以標註。
+
+## 驗證結果
+- **E2E 生成測試成功**：
+  - 重新執行 `cli.js generate` 產出 `4_abcTS`。
+  - 檢查 [abc_tune.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/4_abcTS/src/data/abc_tune.ts#L248-L268)：
+    - `getElementFromChar(char): AbcJS4.Voice`
+    - `var line: AbcJS4.Lines = this.lines[i];`
+    - `var staff: AbcJS4.Staff = line.staff[j];`
+    - `var voice: AbcJS4.Voice[] = staff.voices[k];`
+    - `var elem: AbcJS4.Voice = voice[ii];`
+    - 完全符合設計並成功將 `.d.ts` 的型別深度傳播延伸。
+    - 此外 `getMeter()` 內部的 `var meter` 也正確傳播為 `var meter: AbcJS4.Meter`。
+    - `computePickupLength` 方法的參數成功延伸為 `computePickupLength(lines: Lines[], barLength: number)`。
+
+- **打包建置成功**：在 `4_abcTS` 下執行 `pnpm run build:vite` 完美通過，沒有任何型別檢查或編譯警告。
+
+---
+
+## [2026-06-05] 技術問答 - 提升型別準確率之架構與方案評估
+- 設計了提升重構型別精準度的混合架構與順序。
+- 提出了三項延伸解決方案，並分析其實作原理與程式碼結構：
+  1. TSC 診斷反饋修正迴圈
+  2. 動態側錄鴨子型別結構特徵比對
+  3. LLM 語意型別推測補丁
+
+- 完成設計評估。
+
+---
+
+## [2026-06-05] 設計規格 - TSC 編譯錯誤反饋循環與 AI 自我修正設計方案
+- **完成方案細節撰寫**：已生成並儲存設計規格至 [tsc_feedback_loop_design.md](file:///C:/Users/ESAO_NB27/.gemini/antigravity-ide/brain/f4337bbd-b924-4968-94b9-c9c8e279b171/tsc_feedback_loop_design.md)。
+
+- **詳細設計內容**：
+  1. 五階段重構管線（Pipeline）流程。
+  2. 使用 TypeScript Compiler API 執行 Program 診斷與獲取 AST 錯誤坐標。
+  3. Prompt 工程的 System/User prompt 設計及 LLM 回傳 JSON 補丁的規格。
+  4. 利用 `ts-morph` 進行 AST 節點替換與最大迭代 5 次的收斂收尾控制。
+
+  5. 重新格式化 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 中最佳架構順序與四步驟（建立地圖、JSDoc提取、AST傳播、動態兜底），提升文件可讀性。
+  6. 補齊 `tsc_feedback_loop_design.md` 1.5 節的 TSC 反饋與 AI 修正具體理由（做為防禦潛在指派錯誤的最後防線）與實作方式（擷取上下文呼叫 AI 補丁後由 ts-morph 套用）。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-05 15:05:00
+
+## 已完成的變更
+- **重構步驟對齊**：釐清 `tsc_feedback_loop_design.md` 計畫中各步驟之定位：確認「讀取宣告檔建立型別地圖」應置於 `generate` 階段，因為 `scan` 階段不引入 `ts-morph`；確認「TSC 編譯診斷與 AI 自我修正」應做為 `generate` 指令之最後自我收斂防線。
+- **發佈完整注入設計**：於 [tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 中完整整理 `generate` 重構時的五個子階段（包含既有的載入 `*.d.ts` 字典、JSDoc與靜態推導、AST正反向傳播與 Class 提升清洗、動態側錄兜底，以及新設計的 TSC 診斷反饋修正迴圈）的實作技術細節。
+
+## 驗證結果
+- **文件驗證**：手動檢查 [tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 語法無誤，且 Mermaid 流程圖能正確渲染 generate 完整管線。
