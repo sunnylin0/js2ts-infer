@@ -6,6 +6,16 @@
   "bin": {
     "js2ts-infer": "./dist/cli.js"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/cli.d.ts",
+      "default": "./dist/cli.js"
+    },
+    "./plugins": {
+      "types": "./dist/plugins.d.ts",
+      "default": "./dist/plugins.js"
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node build-post.js",
     "test": "echo \"Error: no test specified\" && exit 1"

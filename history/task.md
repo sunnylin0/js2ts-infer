@@ -51,4 +51,37 @@
 
 - [x] 類別級 (Class-level) Call Graph 關係鏈收集與視覺化任務已全面完成並成功驗證。
 
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-05 09:16:00
+
+- [x] 修正重構後的 4_abcTS 開發與打包設定
+  - [x] 於 `4_abcTS/vite.config.ts` 註解 `vitePlugin` 以防一般開發模式下因型別伺服器未啟動而產生的 `globalThis.__typeTracker is not a function` 錯誤
+  - [x] 將 `server` 設定搬移至最頂層，對齊 Vite 標準配置
+  - [x] 將 `build.lib.entry` 入口路徑指向重構後的 `index.ts`
+  - [x] 驗證 `pnpm run build:vite` 通過
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-05 09:27:00
+
+- [x] 啟用並封裝 TypeScript 宣告檔 (Declaration)
+  - [x] 於 `tsconfig.json` 啟用 `declaration: true` 編譯設定
+  - [x] 於 `package.json` 的 `exports` 新增對應的 `types` 分支
+  - [x] 重新執行 `pnpm run build`，成功產出所有 `*.d.ts` 檔案並通過建置
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-05 13:26:00
+
+- [x] 於 `js2ts-infer generate` 排除轉譯 config 檔
+  - [x] 修改 `src/code-generator.ts`，對檔名包含 `vite.config.` 與 `webpack.config.` 的檔案直接予以跳過
+  - [x] 重新編譯專案並執行測試，驗證 `vite.config.js` 確實未被轉譯且安全保留原樣
+
 

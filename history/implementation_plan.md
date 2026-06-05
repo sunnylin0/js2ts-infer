@@ -131,5 +131,46 @@
 3. **型別注入與清洗**：對齊重構後的型別標註規格，並於 `code-generator.ts` 自動清洗 interface 名稱中的點號，避免語法錯誤（已將 `Particle.constructor` 清洗為 `ParticleconstructorSvgShape`）。
 4. **互動式視覺化**：於檢視層級新增「類別級 (Class-level)」選單與聚合繪製邏輯，D3.js 關係圖繪製流暢。
 
+---
+
+# 修正重構後的 4_abcTS 開發與打包設定
+
+**時間戳記**：2026-06-05 09:16:00
+
+## 影響檔案
+- `4_abcTS/vite.config.ts`
+
+## 預期變更
+- 註解 `vitePlugin`，避開一般開發環境下的型別側錄伺服器連線問題。
+- 搬移 `server` 設定至 Vite 的頂層配置，使 HMR 與自動開頁生效。
+- 修改 `entry` 點為 `index.ts`。
+
+---
+
+# 啟用並封裝 TypeScript 宣告檔 (Declaration)
+
+**時間戳記**：2026-06-05 09:27:00
+
+## 影響檔案
+- `tsconfig.json`
+- `package.json`
+
+## 預期變更
+- 於 `tsconfig.json` 內新增 `"declaration": true` 以在編譯時輸出 `.d.ts` 宣告檔。
+- 於 `package.json` 內將 `exports` 的路徑映射改為物件包裝，增加對應的 `"types"` 分支，將宣告路徑指向 `./dist/*.d.ts`，以便提供外部強型別 IDE 提示與編譯支援。
+
+---
+
+# 於 `js2ts-infer generate` 排除轉譯 config 檔
+
+**時間戳記**：2026-06-05 13:26:00
+
+## 影響檔案
+- `src/code-generator.ts`
+
+## 預期變更
+- 於 `src/code-generator.ts` 的 `files` 遍歷中加入檔名過濾。
+- 對於主檔名是 `vite.config` 或 `webpack.config` 的檔案直接執行 `continue` 跳過，不進行 TS 語法標註與轉譯重寫，保留原樣。
+
 
 

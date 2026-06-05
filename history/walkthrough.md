@@ -58,4 +58,48 @@
 - **視覺化 API 成功回應**：
   - 啟動伺服器後，API `/api/data` 正確傳回包含類別映射、呼叫鏈與佈局的資料，D3 霓虹視覺化架構圖能正常載入與繪製。
 
+---
 
+# 變更驗證與說明
+
+**時間戳記**：2026-06-05 09:16:00
+
+## 已完成的變更
+- **註解開發期型別側錄插件**：在 `4_abcTS/vite.config.ts` 中註解 `vitePlugin`，防止一般開發者開啟伺服器時，因 9002 連接埠未開啟而無法下載 `tracker.js` 腳本，從而避免頁面中被插樁的變數拋出 `globalThis.__typeTracker is not a function` 錯誤。
+- **配置 Vite 頂層 server**：將 `server.open` 的屬性由 `build` 區塊移出至最外層 `defineConfig` 底下，使其成為合法的頂層屬性。
+- **更正 entry 點檔名**：將 `build.lib.entry` 更正為 `index.ts`。
+
+## 驗證結果
+- **Vite 生產打包建置無錯通過**：在 `4_abcTS` 目錄下執行 `pnpm run build:vite` 成功通過：
+  ```
+  vite v8.0.16 building client environment for production...
+  transforming...✓ 151 modules transformed.
+  rendering chunks...
+  dist/abcjs-basic.js  501.86 kB │ gzip: 142.62 kB
+  ✓ built in 311ms
+  ```
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-05 09:27:00
+
+## 已完成的變更
+- **自動化輸出宣告檔**：於 `tsconfig.json` 的 `compilerOptions` 啟用 `"declaration": true`，使 TypeScript 在編譯時自動為所有程式生成相對應的 `*.d.ts` 型別定義。
+- **補全 Exports 型別連結**：修改 `package.json` 的 `exports` 宣告，將原本單純的路徑字串改為物件格式，並明確指向 `types` 與 `default`，保證在使用 pnpm package 或 workspace 鏈接時能讓外部專案直接獲取強型別資源。
+
+## 驗證結果
+- **編譯與型別生成成功**：執行 `pnpm run build` 通過，且在 `dist` 目錄下已順利產生 `plugins.d.ts`、`tracker-client.d.ts`、`cli.d.ts` 等完整的 `*.d.ts` 宣告檔。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-05 13:26:00
+
+## 已完成的變更
+- **排除設定檔轉譯**：在 `src/code-generator.ts` 的遍歷中新增防護條件，如果偵測到檔名起頭為 `vite.config.` 或 `webpack.config.`，則直接 `continue` 跳過該檔案的 ts-morph 語法標標記與重寫動作。
+
+## 驗證結果
+- **E2E 生成測試成功**：執行 `js2ts-infer generate` 重新生成 `4_abcTS`。輸出日誌中無 any 對設定檔之轉譯寫入，且於 `4_abcTS` 目錄下檢查發現 `vite.config.js` 完好地保持原樣且副檔名未變，證實排除成功。
