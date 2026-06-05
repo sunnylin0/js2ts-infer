@@ -1,0 +1,54 @@
+import drawSeparator from './separator';
+import renderText from './text';
+import { Renderer } from "./type-definitions";
+
+function nonMusic(renderer: Renderer, obj: any, selectables: any): void {
+	if (!obj || !obj.rows) return;
+	for (let i = 0; i < obj.rows.length; i++) {
+		const row = obj.rows[i];
+		if (row.absmove) {
+			renderer.absolutemoveY(row.absmove);
+		} else if (row.move) {
+			renderer.moveY(row.move);
+		} else if (row.text || row.phrases) {
+			const x = row.left ? row.left : 0;
+			const el = renderText(renderer, {
+				x: x,
+				y: renderer.y,
+				text: row.text,
+				phrases: row.phrases,
+				'dominant-baseline': row['dominant-baseline'],
+				type: row.font,
+				klass: row.klass,
+				name: row.name,
+				anchor: row.anchor
+			});
+			if (row.absElemType) {
+				selectables.wrapSvgEl({
+					el_type: row.absElemType,
+					name: row.name,
+					startChar: row.startChar,
+					endChar: row.endChar,
+					text: row.text
+				}, el);
+			}
+		} else if (row.separator) {
+			drawSeparator(renderer, row.separator);
+		} else if (row.startGroup) {
+			renderer.paper.openGroup({ klass: row.klass, "data-name": row.name });
+		} else if (row.endGroup) {
+			// TODO-PER: also create a history element with the title "row.endGroup"
+			const g = renderer.paper.closeGroup();
+			if (row.absElemType && g)
+				selectables.wrapSvgEl({
+					el_type: row.absElemType,
+					name: row.name,
+					startChar: row.startChar,
+					endChar: row.endChar,
+					text: ""
+				}, g);
+		}
+	}
+}
+
+export default nonMusic;

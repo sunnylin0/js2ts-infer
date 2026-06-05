@@ -170,6 +170,48 @@
         "from": "src/engine/gameEngine.js::anonymous",
         "to": "src/engine/gameEngine.js::handleDpadInput"
       }
+    ],
+    "classes": [
+      {
+        "from": "src/state/states.js::MenuState",
+        "to": "src/state/states.js::PlayingState"
+      },
+      {
+        "from": "src/state/states.js::PlayingState",
+        "to": "src/engine/snake.js::Snake"
+      },
+      {
+        "from": "src/state/states.js::PlayingState",
+        "to": "src/engine/particles.js::ParticleSystem"
+      },
+      {
+        "from": "src/state/states.js::PlayingState",
+        "to": "src/state/states.js::PausedState"
+      },
+      {
+        "from": "src/state/states.js::PlayingState",
+        "to": "src/state/states.js::GameOverState"
+      },
+      {
+        "from": "src/state/states.js::PausedState",
+        "to": "src/state/states.js::MenuState"
+      },
+      {
+        "from": "src/state/states.js::GameOverState",
+        "to": "src/state/states.js::PlayingState"
+      },
+      {
+        "from": "src/state/states.js::GameOverState",
+        "to": "src/state/states.js::MenuState"
+      },
+      {
+        "from": "src/engine/particles.js::ParticleSystem",
+        "to": "src/engine/particles.js::Particle"
+      },
+      {
+        "from": "src/engine/gameEngine.js::GameEngine",
+        "to": "src/audio.js::SoundSynthesizer"
+      }
     ]
   }
 }

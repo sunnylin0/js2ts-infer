@@ -9,7 +9,10 @@ const DEFAULT_CONFIG = {
   trackerPort: 9002,
   maxDepth: 5,
   confidenceThreshold: 5,
-  interfaceThreshold: 3
+  interfaceThreshold: 3,
+  aiApiKey: "",
+  aiModel: "gemini-2.5-flash",
+  maxFeedbackIterations: 5
 };
 
 export default function init(): void {

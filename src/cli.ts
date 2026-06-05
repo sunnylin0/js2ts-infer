@@ -55,8 +55,8 @@ program
   .option('-c, --config <path>', '設定檔路徑', 'js2ts.config.json')
   .option('-d, --dry-run', '輸出變更的 Diff Log，不實際修改檔案', false)
   .option('-f, --force', '強制執行，忽略 Git 工作區未提交檢查', false)
-  .action((options) => {
-    generateCmd(options);
+  .action(async (options) => {
+    await generateCmd(options);
   });
 
 program

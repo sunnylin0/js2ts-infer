@@ -5687,6 +5687,168 @@
         "from": "src/api/abc_animation.js::setCursor",
         "to": "src/api/abc_animation.js::measureCallback"
       }
+    ],
+    "classes": [
+      {
+        "from": "src/write/renderer.js::Renderer",
+        "to": "src/write/svg.js::Svg"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/helpers/classes.js::Classes"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/renderer.js::Renderer"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/helpers/get-font-and-attr.js::GetFontAndAttr"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/helpers/get-text-size.js::GetTextSize"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/creation/abstract-engraver.js::AbstractEngraver"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/creation/elements/top-text.js::TopText"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/creation/elements/subtitle.js::Subtitle"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/creation/elements/free-text.js::FreeText"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/creation/elements/separator.js::Separator"
+      },
+      {
+        "from": "src/write/engraver-controller.js::EngraverController",
+        "to": "src/write/creation/elements/bottom-text.js::BottomText"
+      },
+      {
+        "from": "src/write/creation/decoration.js::Decoration",
+        "to": "src/write/creation/elements/crescendo-element.js::CrescendoElem"
+      },
+      {
+        "from": "src/write/creation/decoration.js::Decoration",
+        "to": "src/write/creation/elements/glissando-element.js::GlissandoElem"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/decoration.js::Decoration"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/staff-group-element.js::StaffGroupElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/voice-element.js::VoiceElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/brace-element.js::BraceElem"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/ending-element.js::EndingElem"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/tie-element.js::TieElem"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/absolute-element.js::AbsoluteElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/tempo-element.js::TempoElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/relative-element.js::RelativeElement"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/beam-element.js::BeamElem"
+      },
+      {
+        "from": "src/write/creation/abstract-engraver.js::AbstractEngraver",
+        "to": "src/write/creation/elements/triplet-element.js::TripletElem"
+      },
+      {
+        "from": "src/write/creation/elements/tempo-element.js::TempoElement",
+        "to": "src/write/creation/elements/absolute-element.js::AbsoluteElement"
+      },
+      {
+        "from": "src/write/creation/elements/tempo-element.js::TempoElement",
+        "to": "src/write/creation/elements/relative-element.js::RelativeElement"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-string.js::PluginInstance",
+        "to": "src/tablatures/instruments/string-tablature.js::StringTablature"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-string.js::PluginInstance",
+        "to": "src/tablatures/instruments/string-patterns.js::StringPatterns"
+      },
+      {
+        "from": "src/tablatures/instruments/string-patterns.js::StringPatterns",
+        "to": "src/tablatures/instruments/tab-note.js::TabNote"
+      },
+      {
+        "from": "src/synth/synth-controller.js::SynthController",
+        "to": "src/synth/create-synth-control.js::CreateSynthControl"
+      },
+      {
+        "from": "src/synth/synth-controller.js::SynthController",
+        "to": "src/synth/create-synth.js::CreateSynth"
+      },
+      {
+        "from": "src/synth/synth-controller.js::SynthController",
+        "to": "src/api/abc_timing_callbacks.js::TimingCallbacks"
+      },
+      {
+        "from": "src/synth/abc_midi_sequencer.js::MidiSequencer",
+        "to": "src/synth/repeats.js::Repeats"
+      },
+      {
+        "from": "src/synth/abc_midi_flattener.js::MidiFlattener",
+        "to": "src/synth/chord-track.js::ChordTrack"
+      },
+      {
+        "from": "src/parse/abc_parse.js::Parse",
+        "to": "src/data/abc_tune.js::Tune"
+      },
+      {
+        "from": "src/parse/abc_parse.js::Parse",
+        "to": "src/parse/tune-builder.js::TuneBuilder"
+      },
+      {
+        "from": "src/parse/abc_parse.js::Parse",
+        "to": "src/parse/abc_tokenizer.js::Tokenizer"
+      },
+      {
+        "from": "src/parse/abc_parse.js::Parse",
+        "to": "src/parse/abc_parse_header.js::ParseHeader"
+      },
+      {
+        "from": "src/edit/abc_editor.js::Editor",
+        "to": "src/edit/abc_editarea.js::EditArea"
+      },
+      {
+        "from": "src/edit/abc_editor.js::Editor",
+        "to": "src/synth/synth-controller.js::SynthController"
+      }
     ]
   }
 }

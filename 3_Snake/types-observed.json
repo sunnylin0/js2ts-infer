@@ -718,14 +718,14 @@
       "Particle"
     ],
     "objectShapes": [],
-    "callCount": 4424
+    "callCount": 4525
   },
   "src/engine/particles.js::anonymous::return": {
     "observedTypes": [
       "undefined"
     ],
     "objectShapes": [],
-    "callCount": 4411
+    "callCount": 4512
   },
   "src/engine/particles.js::update::return": {
     "observedTypes": [
@@ -968,14 +968,14 @@
         "removeChild": "Function"
       }
     ],
-    "callCount": 1
+    "callCount": 8
   },
   "run-test.js::global::var::sys": {
     "observedTypes": [
       "ParticleSystem"
     ],
     "objectShapes": [],
-    "callCount": 1
+    "callCount": 8
   },
   "__callGraph": {
     "graph": {
@@ -994,10 +994,27 @@
       },
       "src/engine/particles.js::anonymous": {
         "src/engine/particles.js::draw": 13,
-        "run-test.js::document": 13
+        "run-test.js::document": 13,
+        "src/engine/particles.js::Particle.draw": 101
       },
       "src/engine/particles.js::clear": {
         "src/engine/particles.js::anonymous": 13
+      },
+      "src/engine/particles.js::ParticleSystem.spawn": {
+        "src/engine/particles.js::Particle.constructor": 101
+      },
+      "src/engine/particles.js::Particle.constructor": {
+        "run-test.js::createElementNS": 101,
+        "run-test.js::setAttribute": 202
+      },
+      "src/engine/particles.js::ParticleSystem.update": {
+        "src/engine/particles.js::Particle.update": 101
+      },
+      "src/engine/particles.js::ParticleSystem.draw": {
+        "src/engine/particles.js::anonymous": 101
+      },
+      "src/engine/particles.js::Particle.draw": {
+        "run-test.js::setAttribute": 404
       }
     }
   },
@@ -1026,5 +1043,326 @@
       }
     ],
     "callCount": 13
+  },
+  "src/engine/particles.js::ParticleSystem.constructor::param::svgCanvas": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "appendChild": "Function",
+        "removeChild": "Function"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/particles.js::ParticleSystem.spawn::param::x": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/particles.js::ParticleSystem.spawn::param::y": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/particles.js::ParticleSystem.spawn::param::color": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/particles.js::ParticleSystem.spawn::var::count": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/particles.js::ParticleSystem.spawn::var::i": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/particles.js::Particle.constructor::param::svg": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "appendChild": "Function",
+        "removeChild": "Function"
+      }
+    ],
+    "callCount": 101
+  },
+  "src/engine/particles.js::Particle.constructor::param::x": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "src/engine/particles.js::Particle.constructor::param::y": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "src/engine/particles.js::Particle.constructor::param::color": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "src/engine/particles.js::Particle.constructor::var::angle": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "src/engine/particles.js::Particle.constructor::var::speed": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "run-test.js::createElementNS::param::ns": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "run-test.js::createElementNS::param::tag": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "run-test.js::createElementNS::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "setAttribute": "Function",
+        "parentNode": {
+          "removeChild": "Function"
+        }
+      }
+    ],
+    "callCount": 101
+  },
+  "run-test.js::setAttribute::param::name": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 606
+  },
+  "run-test.js::setAttribute::param::value": {
+    "observedTypes": [
+      "string",
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 606
+  },
+  "src/engine/particles.js::ParticleSystem.update::var::i": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/particles.js::Particle.update::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "src/engine/particles.js::ParticleSystem.update::var::isDead": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 101
+  },
+  "src/engine/snake.js::Snake.constructor::param::gridW": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.constructor::param::gridH": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.constructor::var::midX": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.constructor::var::midY": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "run-test.js::global::var::snake": {
+    "observedTypes": [
+      "Snake"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.pushDirection::param::dirName": {
+    "observedTypes": [
+      "string"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.pushDirection::var::targetDirVector": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.pushDirection::var::referenceDir": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.pushDirection::var::isOpposite": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.move::var::nextDir": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.move::var::actualCurrentDir": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.move::var::isOpposite": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.move::var::head": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.move::var::newHead": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.move::return": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.checkSelfCollision::var::head": {
+    "observedTypes": [],
+    "objectShapes": [
+      {
+        "x": "number",
+        "y": "number"
+      }
+    ],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.checkSelfCollision::var::i": {
+    "observedTypes": [
+      "number"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "src/engine/snake.js::Snake.checkSelfCollision::return": {
+    "observedTypes": [
+      "boolean"
+    ],
+    "objectShapes": [],
+    "callCount": 7
+  },
+  "run-test.js::anonymous::param::resolve": {
+    "observedTypes": [],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "run-test.js::anonymous::return": {
+    "observedTypes": [
+      "Timeout"
+    ],
+    "objectShapes": [],
+    "callCount": 6
+  },
+  "run-test.js::anonymous::param::resolve::cb_return": {
+    "observedTypes": [
+      "undefined"
+    ],
+    "objectShapes": [],
+    "callCount": 6
   }
 }

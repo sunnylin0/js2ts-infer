@@ -13,18 +13,18 @@
 - **雙階段靜態類別依賴掃描**：於 `static-analyzer.ts` 內設計雙階段 AST 分析，先記錄全域類別映射，第二階段再掃描建構函式與方法呼叫以精確輸出 `staticCallGraph.classes`（例如 `PlayingState -> Snake`）。
 - **執行期類別前綴插樁**：修改 `babel-plugin-js2ts.ts` 與 `tracker-client.ts`，在執行期型別收集與呼叫鏈上自動為類別方法與建構子附加 `ClassName.` 前綴（例如 `ParticleSystem.spawn`），藉此在跨類別時精確區分同名方法。
 - **介面名稱清洗與 TS 相容**：更新 `code-generator.ts` 中 Class Method 的型別注入規格，並自動清除所產生參數 interface 名稱中的點號，避免點號引起 TypeScript 語法錯誤（例如將 `Particle.constructor` 清洗為 `ParticleconstructorSvgShape`）。
-- **「類別級」視覺化架圖**：於 `templates/visualizer.html` 新增「類別級 (Class-level)」檢視選項。前端將側錄資料中含有點號的追蹤 ID 予以切割聚合至各自 of Class 節點，成功繪製出類別與類別間的動靜態呼叫關係。
+- **「類別級」視覺化架圖**：於 `templates/visualizer.html` 新增「類別級 (Class-level)」檢視選項。前端將側錄資料中含有點號的追蹤 ID 予以切割聚合至各自 of Class 節點，成功繪製出類別與類別間 the 動靜態呼叫關係。
 
 ---
 
 ## [2026-06-05] v1.4.1 - 修正轉換後 4_abcTS 的開發環境配置
 
 - **關閉開發期型別側錄以阻斷干擾**：在 `4_abcTS/vite.config.ts` 中將 `vitePlugin` 註解關閉，以防一般開發模式下因無法載入背景收集伺服器（9002 連接埠）而拋出 `globalThis.__typeTracker is not a function` 錯誤，確保 `editor.html` 與相關頁面可正常載入與運作。
-- **調整 Vite Config 規範**：修正 `vite.config.ts` 的 `server` 配置，將其從 `build` 下層移至與 `build` 同級的頂層配置，使瀏覽器能在伺服器啟動時正常開啟，並修正 Entry 為 `index.ts`。
+- **調整 Vite Config 規範**：修正 `vite.config.ts` 的 `server` 配置，將其從 `build` 下層移至與 `build` 同級 the 頂層配置，使瀏覽器能在伺服器啟動時正常開啟，並修正 Entry 為 `index.ts`。
 
 ---
 
-## [2026-06-05] 技術解答 - pnpm 工具包設計與導入配置
+## [2026-06-05] 技術解答 - pnpm 套件包設計與導入配置
 
 - **套件封裝設計**：設計 `js2ts-infer` 套件的 `package.json` `exports` 配置，將 `vitePlugin` / `webpackLoader` 等前端插樁插件隔離至 `js2ts-infer/plugins` 的子導出路徑。
 - **配置導入示範**：說明在 `vite.config.js` 中將相對路徑取代為 `import { vitePlugin } from 'js2ts-infer/plugins'` 的具體寫法。
@@ -39,7 +39,7 @@
 
 ## [2026-06-05] v1.4.2 - 啟用並支持 TypeScript 宣告檔 (*.d.ts) 輸出與條件導出
 
-- **啟用 tsconfig 宣告檔編譯輸出**：於 `tsconfig.json` 配置中啟用 `"declaration": true`，使 `tsc` 執行編譯時自動為所有程式產生型別定義宣告檔 `*.d.ts` 至 `dist/` 目錄。
+- **啟用 tsconfig 宣告檔編譯輸出**：於 `tsconfig.json` 配置中啟用 `"declaration": true`，使 `tsc` 執行編譯時自動為所有程式生成相對應的 `*.d.ts` 型別定義宣告檔至 `dist/` 目錄。
 - **補完 package 條件型別導出**：重構 `package.json` 中的 `exports` 物件，明確劃分並指向 `types` 與 `default` 分支（例如 `"types": "./dist/plugins.d.ts"`），保證其他 TypeScript 客戶端（如 `vite.config.ts`）在引用的同時能享有完整的 IDE 智慧語法提示。
 
 ---
@@ -64,13 +64,11 @@
 - **反向傳播 (方法參數)**：分析 Class 內部方法的調用引數，反向將引數的推導型別寫入被呼叫方法的參數上（如將 `lines` 標註為 `Lines[]`）。
 - **保留命名空間前綴**：修正型別清理機制保留 `AbcJS4.` 前綴，保證在非 namespace 檔案中能全域識別型別並 100% 通過 TypeScript 編譯。
 
-
 ---
 
 ## [2026-06-05] 技術問答 - 提升加入型別準確率的架構順序與方案
 
 - **架構順序定義**：釐清並設計「靜態地圖奠基 -> JSDoc與靜態推導 -> AST 正反向傳播 -> 動態側錄兜底」的重構管線流程。
-
 - **延伸方案提出**：
   1. **TSC 編譯錯誤反饋循環 (Feedback Loop)**：利用 `tsc` 編譯錯誤診斷動態修正 union / optional 型別。
   2. **鴨子型別結構特徵比對**：將動態側錄的物件屬性與 `*.d.ts` 定義的 Interface 計算相似度進行精準對齊。
@@ -81,10 +79,7 @@
 ## [2026-06-05] 設計規格 - TSC 編譯錯誤反饋循環與 AI 自我修正設計方案
 
 - **發佈設計規格文件**：建立 [tsc_feedback_loop_design.md](file:///C:/Users/ESAO_NB27/.gemini/antigravity-ide/brain/f4337bbd-b924-4968-94b9-c9c8e279b171/tsc_feedback_loop_design.md)，詳細記錄五階段重構管線、TSC 診斷擷取程式碼、Prompt 工程設計、Patch 套用以及循環收斂控制機制。
-
-
 - **整理 v2 版本設計文件**：將詳細的注入架構與四個步驟（讀取既有宣告檔、JSDoc提取與靜態初步推導、AST正反向傳播、動態側錄兜底）重新整理，以結構化標題與項目符號對齊，寫入並更新至 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 中。
-
 - **補充第 1.5 節設計細節**：於 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md#L32-L35) 補完「第五步：TSC 編譯錯誤反饋循環與 AI 自我修正」的具體理由與實作方式摘要，完備全套注入流程規劃。
 
 ---
@@ -93,4 +88,45 @@
 
 - **釐清載入時機與定位**：分析並確認「讀取宣告檔建立型別地圖」應置於 `generate` 階段，不屬於 `scan` 階段，保證 `scan` 的效能與職責單一。
 - **發佈完整 `generate` 設計規格**：合併整理並在 [v2/tsc_feedback_loop_design.md](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/v2/tsc_feedback_loop_design.md) 中完整發佈 `generate` 階段的五大注入與修正流程。
+
+---
+
+## [2026-06-05] v1.5.0 - 實作 TSC 編譯錯誤反饋循環與代碼模組化分檔
+
+- **程式碼分檔重構**：將 `src/code-generator.ts` 分割為 [ast-refactorer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/ast-refactorer.ts)（AST 轉換與傳播邏輯）與 [feedback-loop.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/feedback-loop.ts)（TSC-AI 自我修復邏輯），將原 `code-generator.ts` 精簡為純粹的重構控制管線。
+- **TSC 錯誤診斷與 AI 修正**：於 `feedback-loop.ts` 內調用 `typescript` Compiler API 擷取核心型別編譯錯誤（TS2322 等），提取出錯程式碼上下文並調用 Gemini API 自動生成 JSON 修復補丁。
+- **429/503 自動重試與 bypass 開關**：
+  * 在 `feedback-loop.ts` 實作自動退避重試，可解析 API 提供的 `retryDelay` 進行休眠等待。
+  * 因測試時遭遇極其嚴重的 Free Tier Rate Limit (429) 與服務不可用 (503) 阻塞，已暫時將 `code-generator.ts` 中的 `runFeedbackLoop` 調用予以註解（AI 修正旁路關閉），避免干擾重構管線的主流程。
+
+---
+
+## [2026-06-05] v1.5.1 - 修正字面量型態收窄與優化 return 型別推導策略
+
+- **字面量型態安全寬化 (Literal Widening)**：
+  - 於 `src/ast-refactorer.ts` 新增全域 `widenTypeName` 輔助函數，精確且安全地將 `'true'`, `'false'`, 數字字面量（以 `Number()` 健全驗證）及引號字串字面量寬化為基礎型別 `'boolean'`, `'number'`, `'string'`。
+  - 支援對 Union 型態（如 `0 | 4` 等聯集）的自動寬化去重（合併為 `'number'`）。
+  - 將其應用至 `resolveParameterType` 與 `getCleanTypeText`，徹底根除 `var pickupLength: 0`、`barLength: 0`、`num: 4` 等型別過度限縮之語法問題。
+- **優化 Method 回傳值推導優先級**：
+  - 實作了 `resolveAndSetReturnType` 函數，定義了「優先採用 AST 靜態型態推導，失敗 (如 any) 時才以 `typeDB` 動態側錄兜底」的新標註模式。
+  - 將 `annotateFunction` 的傳回型別 fallback 邏輯移出，並改為在 Class methods 及一般 Function 解析完成後統一由 `resolveAndSetReturnType` 標註。
+  - 此舉順利讓 `getMeter()` 直接使用 `index.d.ts` 定義的 `Meter` 介面（不再重疊生成 `*ReturnShape`），並讓 `getKeySignature()` 完美標記為 `Key | {}`。
+
+---
+
+## [2026-06-05] v1.5.2 - 修正 Interface 方法簽章解析 Bug，完美打通同名型別注入
+
+- **修復 InterfaceDeclaration 方法獲取**：
+  - 修正 `src/ast-refactorer.ts` 的 `annotateFunction` 函數：修復了原本對 `InterfaceDeclaration` 調用 `getMethod`（Class 專屬 API）導致無法識別 `index.d.ts` 內定義的方法簽章之問題。
+  - 透過動態判斷，相容呼叫 `getMethodSignature`，使 `index.d.ts` 中的介面方法定義（如 `engraveABC` 等）能被精確識別並注入型別。
+- **完全移除冗餘的 Shape 介面**：
+  - 重新轉譯後，`4_abcTS/src/write/engraver-controller.ts` 頂部的多餘 `Tune` 相關 Shape 介面已完全被移除，參數也精確標註為 `abctunes: Tune` 等，代碼更加乾淨。
+- **Vite 打包建置通過**：
+  - 轉換後的 `4_abcTS` 專案通過 `pnpm run build:vite`，保證 151 個模組完全無錯。
+
+---
+
+## [2026-06-06] v1.5.3 - 執行專案地圖初始化與 agent.md 生成
+
+- **全自動專案地圖繪製**：掃描並識別專案使用之 Node.js / TypeScript 技術棧，於專案根目錄生成完整的 `agent.md` 指南，以便後續開發助理能夠快速學會並掌握專案架構、開發規範與 ts-morph / Babel plugin 等核心實作之 AI 協作注意事項。
 

@@ -8,6 +8,6 @@ interface GenerateOptions {
   outDir?: string;
 }
 
-export default function generate(options: GenerateOptions): void {
-  runGeneration(options);
+export default async function generate(options: GenerateOptions): Promise<void> {
+  await runGeneration(options);
 }

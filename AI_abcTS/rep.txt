@@ -1,0 +1,14 @@
+import \* as (.*?) from 
+->
+import $1 from 
+
+
+
+import (.*?) = require\((".*?")\);
+->
+import $1 from $2;
+
+
+const (.*?) = require\(('.*?')\);
+->
+import $1 from $2;

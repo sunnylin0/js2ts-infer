@@ -1,47 +1,47 @@
 {
-  "name": "js2ts-infer",
-  "version": "1.0.0",
-  "description": "JS to TS runtime type inference tool",
-  "main": "dist/cli.js",
-  "bin": {
-    "js2ts-infer": "./dist/cli.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/cli.d.ts",
-      "default": "./dist/cli.js"
-    },
-    "./plugins": {
-      "types": "./dist/plugins.d.ts",
-      "default": "./dist/plugins.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node build-post.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "@babel/core": "^7.24.5",
-    "@babel/generator": "^7.24.5",
-    "@babel/parser": "^7.24.5",
-    "@babel/traverse": "^7.24.5",
-    "body-parser": "^1.20.2",
-    "chalk": "^4.1.2",
-    "commander": "^12.1.0",
-    "cors": "^2.8.5",
-    "diff": "^5.2.0",
-    "express": "^4.19.2",
-    "glob": "^10.3.15",
-    "ora": "^5.4.1",
-    "prompts": "^2.4.2",
-    "ts-morph": "^22.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^25.9.1",
-    "puppeteer": "^25.1.0",
-    "typescript": "^6.0.3"
-  }
+	"name": "js2ts-infer",
+	"version": "1.0.0",
+	"description": "JS to TS runtime type inference tool",
+	"main": "dist/cli.js",
+	"bin": {
+		"js2ts-infer": "./dist/cli.js"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/cli.d.ts",
+			"default": "./dist/cli.js"
+		},
+		"./plugins": {
+			"types": "./dist/plugins.d.ts",
+			"default": "./dist/plugins.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node build-post.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"dependencies": {
+		"body-parser": "^1.20.2",
+		"cors": "^2.8.5",
+		"express": "^4.19.2"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.24.5",
+		"@babel/generator": "^7.24.5",
+		"@babel/parser": "^7.24.5",
+		"@babel/traverse": "^7.24.5",
+		"@types/node": "^25.9.1",
+		"chalk": "^4.1.2",
+		"commander": "^12.1.0",
+		"diff": "^5.2.0",
+		"glob": "^10.3.15",
+		"ora": "^5.4.1",
+		"prompts": "^2.4.2",
+		"puppeteer": "^25.1.0",
+		"ts-morph": "^22.0.0",
+		"typescript": "^6.0.3"
+	}
 }

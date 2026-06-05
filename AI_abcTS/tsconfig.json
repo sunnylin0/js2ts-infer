@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "esnext",
+    "rootDir": ".",
+    "outDir": "../../test4/abcjs663",
+    // "moduleResolution": "node"
+    /* 🛠️ 關閉嚴格模式與相關檢查 */
+    "strict": false, /* 關閉所有嚴格模式檢查 */
+    "noImplicitAny": false, /* 允許參數隱式具有 'any' 型別 (解決 line 報錯) */
+    "strictNullChecks": false, /* 關閉 Null 檢查 (解決 br2 可能是 null 的報錯) */
+    // "baseUrl": ".",
+    "paths": {
+      "abcjs": [
+        "./types/index.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "index.ts",
+    "version.ts"
+  ]
+}
