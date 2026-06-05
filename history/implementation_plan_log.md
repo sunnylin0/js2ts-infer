@@ -423,3 +423,44 @@
 ### 手動驗證
 1. 確認 `agent.md` 檔案已正確在根目錄生成，內容符合混和技術棧規範。
 
+---
+
+# 為 src 目錄下所有 Function 撰寫頂級 JSDoc 註解
+
+**時間戳記**：2026-06-06 06:01:00
+
+## 使用者審查要求
+> [!NOTE]
+> 本次變更為全專案 `src/` 與 `src/commands/` 的核心功能代碼與指令子程式加入符合開發規範 [JSDOC_GUIDE.md](file:///c:/Users/sunny/Desktop/abc_js2ts/JSDOC_GUIDE.md) 的頂級 JSDoc/TSDoc 註解，不影響程式執行邏輯。
+
+## 開放問題
+無。
+
+## 預期變更
+### 核心指令與實作檔
+- #### [MODIFY] [generate.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/commands/generate.ts)
+- #### [MODIFY] [init.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/commands/init.ts)
+- #### [MODIFY] [merge.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/commands/merge.ts)
+- #### [MODIFY] [review.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/commands/review.ts)
+- #### [MODIFY] [run.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/commands/run.ts)
+- #### [MODIFY] [scan.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/commands/scan.ts)
+- #### [MODIFY] [visualize.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/commands/visualize.ts)
+- #### [MODIFY] [code-generator.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/code-generator.ts)
+- #### [MODIFY] [ast-refactorer.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/ast-refactorer.ts)
+- #### [MODIFY] [feedback-loop.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/feedback-loop.ts)
+- #### [MODIFY] [static-analyzer.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/static-analyzer.ts)
+- #### [MODIFY] [tracker-client.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/tracker-client.ts)
+- #### [MODIFY] [tracker-server.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/tracker-server.ts)
+- #### [MODIFY] [type-merger.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/type-merger.ts)
+- #### [MODIFY] [babel-plugin-js2ts.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/babel-plugin-js2ts.ts)
+- #### [MODIFY] [interactor.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/interactor.ts)
+- #### [MODIFY] [loader-hook.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/loader-hook.ts)
+- #### [MODIFY] [loader-hook-esm.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/loader-hook-esm.ts)
+- #### [MODIFY] [plugins.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/plugins.ts)
+
+## 驗證計畫
+### 自動化測試
+1. 在根目錄下執行 `pnpm run build` 進行編譯。
+2. 確保沒有任何 TypeScript 型別宣告與編譯錯誤。
+
+

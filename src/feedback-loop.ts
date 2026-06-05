@@ -28,6 +28,16 @@ const TARGET_ERROR_CODES = new Set([
 /**
  * 載入專案的 tsconfig.json 配置，若無則回退至預設值
  */
+/**
+ * 載入指定輸出目錄的 tsconfig.json，以獲取與專案一致的編譯選項。
+ * 
+ * @description
+ * 讀取並解析 `tsconfig.json`。若檔案不存在或解析出錯，
+ * 則回退至一組安全的預設值（ES2022 / NodeNext / 關閉 strict / 僅檢查不發射代碼 / 跳過庫檢查）。
+ * 
+ * @param {string} outDir - 專案的輸出目錄路徑。
+ * @returns {ts.CompilerOptions} 適合目前專案環境的 TypeScript 編譯選項。
+ */
 function getCompilerOptions(outDir: string): ts.CompilerOptions {
   const tsconfigPath = path.join(outDir, 'tsconfig.json');
   if (fs.existsSync(tsconfigPath)) {
@@ -58,6 +68,18 @@ function getCompilerOptions(outDir: string): ts.CompilerOptions {
 
 /**
  * 對輸出目錄下的所有檔案執行 TSC 語義診斷，提取目標錯誤
+ */
+/**
+ * 對指定的 TypeScript 檔案列表執行編譯器語意診斷，過濾出核心型別相關的錯誤。
+ * 
+ * @description
+ * 建立一個 TypeScript `Program`，調用 `getSemanticDiagnostics`。
+ * 過濾並只保留感興趣的核心型別衝突錯誤（如型別不相容、屬性不存在、可能為 undefined 等）。
+ * 針對每個診斷錯誤，計算出錯誤發生的檔案行號、字元位置，並擷取出錯誤的程式碼片段。
+ * 
+ * @param {string[]} tsFiles - 待分析的 TypeScript 原始碼檔案路徑列表。
+ * @param {ts.CompilerOptions} compilerOptions - 編譯器配置選項。
+ * @returns {TypeCheckError[]} 所有過濾後的型別相關錯誤物件清單。
  */
 function runTscDiagnostics(tsFiles: string[], compilerOptions: ts.CompilerOptions): TypeCheckError[] {
   const program = ts.createProgram(tsFiles, compilerOptions);
@@ -92,6 +114,21 @@ function runTscDiagnostics(tsFiles: string[], compilerOptions: ts.CompilerOption
 
 /**
  * 呼叫 Gemini API 獲取修復 Patch
+ */
+/**
+ * 呼叫 Gemini 語言模型 API，根據編譯錯誤的上下文推導並獲取修正補丁。
+ * 
+ * @description
+ * 向 API 發送包含系統指令與使用者錯誤上下文的 JSON 請求，要求回傳 `targetCode` 與 `patchedCode`。
+ * 內建 429 (Too Many Requests) 容錯重試機制：當 API 回傳 429 錯誤時，自動讀取 RetryInfo 中
+ * 的 `retryDelay` 延遲秒數，執行退避等待並自動重新發送請求，最多重試 3 次。
+ * 
+ * @param {string} apiKey - 認證用 Gemini API Key。
+ * @param {string} model - 使用的模型代稱（如 gemini-2.5-flash）。
+ * @param {string} systemPrompt - 系統提示詞，定義 AI 行為規範與回傳 JSON 格式要求。
+ * @param {any} userPromptObj - 包含具體錯誤訊息、出錯代碼片段與上下文的 Prompt 物件。
+ * @param {number} [attempt=1] - 目前是第幾次嘗試呼叫。
+ * @returns {Promise<{ targetCode: string; patchedCode: string } | null>} 解析成功後回傳補丁結果，若失敗則回傳 `null`。
  */
 async function callGeminiForFix(
   apiKey: string,
@@ -184,6 +221,26 @@ async function callGeminiForFix(
 
 /**
  * TSC 反饋與 AI 修正的主控制迴圈
+ */
+/**
+ * 執行 TSC 反饋與 AI 自我修正的主控制迴圈。
+ * 
+ * @description
+ * 1. 檢測是否存在 `GEMINI_API_KEY`，若無則跳過。
+ * 2. 在最大迭代次數限制內，重複執行：
+ *    a. 掃描輸出目錄下的所有 `.ts` 檔案。
+ *    b. 呼叫 `runTscDiagnostics` 進行型別診斷。若無錯誤，則提早收斂結束。
+ *    c. 針對每個有型別錯誤的檔案，擷取該行上下 15 行作為 Context。
+ *    d. 發送請求至 Gemini 取得修正後的 `patchedCode`。
+ *    e. 當同一個位置連續失敗次數過多時，啟用強制 any 降級策略，以求順利通過編譯。
+ *    f. 將修正套用回原始檔案，並進入下一次迭代。
+ * 
+ * @example
+ * await runFeedbackLoop('./srcTS', config);
+ * 
+ * @param {string} outDir - 待進行型別檢查與修正的專案目錄。
+ * @param {any} config - 使用者配置（包含 API key、模型、最大迭代次數等參數）。
+ * @returns {Promise<void>} 回傳一個 Promise，解析後代表自我修正迴圈執行結束。
  */
 export async function runFeedbackLoop(outDir: string, config: any) {
   const apiKey = process.env.GEMINI_API_KEY || config.aiApiKey;

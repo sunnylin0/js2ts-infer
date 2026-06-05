@@ -7,6 +7,22 @@ interface MergeOptions {
   out: string;
 }
 
+/**
+ * 合併多個暫存的 JSON 型別側錄資料庫檔。
+ * 
+ * @description
+ * 讀取並解析所有指定的 JSON 側錄檔案，對內部同名欄位、參數、方法與類別
+ * 進行型別寬化與聯集合併（Union Types），最終將結果輸出至指定的單一 JSON 檔案中。
+ * 
+ * @example
+ * merge(['types1.json', 'types2.json'], { out: 'types-observed.json' });
+ * 
+ * @param {string[]} files - 欲合併的 JSON 檔案路徑清單。
+ * @param {MergeOptions} options - 合併設定選項。
+ * @param {string} options.out - 輸出的合併檔案路徑。
+ * @returns {void} 本方法不回傳任何值。
+ * @throws {Error} 當檔案無法解析或寫入目標路徑失敗時拋出錯誤並中斷程式。
+ */
 export default function merge(files: string[], options: MergeOptions): void {
   if (!files || files.length === 0) {
     console.error(chalk.red('❌ 請指定至少一個要合併的 JSON 檔案！'));

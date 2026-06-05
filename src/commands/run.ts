@@ -8,6 +8,16 @@ interface RunOptions {
   config: string;
 }
 
+/**
+ * 檢查前端（Vite 或 Webpack）配置是否正確啟用了型別側錄插件。
+ * 
+ * @description
+ * 讀取專案根目錄的 `package.json` 及設定檔，當偵測到專案包含 Vite 或是 Webpack 依賴時，
+ * 檢查對應的設定檔（例如 `vite.config.*`）是否啟用了 `vitePlugin` 或 `webpackLoader` 插樁插件。
+ * 若無，將在控制台輸出錯誤警告，以便提示開發者配置，防止無法正確收集瀏覽器端型別。
+ * 
+ * @returns {boolean} 若配置正確或無須配置則回傳 `true`，否則回傳 `false`。
+ */
 function checkFrontendConfig(): boolean {
   const cwd = process.cwd();
   const pkgPath = path.join(cwd, 'package.json');
@@ -73,6 +83,24 @@ function checkFrontendConfig(): boolean {
   }
 }
 
+/**
+ * 啟動型別收集伺服器，並在此環境下掛載動態代理 Hook 執行測試或應用指令。
+ * 
+ * @description
+ * 1. 讀取 `js2ts.config.json` 取得連接埠號，並啟動用於側錄型別的 `tracker-server`。
+ * 2. 根據目前 Node.js 版本，動態設置 `NODE_OPTIONS` 環境變數以載入 CJS/ESM Hook 記憶體插樁模組。
+ * 3. 使用 `spawn` 執行開發者傳入的 Shell 指令（如測試腳本或開發伺服器啟動指令）。
+ * 4. 指令執行結束時，自動關閉側錄伺服器並將收集到的型別資料寫入 `types-observed.json`。
+ * 
+ * @example
+ * await run('pnpm run test', { config: 'js2ts.config.json' });
+ * 
+ * @param {string} command - 要執行的測試或應用 Shell 指令。
+ * @param {RunOptions} options - 執行設定選項。
+ * @param {string} options.config - 設定檔路徑。
+ * @returns {Promise<void>} 回傳一個 Promise，解析後代表側錄與執行流程結束。
+ * @throws {Error} 當啟動伺服器出錯或執行程序異常時會拋出錯誤並退出程式。
+ */
 export default async function run(command: string, options: RunOptions): Promise<void> {
   if (!checkFrontendConfig()) {
     process.exit(1);

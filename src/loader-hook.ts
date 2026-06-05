@@ -38,6 +38,17 @@ try {
 // @ts-ignore
 const originalCompile = Module.prototype._compile;
 
+/**
+ * 攔截並複寫 Node.js CommonJS Module 的 `_compile` 方法。
+ * 
+ * @description
+ * 在 Node.js 載入並編譯每一個 CommonJS 模組時，比對檔案是否在 include 且非 exclude 清單中。
+ * 若符合，則調用 Babel 將其源碼進行動態插樁注入側錄 Proxy，再將插樁後的程式碼遞交給原編譯器執行。
+ * 
+ * @param {string} content - 待編譯的 JS 原始碼內容.
+ * @param {string} filename - 該模組的實體檔案路徑.
+ * @returns {any} 原編譯器的編譯執行結果.
+ */
 // @ts-ignore
 Module.prototype._compile = function (content: string, filename: string) {
   const absPath = path.resolve(filename);

@@ -15,6 +15,18 @@ const DEFAULT_CONFIG = {
   maxFeedbackIterations: 5
 };
 
+/**
+ * 初始化並在專案根目錄下生成預設的設定檔。
+ * 
+ * @description
+ * 此方法會在目前的執行目錄 (cwd) 中偵測是否已有 `js2ts.config.json`。
+ * 若不存在，將寫入預設的排除路徑、型別合併深度、測試側錄伺服器埠號等相關配置項。
+ * 
+ * @example
+ * init();
+ * 
+ * @returns {void} 本方法不回傳任何值。
+ */
 export default function init(): void {
   const configPath = path.join(process.cwd(), 'js2ts.config.json');
   

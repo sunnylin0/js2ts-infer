@@ -11,6 +11,16 @@ interface VisualizeOptions {
   port?: string;
 }
 
+/**
+ * 根據目前作業系統平台，自動在預設瀏覽器中開啟指定網址。
+ * 
+ * @description
+ * 辨識 `process.platform`，在 Windows 調用 `start`，在 macOS 調用 `open`，
+ * 在 Linux 調用 `xdg-open`，以非同步背景程序方式開啟檢視網頁。
+ * 
+ * @param {string} url - 欲在瀏覽器中開啟的完整 URL 網址。
+ * @returns {void} 本方法不回傳任何值。
+ */
 function openBrowser(url: string) {
   const isWin = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
@@ -18,6 +28,23 @@ function openBrowser(url: string) {
   exec(cmd, () => {});
 }
 
+/**
+ * 啟動 Call Graph 呼叫關係鏈與型別依賴關係的互動式 Web 視覺化檢視工具。
+ * 
+ * @description
+ * 1. 啟動一個 Express 背景伺服器（預設埠號 9003）。
+ * 2. 提供 `/api/data` 介面，讀取 `boundary-map.json`、`types-observed.json` 及視覺化佈局設定檔。
+ * 3. 提供 `/api/layout` POST 介面，支援使用者在網頁上拖曳固定節點位置後回傳存檔至 `visualizer-layout.json`。
+ * 4. 自動開啟預設瀏覽器展示以 D3.js 繪製的暗黑霓虹風格關係圖。
+ * 
+ * @example
+ * visualize({ config: 'js2ts.config.json', port: '9003' });
+ * 
+ * @param {VisualizeOptions} options - 視覺化檢視設定選項。
+ * @param {string} options.config - 設定檔路徑。
+ * @param {string} [options.port] - 指定的 Express 伺服器埠號。
+ * @returns {void} 本方法不回傳任何值。
+ */
 export default function visualize(options: VisualizeOptions): void {
   const configPath = path.resolve(process.cwd(), options.config);
   let config: any = {};

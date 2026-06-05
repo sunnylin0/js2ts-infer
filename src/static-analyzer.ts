@@ -4,6 +4,15 @@ import * as parser from '@babel/parser';
 import traverse from '@babel/traverse';
 import { globSync } from 'glob';
 
+/**
+ * 判定 AST 節點所代表的對象型別。
+ * 
+ * @description
+ * 識別節點為 function、class 或是 unknown，用於靜態邊界 API 導出分類。
+ * 
+ * @param {any} node - AST 節點對象。
+ * @returns {string} 表示類型的字串（'function' | 'class' | 'unknown'）。
+ */
 function getTypeOfNode(node: any): string {
   if (!node) return 'unknown';
   if (node.type === 'FunctionDeclaration' || 
@@ -17,6 +26,15 @@ function getTypeOfNode(node: any): string {
   return 'unknown';
 }
 
+/**
+ * 取得指定函數 AST 節點的名稱。
+ * 
+ * @description
+ * 處理函數宣告、類別方法、物件方法、變數指派等不同 AST 結構，推導出適當的函數字串識別標識。
+ * 
+ * @param {any} pathNode - Babel AST 節點路徑對象。
+ * @returns {string} 函數名稱，若無法辨識則返回 `'anonymous'`。
+ */
 function getFunctionName(pathNode: any): string {
   const node = pathNode.node;
   if (node.id && node.id.name) {
@@ -45,12 +63,32 @@ function getFunctionName(pathNode: any): string {
   return 'anonymous';
 }
 
+/**
+ * 向上尋找目前 AST 節點的父級函數名稱。
+ * 
+ * @description
+ * 用於分析呼叫關係鏈時，取得「調用者 (Caller)」的函數名稱。
+ * 
+ * @param {any} astPath - Babel AST 節點路徑對象。
+ * @returns {string} 父函數名稱，若位於最上層全域空間則返回 `'global'`。
+ */
 function getParentFunctionName(astPath: any): string {
   const parentFunc = astPath.findParent((p: any) => p.isFunction());
   if (!parentFunc) return 'global';
   return getFunctionName(parentFunc);
 }
 
+/**
+ * 解析相對引入路徑，找出其在專案檔案清單中實際存在的實體檔案路徑。
+ * 
+ * @description
+ * 嘗試為相對路徑補上 `.js`、`.ts`、`.jsx`、`.tsx` 或是 `/index.js` 等副檔名，並進行不區分大小寫的檔案匹配。
+ * 
+ * @param {string} currentFile - 當前執行分析的實體檔案路徑。
+ * @param {string} importSource - 程式碼中 import/require 的原始路徑字串。
+ * @param {string[]} projectFiles - 專案中所有檔案的相對/絕對路徑列表。
+ * @returns {string|null} 解析出的專案相對檔案路徑，若解析失敗或為外部 node_modules 依賴則返回 `null`。
+ */
 function resolveImportPath(currentFile: string, importSource: string, projectFiles: string[]): string | null {
   if (!importSource.startsWith('.')) {
     return null;
@@ -76,6 +114,22 @@ function resolveImportPath(currentFile: string, importSource: string, projectFil
   return null;
 }
 
+/**
+ * 對專案進行兩階段靜態分析，產出 Class 定義地圖、邊界 API 列表與靜態 Call Graph。
+ * 
+ * @description
+ * - **第一階段**：遍歷匹配的檔案，解析 AST 建立全專案的 Class 宣告地圖，並掃描 ESM/CommonJS 導出（Export）識別邊界 API。
+ * - **第二階段**：分析 Import 與 Require 依賴關係，掃描 `CallExpression` 與 `NewExpression` 分別繪製「檔案間」、「函數間」與「類別間」三層靜態呼叫依賴圖。
+ * 
+ * @example
+ * const result = analyzeProject({
+ *   include: ['src/core/*.js'],
+ *   exclude: ['node_modules']
+ * });
+ * 
+ * @param {any} config - 包含 include 與 exclude 排除規則的設定檔。
+ * @returns {object} 包含 classes (地圖)、boundaries (邊界 API 陣列)、staticCallGraph (三層依賴關係) 的靜態分析結果。
+ */
 export function analyzeProject(config: any) {
   const includePatterns = config.include || [];
   const excludePatterns = config.exclude || [];

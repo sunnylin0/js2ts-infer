@@ -130,3 +130,15 @@
 
 - **全自動專案地圖繪製**：掃描並識別專案使用之 Node.js / TypeScript 技術棧，於專案根目錄生成完整的 `agent.md` 指南，以便後續開發助理能夠快速學會並掌握專案架構、開發規範與 ts-morph / Babel plugin 等核心實作之 AI 協作注意事項。
 
+---
+
+## [2026-06-06] v1.5.4 - 全專案核心工具與命令 JSDoc 註解補全
+
+- **JSDoc/TSDoc 標準化註解補全**：
+  - 為專案中所有核心工具檔案與指令程式碼（如 `src/ast-refactorer.ts`、`src/loader-hook.ts` 等）補齊了符合 `JSDOC_GUIDE.md` 規範的頂級說明註解。
+- **解決 JSDoc 編譯衝突**：
+  - 修正 `static-analyzer.ts` 中的星號斜線語法標記問題，消除了 TypeScript 編譯階段的語法解析錯誤。
+  - 調整 `loader-hook.ts` 中 `// @ts-ignore` 擺放位置以順利忽略私有方法的型別檢查。
+- **專案重新編譯建置通過**：
+  - 於根目錄執行 `pnpm run build` 通過編譯並成功輸出所有建置產物。
+

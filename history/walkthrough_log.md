@@ -251,3 +251,17 @@
 
 ## 驗證結果
 - **地圖生成完整**：`agent.md` 的所有預設區塊均已填寫完畢，且包含最完整的專案細節與注意事項。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-06 06:33:00
+
+## 已完成的變更
+- **補全核心工具與命令 JSDoc 註解**：在 `src/ast-refactorer.ts`、`src/loader-hook.ts` 等所有剩餘的核心工具模組與命令模組補全了頂級、符合 `JSDOC_GUIDE.md` 規範的 JSDoc/TSDoc 註解。
+- **排解 JSDoc 特殊字元編譯衝突**：修正了 `static-analyzer.ts` 中 `@example` 區塊包含 `**/` 特殊星號斜線序列導致的註解提前閉合及 TypeScript 語法解析錯誤；調整為合規路徑字串。
+- **修正 TS 忽略標記位置**：修正 `loader-hook.ts` 中 `// @ts-ignore` 與 JSDoc 註解的前後擺放順序，確保 `// @ts-ignore` 正確覆蓋私有 `Module.prototype._compile` 方法。
+
+## 驗證結果
+- **TypeScript 編譯無錯通過**：在根目錄執行 `pnpm run build` 成功完成編譯，成功產出所有 ESM 及 CommonJS 檔案，並複製範本資源。

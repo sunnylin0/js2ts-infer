@@ -7,6 +7,22 @@ interface ScanOptions {
   config: string;
 }
 
+/**
+ * 執行專案靜態依賴與邊界 API 掃描分析。
+ * 
+ * @description
+ * 載入指定設定檔，分析 include 範圍內的所有 JavaScript 檔案之 Import、Require 
+ * 與 CallExpression，識別專案中 Class 之繼承與靜態呼叫關係，並導出邊界 API/Exports，
+ * 最終將掃描獲得的地圖輸出至專案根目錄的 `boundary-map.json` 中。
+ * 
+ * @example
+ * scan({ config: 'js2ts.config.json' });
+ * 
+ * @param {ScanOptions} options - 掃描設定選項。
+ * @param {string} options.config - 設定檔路徑。
+ * @returns {void} 本方法不回傳任何值。
+ * @throws {Error} 當無法讀取設定檔或靜態分析過程中遭遇語法錯誤時會拋出異常並退出。
+ */
 export default function scan(options: ScanOptions): void {
   const configPath = path.resolve(process.cwd(), options.config);
   

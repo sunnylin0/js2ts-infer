@@ -11,10 +11,23 @@
   const callStack: string[] = [];
   const callGraph: Record<string, Record<string, number>> = {};
 
+  /**
+   * 取得型別側錄伺服器的 Base URL。
+   * 
+   * @returns {string} 連接至本地型別伺服器的網址。
+   */
   function getBaseUrl() {
     return `http://localhost:${port}`;
   }
 
+  /**
+   * 將目前暫存的側錄型別資料批量以 HTTP POST 異步發送回側錄伺服器。
+   * 
+   * @description
+   * 支援在瀏覽器端使用 `fetch`，在 Node.js 端無 fetch 時，回退使用 `http.request` 套件進行發送。
+   * 
+   * @returns {void} 本方法不回傳任何值。
+   */
   function flushTypes() {
     if (Object.keys(clientDB).length === 0) return;
 
@@ -60,6 +73,11 @@
     }
   }
 
+  /**
+   * 佇列發送。使用 1000 毫秒的防抖（Debounce）機制緩衝寫入。
+   * 
+   * @returns {void} 本方法不回傳任何值。
+   */
   function queueFlush() {
     if (sendTimeout) return;
     sendTimeout = setTimeout(() => {
@@ -68,6 +86,15 @@
     }, 1000);
   }
 
+  /**
+   * 同步發送當前暫存的所有型別側錄資料。
+   * 
+   * @description
+   * 在網頁卸載（beforeunload、pagehide）或 Node.js 程序退出時呼叫。
+   * 優先使用 `navigator.sendBeacon` 或同步的 `XMLHttpRequest`，在 Node.js 端則透過 `execSync` 搭配 curl 同步傳送。
+   * 
+   * @returns {void} 本方法不回傳任何值。
+   */
   function flushTypesSync() {
     if (Object.keys(clientDB).length === 0) return;
 
@@ -127,6 +154,20 @@
     });
   }
 
+  /**
+   * 將任意 JavaScript 執行期變數序列化為可讀的型別字串或物件結構。
+   * 
+   * @description
+   * 1. 基本型別：回傳 `typeof val`（如 string, number, boolean）。
+   * 2. 陣列：抽樣前 10 個元素，遞迴序列化，回傳 `Array<Type1 | Type2>`。
+   * 3. Promise：回傳 `'Promise<any>'`。
+   * 4. 自訂類別實例：回傳類別名稱（如 `constructor.name`）。
+   * 5. 字面量物件：遞迴遍歷屬性鍵值對，回傳代表其 Shape 的對應物件結構。
+   * 
+   * @param {any} val - 欲進行型別序列化的變數值。
+   * @param {number} [depth=0] - 目前遞迴的深度，防範無限遞迴。
+   * @returns {any} 序列化後的型別描述（字串或結構物件）。
+   */
   function serializeType(val: any, depth = 0): any {
     if (val === null) return 'null';
     if (val === undefined) return 'undefined';
@@ -172,6 +213,19 @@
     return shape;
   }
 
+  /**
+   * 型別側錄攔截 Proxy 函數。
+   * 
+   * @description
+   * 1. 累加呼叫次數，對高頻呼叫點執行抽樣防抖，減輕性能損耗。
+   * 2. 若傳入值為 Promise，對 `then` / `catch` 進行攔截側錄其 Resolved/Rejected 型別。
+   * 3. 若為 Function 類型，則呼叫 `wrapFunction` 包裝其參數與回傳值以利後續 Callback 側錄。
+   * 4. 調用 `serializeType` 對變數進行型別提取，存入暫存 clientDB 中。
+   * 
+   * @param {string} trackerId - 側錄點識別碼。
+   * @param {any} value - 被攔截監控的實際變數值。
+   * @returns {any} 返回原始傳入的 `value`（或被 wrapper 包裝後的函數），以防阻礙程式原本行為。
+   */
   const trackerFn = function (trackerId: string, value: any) {
     if (!clientDB[trackerId]) {
       clientDB[trackerId] = {
@@ -257,6 +311,17 @@
 
   (globalThis as any).__typeTracker = trackerFn;
 
+  /**
+   * 包裝並代理普通函數或 Callback，追蹤其執行時的參數與回傳值型別。
+   * 
+   * @description
+   * 常用於高階函數與監聽回呼。包裝後會對執行時傳入的參數與最終 return 值
+   * 自動以 `cb_param::[index]` 與 `cb_return` 的格式發送回 tracker 紀錄。
+   * 
+   * @param {string} trackerId - 該函數的側錄 ID 識別碼。
+   * @param {any} originalFn - 原始的函數對象。
+   * @returns {any} 代理包裝後的防偽裝函數對象。
+   */
   function wrapFunction(trackerId: string, originalFn: any): any {
     if (originalFn.__isWrapped) return originalFn;
 

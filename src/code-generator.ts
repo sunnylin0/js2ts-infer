@@ -8,6 +8,16 @@ import { globSync } from 'glob';
 import { processFileRefactoring } from './ast-refactorer';
 import { runFeedbackLoop } from './feedback-loop';
 
+/**
+ * 檢查指定的專案目錄 Git 工作區狀態。
+ * 
+ * @description
+ * 使用 `git status --porcelain` 執行同步子程序，若回傳內容不為空，
+ * 代表工作區有未提交的變更。如果發生錯誤（如未安裝 git 或非 git 專案），預設回傳 `true` 以容錯。
+ * 
+ * @param {string} [dir=process.cwd()] - 欲檢查的工作目錄，預設為目前的執行目錄。
+ * @returns {boolean} 若工作區乾淨無未提交變更則回傳 `true`，否則回傳 `false`。
+ */
 function checkGitStatus(dir: string = process.cwd()): boolean {
 	try {
 		const status = execSync('git status --porcelain', { cwd: dir, encoding: 'utf8' }).trim();
@@ -17,6 +27,26 @@ function checkGitStatus(dir: string = process.cwd()): boolean {
 	}
 }
 
+/**
+ * 執行專案源碼轉譯與型別注入的 Pipeline 核心調度函數。
+ * 
+ * @description
+ * 1. 解析輸入與輸出路徑，並讀取專案的設定檔與動態型別側錄檔 `types-observed.json`。
+ * 2. 載入輸入目錄下所有 `*.d.ts` 宣告檔至單一 `Project` 實例，作為型別優先對齊之字典。
+ * 3. 處理輸出目錄複製，並逐一對所有匹配的 JS 檔案呼叫 AST 重構程式 `processFileRefactoring`。
+ * 4. 將重構注入型別後的代碼寫入對應的 `.ts` 檔案，若指定為 `--dry-run` 則僅輸出 Diff Log。
+ * 
+ * @example
+ * await runGeneration({
+ *   inDir: './src',
+ *   outDir: './srcTS',
+ *   config: 'js2ts.config.json',
+ *   force: true
+ * });
+ * 
+ * @param {any} options - 產生器選項配置。
+ * @returns {Promise<void>} 回傳一個 Promise，解析後代表專案型別注入管線執行完畢。
+ */
 export async function runGeneration(options: any) {
 	const inDir = options.inDir ? path.resolve(process.cwd(), options.inDir) : process.cwd();
 	const configPath = path.isAbsolute(options.config)

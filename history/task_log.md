@@ -197,3 +197,15 @@
   - [x] 掃描 `package.json`, `tsconfig.json`, `pnpm-lock.yaml` 等特徵
   - [x] 產出專案 Blueprint 指南 `agent.md`
 
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-06 06:33:00
+
+- [x] 為 src 目錄下所有 Function 撰寫頂級 JSDoc 註解
+  - [x] 為 `src/commands` 目錄下的所有指令 Function 撰寫頂級 JSDoc 註解
+  - [x] 為 `src/` 核心工具檔的所有 Function 撰寫頂級 JSDoc 註解
+  - [x] 執行 `pnpm run build` 驗證專案編譯是否成功
+
+

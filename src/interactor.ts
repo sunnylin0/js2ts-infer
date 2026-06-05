@@ -4,6 +4,21 @@ import { Project, SyntaxKind } from 'ts-morph';
 import chalk from 'chalk';
 import prompts from 'prompts';
 
+/**
+ * 啟動終端機互動式 Review 流程的控制核心。
+ * 
+ * @description
+ * 1. 讀取 `js2ts.config.json` 取得來源檔案的 include / exclude 規則，並將副檔名替換為 `.ts`。
+ * 2. 載入動態型別側錄檔 `types-observed.json`。
+ * 3. 遍歷符合條件的 `.ts` 檔案，發現由 AI 自動生成但命名不佳的 shape 介面時，詢問開發者是否重新命名。
+ * 4. 針對檔案中所有 `any` 或低信賴度參數，輸出上下 4 行 context，並列出側錄到的推薦型別，讓開發者透過選擇器或手動輸入補完型別。
+ * 
+ * @example
+ * await runReview({ config: 'js2ts.config.json' });
+ * 
+ * @param {any} options - Review 啟動選項。
+ * @returns {Promise<void>} 回傳一個 Promise，解析後代表互動式審閱對話結束。
+ */
 export async function runReview(options: any) {
   const configPath = path.resolve(process.cwd(), options.config);
   let config = {

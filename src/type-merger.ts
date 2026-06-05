@@ -2,6 +2,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 
+/**
+ * 合併兩個型別值，推導出聯集或寬化後的結果。
+ * 
+ * @description
+ * 1. 若兩者完全相同，直接回傳。
+ * 2. 若其中一個為空，回傳另一個。
+ * 3. 若皆為物件結構，呼叫 `mergeTwoShapes` 深度合併物件。
+ * 4. 若其中一者為物件而另一者為 null/undefined，則為物件加上 `__nullable = true`。
+ * 5. 若皆為字串型別，以 ` | ` 符號分割並進行聯集去重合併。
+ * 
+ * @param {any} v1 - 第一個型別值（字串或物件結構）。
+ * @param {any} v2 - 第二個型別值（字串或物件結構）。
+ * @returns {any} 合併後的聯集合成型別。
+ */
 export function mergeSingleVal(v1: any, v2: any): any {
   if (v1 === v2) return v1;
   if (!v1) return v2;
@@ -33,6 +47,18 @@ export function mergeSingleVal(v1: any, v2: any): any {
   return mergedParts.join(' | ');
 }
 
+/**
+ * 深度合併兩個物件字面量（Shape）結構。
+ * 
+ * @description
+ * 取得兩個 Shape 的所有鍵名聯集。針對每一個鍵，
+ * 取得各自對應的型別並呼叫 `mergeSingleVal` 進行深度合併。
+ * 若某個鍵僅在其中一個 Shape 中出現，則視為可選屬性並與 `'undefined'` 進行合併。
+ * 
+ * @param {any} s1 - 第一個物件字面量 Shape 結構。
+ * @param {any} s2 - 第二個物件字面量 Shape 結構。
+ * @returns {any} 合併後包含可選與 nullable 標記的新 Shape 結構。
+ */
 export function mergeTwoShapes(s1: any, s2: any): any {
   const result: any = {};
   
@@ -58,6 +84,20 @@ export function mergeTwoShapes(s1: any, s2: any): any {
   return result;
 }
 
+/**
+ * 合併兩個完整的型別資料庫（dbA 與 dbB）。
+ * 
+ * @description
+ * 1. 合併與加總靜態/動態呼叫關係鏈 `__callGraph` 的權重。
+ * 2. 遍歷 dbB 中的所有型別側錄記錄點 ID。
+ *    a. 若 dbA 中不存在此 ID，直接複製。
+ *    b. 若 dbA 已存在此 ID，加總 `callCount`、聯集合併並去重 `observedTypes`。
+ *    c. 比對兩者的物件結構（objectShapes）。若結構相似度大於等於 50%，則將兩者合併；否則作為獨立的物件結構加入清單中。
+ * 
+ * @param {any} dbA - 原有的型別資料庫物件。
+ * @param {any} dbB - 欲併入的新型別資料庫物件。
+ * @returns {any} 合併後去重與寬化完成的新型別資料庫。
+ */
 export function mergeDatabases(dbA: any, dbB: any): any {
   const merged = { ...dbA };
 

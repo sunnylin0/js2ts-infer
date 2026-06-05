@@ -3,6 +3,16 @@ import * as path from 'path';
 import { Project, SyntaxKind } from 'ts-morph';
 import { mergeSingleVal } from './type-merger';
 
+/**
+ * 合併一個物件字面量 Shape 的陣列，計算出合併後單一寬化 Shape。
+ * 
+ * @description
+ * 遍歷所有傳入的 Shape，將相同的欄位名進行歸納，並透過 `mergeSingleVal` 對其型別進行寬化。
+ * 若某個欄位在部分 Shape 中缺失，則自動將該欄位標記為含有 `undefined` 的可選屬性。
+ * 
+ * @param {any[]} shapes - 包含多個物件結構 (Shape) 的陣列。
+ * @returns {any} 返回合併寬化後的單一 Shape 物件結構。
+ */
 function mergeObjectShapesArray(shapes: any[]): any {
   if (shapes.length === 0) return {};
   if (shapes.length === 1) return shapes[0];
@@ -44,6 +54,15 @@ function mergeObjectShapesArray(shapes: any[]): any {
   return combined;
 }
 
+/**
+ * 格式化介面或物件字面量的 Key 名稱。
+ * 
+ * @description
+ * 若 Key 包含特殊字元或不符合變數命名規範，則將其使用 JSON.stringify 進行引號包裹。
+ * 
+ * @param {string} key - 原始 Key 欄位名稱。
+ * @returns {string} 格式化後的 Key 字串。
+ */
 function formatInterfaceKey(key: string): string {
   if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
     return key;
@@ -51,6 +70,18 @@ function formatInterfaceKey(key: string): string {
   return JSON.stringify(key);
 }
 
+/**
+ * 將物件字面量 Shape 遞迴轉換為 TypeScript Interface 的主體程式碼字串。
+ * 
+ * @description
+ * 遍歷 Shape 物件，逐個屬性將型別寫為 `key: type;`。若屬性為嵌套物件，遞迴呼叫本函數處理。
+ * 若屬性包含 `undefined`，將其設為可選屬性 `key?: type;`。
+ * 並於末尾統一追加 `[key: string]: any;` 索引簽名以增加型別相容性。
+ * 
+ * @param {any} shape - 包含欄位型別映射的 Shape 結構。
+ * @param {number} [depth=1] - 目前嵌套遞迴的深度，用於縮排排版。
+ * @returns {string} Interface 內部的成員定義程式碼。
+ */
 function shapeToInterfaceBody(shape: any, depth = 1): string {
   const indent = '  '.repeat(depth);
   let body = '';
@@ -85,6 +116,18 @@ function shapeToInterfaceBody(shape: any, depth = 1): string {
   return body;
 }
 
+/**
+ * 在專案中尋找與當前 Shape 結構特徵相符的既有 Interface 名稱。
+ * 
+ * @description
+ * 避免生成重複冗餘的 `*Shape` 介面。遍歷專案中所有的介面定義，
+ * 比對其屬性鍵名是否能 100% 覆蓋當前 Shape 的鍵名（至少大於等於 2 個欄位符合）。
+ * 若有，則直接復用既有 Interface。
+ * 
+ * @param {Project} project - ts-morph Project 專案實例。
+ * @param {any} shape - 欲進行比對的 Shape 結構。
+ * @returns {string|null} 匹配到的 Interface 名稱，若無則返回 `null`。
+ */
 function findMatchingInterface(project: Project, shape: any): string | null {
   const shapeKeys = Object.keys(shape).filter(k => k !== '__nullable');
   if (shapeKeys.length === 0) return null;
@@ -113,6 +156,18 @@ function findMatchingInterface(project: Project, shape: any): string | null {
   return null;
 }
 
+/**
+ * 將特定字面量型別寬化為對應的 TypeScript 基礎型別。
+ * 
+ * @description
+ * 1. `'true'` 或 `'false'` 寬化為 `'boolean'`。
+ * 2. 數值字串寬化為 `'number'`。
+ * 3. 各式引號包裹的字串寬化為 `'string'`。
+ * 4. 支援聯集型別（` | `）的分割遞迴寬化。
+ * 
+ * @param {string} t - 原始的字面量型別字串（如 `"abc"`, `42` 等）。
+ * @returns {string} 寬化後的基礎型別字串（如 `string`, `number` 等）。
+ */
 function widenTypeName(t: string): string {
   if (t.includes(' | ')) {
     const parts = t.split(' | ').map(p => widenTypeName(p));
@@ -134,6 +189,21 @@ function widenTypeName(t: string): string {
   return t;
 }
 
+/**
+ * 依據側錄記錄與現有 d.ts 規則解析並推導出最合適的參數型別字串。
+ * 
+ * @description
+ * 1. 提取 basic types 與 objectShapes。
+ * 2. 針對基礎型別執行 `widenTypeName` 寬化基礎型別。
+ * 3. 針對物件 Shape 呼叫 `findMatchingInterface` 尋找既有介面；若無則自動生成新的 `*Shape` 並暫存。
+ * 4. 處理可為 null 或是 undefined 的聯集型別，並對 `[object Object]` 進行安全過濾。
+ * 
+ * @param {any} record - 從 typeDB 取得的單一參數側錄記錄點。
+ * @param {string} baseName - 用於自動生成 Interface 名稱的前綴底標。
+ * @param {Record<string, string>} interfacesToDeclare - 用於收集待寫入 Interface 的暫存映射物件。
+ * @param {Project} [project] - ts-morph Project 專案實例。
+ * @returns {string} 推導出的 TypeScript 參數型別定義字串。
+ */
 function resolveParameterType(record: any, baseName: string, interfacesToDeclare: Record<string, string>, project?: Project): string {
   const observedTypes = record.observedTypes || [];
   const objectShapes = record.objectShapes || [];
@@ -183,6 +253,16 @@ function resolveParameterType(record: any, baseName: string, interfacesToDeclare
   return result;
 }
 
+/**
+ * 取得乾淨、可用於重構的變數或回傳值型別字串。
+ * 
+ * @description
+ * 讀取 AST 推導出的類型，若該類型包含複雜 inline 結構、`import(`、`typeof` 或是臨時的 Shape 類，
+ * 則不予以採納（返回空字串），改由動態兜底推導。同時對基本類型進行 `widenTypeName` 寬化處理。
+ * 
+ * @param {any} type - ts-morph Type 物件。
+ * @returns {string} 格式化後的乾淨型別描述字串，若不符採納標準則返回空字串。
+ */
 function getCleanTypeText(type: any): string {
   let text = type.getText();
 
@@ -201,6 +281,16 @@ function getCleanTypeText(type: any): string {
   return widenTypeName(text);
 }
 
+/**
+ * 在專案原始碼中根據名稱查找特定的 Interface 聲明節點。
+ * 
+ * @description
+ * 遍歷專案所有源檔案，搜尋具有相同名稱的介面宣告。
+ * 
+ * @param {Project} project - ts-morph Project 專案實例。
+ * @param {string} name - 欲搜尋的 Interface 名稱。
+ * @returns {any|undefined} 匹配到的 InterfaceDeclaration 節點，若無則返回 `undefined`。
+ */
 function findInterfaceInProject(project: Project, name: string): any {
   for (const sourceFile of project.getSourceFiles()) {
     const interfaces = sourceFile.getDescendantsOfKind(SyntaxKind.InterfaceDeclaration);
@@ -210,6 +300,16 @@ function findInterfaceInProject(project: Project, name: string): any {
   return undefined;
 }
 
+/**
+ * 取得屬性宣告的型別定義字串。
+ * 
+ * @description
+ * 優先讀取 TS 型別系統的型別文字（過濾 `import(` 複雜引用），
+ * 若無或失敗，則改回退取得其 AST 型別節點的原始碼文字，兜底為 `'any'`。
+ * 
+ * @param {any} prop - ts-morph 屬性節點對象。
+ * @returns {string} 該屬性的型別描述字串。
+ */
 function getPropertyTypeString(prop: any): string {
   const type = prop.getType();
   if (type) {
@@ -225,6 +325,19 @@ function getPropertyTypeString(prop: any): string {
   return 'any';
 }
 
+/**
+ * 安全地為 Class 類別新增成員屬性宣告。
+ * 
+ * @description
+ * 嘗試調用 `insertProperty` 將屬性插入 Class 起頭。
+ * 若拋出異常（如無構造函數或語法衝突），則降級使用文本分析與插字方式，
+ * 尋找建構子或第一個方法的位置，動態寫入類別成員屬性聲明，避免重構中斷。
+ * 
+ * @param {any} cls - ClassDeclaration 類別節點對象。
+ * @param {string} propName - 欲新增的屬性欄位名稱。
+ * @param {string} [typeStr='any'] - 該屬性的型別字串。
+ * @returns {void} 本方法不回傳值。
+ */
 function safeAddProperty(cls: any, propName: string, typeStr: string = 'any') {
   try {
     cls.insertProperty(0, {
@@ -255,6 +368,15 @@ function safeAddProperty(cls: any, propName: string, typeStr: string = 'any') {
   }
 }
 
+/**
+ * 將一般 JavaScript 註解清理並轉換為 JSDoc 標準區塊。
+ * 
+ * @description
+ * 移除 `//`, `/*` 或是 `/**` 的標示，統一格式化為不帶引號註解的多行文本。
+ * 
+ * @param {string} comment - 原始註解內容字串。
+ * @returns {string} 清理後的註解文本內容。
+ */
 function cleanCommentToJSDoc(comment: string): string {
   if (comment.startsWith('/**')) {
     return comment.replace(/^\/\*\*+/, '').replace(/\*+\/$/, '').trim();
@@ -265,6 +387,25 @@ function cleanCommentToJSDoc(comment: string): string {
   return comment.split('\n').map(line => line.replace(/^\/\/+/, '').trim()).join('\n');
 }
 
+/**
+ * 為指定函數的參數進行 TypeScript 型別標註（Annotation）。
+ * 
+ * @description
+ * 1. 取得函數參數列表。
+ * 2. 比對對應的 `d.ts` 宣告檔型別，若有高信賴型別，優先套用。
+ * 3. 若無 `d.ts` 資訊，則查詢 `typeDB` 中該參數的側錄記錄。
+ * 4. 當側錄呼叫次數大於信賴閾值時，調用 `resolveParameterType` 推導類型並標註。
+ * 5. 若側錄次數不足，則標記為低信賴度 any (`/* @inferred-low-confidence *\/ any`)。
+ * 
+ * @param {any} fnNode - 函數宣告或方法節點。
+ * @param {string} fnName - 函數識別名稱。
+ * @param {string} relPath - 目前檔案的專案相對路徑。
+ * @param {any} typeDB - 記憶體型別側錄資料庫。
+ * @param {Record<string, string>} interfacesToDeclare - 用於收集待聲明 Interface 的暫存映射物件。
+ * @param {any} config - 主設定檔配置物件。
+ * @param {any} [dtsInterface] - 同名類別在 d.ts 中的介面定義節點。
+ * @returns {void} 本方法不回傳值。
+ */
 function annotateFunction(
   fnNode: any,
   fnName: string,
@@ -355,6 +496,22 @@ function annotateFunction(
   }
 }
 
+/**
+ * 推導並設定函數或方法的回傳值型別。
+ * 
+ * @description
+ * 1. 優先透過 ts-morph 靜態 AST 分析 Return 語句，推導並寬化回傳值。
+ * 2. 若推導失敗或回傳 any/空，則查詢 `typeDB` 中的回傳側錄。
+ * 3. 當側錄呼叫次數大於信賴閾值時，套用側錄到的回傳型別。
+ * 
+ * @param {any} fnNode - 函數或方法節點。
+ * @param {string} fnName - 函數識別名稱。
+ * @param {string} relPath - 目前檔案的相對路徑。
+ * @param {any} typeDB - 記憶體型別側錄資料庫。
+ * @param {Record<string, string>} interfacesToDeclare - 用於收集待聲明 Interface 的暫存映射物件。
+ * @param {any} config - 主設定檔配置物件。
+ * @returns {void} 本方法不回傳值。
+ */
 function resolveAndSetReturnType(
   fnNode: any,
   fnName: string,
@@ -416,6 +573,17 @@ function resolveAndSetReturnType(
   }
 }
 
+/**
+ * 將檔案中的 CommonJS 模組語法（require/exports）重構為標準 ESM 模組語法（import/export）。
+ * 
+ * @description
+ * 1. 尋找全域 `require` 表達式並轉為靜態 `import` 聲明（支援解構與預設導入）。
+ * 2. 轉換 `module.exports = ...` 為 `export default ...`。
+ * 3. 轉換 `exports.foo = ...` 或 `module.exports.foo = ...` 為具名的 `export const foo = ...`。
+ * 
+ * @param {any} sourceFile - ts-morph SourceFile 原始碼檔案節點對象。
+ * @returns {void} 本方法直接修改 AST 節點，無回傳值。
+ */
 function refactorCjsToEsm(sourceFile: any) {
   sourceFile.getVariableStatements().forEach((stmt: any) => {
     if (stmt.getParent().getKind() !== SyntaxKind.SourceFile) return;
@@ -485,6 +653,28 @@ function refactorCjsToEsm(sourceFile: any) {
   });
 }
 
+/**
+ * 執行單一 JavaScript 檔案至 TypeScript 檔案的 AST 重構核心管線。
+ * 
+ * @description
+ * 1. 建立對應的 `.ts` 虛擬 AST 樹。
+ * 2. 清理現有的參數型別與 Interface。
+ * 3. 執行 `refactorCjsToEsm` 完成 CommonJS 到 ESM 的語法轉換。
+ * 4. 針對一般函數、類別方法、建構子以及變數箭頭函數：
+ *    a. 呼叫 `annotateFunction` 注入參數型別（合併 d.ts 與 typeDB 側錄）。
+ *    b. 呼叫 `resolveAndSetReturnType` 推導並標註回傳值型別。
+ * 5. 針對類別：
+ *    a. 分析建構子與 this 賦值，自動提升並聲明類別屬性（Field Declarations），並保留原註解為 JSDoc。
+ *    b. 補齊漏掉的 Class 屬性，防範 TS2339 未宣告屬性錯誤。
+ * 6. 在檔案開頭/結尾寫入自動生成的所有 `*Shape` Interface 介面宣告。
+ * 
+ * @param {string} filePath - 待重構的實體 JavaScript 檔案路徑。
+ * @param {any} typeDB - 側錄型別資料庫。
+ * @param {any} config - 重構主配置參數物件。
+ * @param {string} inDir - 輸入的源碼目錄。
+ * @param {Project} project - ts-morph Project 專案實例。
+ * @returns {string} 重構轉換後的完整 TypeScript 原始碼字串。
+ */
 export function processFileRefactoring(filePath: string, typeDB: any, config: any, inDir: string, project: Project): string {
   const originalCode = fs.readFileSync(filePath, 'utf-8');
   const sourceFile = project.createSourceFile(filePath.replace(/\.js$/, '.ts'), originalCode, { overwrite: true });
