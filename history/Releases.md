@@ -164,3 +164,12 @@
 - **修復 ThisKeyword 方法呼叫引數傳播**：將 `src/ast-refactorer.ts` 內查詢 `this.method(...)` 呼叫的選擇器從 `expression.name="this"` 修正為 `expression.kind=${SyntaxKind.ThisKeyword}`，打通 `this` 方法呼叫引數的型別反向傳播機制，使 `computePickupLength(lines: Lines[], ...)` 獲得最精確的宣告檔型別。
 - **排除阻礙型別演進的無效陣列型別**：修改 `getCleanTypeText` 排除 `undefined[]`, `never[]`, `null[]` 等在 empty array `[]` 初始化時產生的初階無效型別，恢復 TypeScript 陣列型別演進能力，徹底根除型別感染/污染問題，使 `addEndPoints` 與 `makeSortedArray` 能夠正確使用 `any[]`。
 - **打包建置無錯通過**：轉譯後的 `4_abcTS` 專案執行 `pnpm run build:vite` 成功編譯通過，建置產物無任何型別或語法錯誤。
+
+---
+
+## [2026-06-07] v1.5.8 - 實現雙輪反向型別傳播、Import 全路徑型別解包，打通全專案多級全域型別鏈
+
+- **實現 2 輪迭代全域反向傳播**：重構 `runGlobalReversePropagation` 為 2 輪迭代結構，成功解決多級函數呼叫傳遞時（如 `abc_tune.ts` 呼叫 `sequence` 再調用 `MidiSequencer.sequence`）型別寫入與編譯器快取時間差導致的傳播中斷問題。
+- **實現屬性方法調用與 Import 靜態追蹤**：實作 `resolveImportTarget` 與 `resolvePropertyAccessCallee`，成功追蹤類別實體的方法呼叫（如 `sequencer.sequence(...)`），將其實體宣告與引數型別進行反向綁定。
+- **實現全路徑 `import(...)` 解包還原**：實作 `unwrapImportType`，自動將編譯器推導的 `import("...").default` 解開並還原為具名的 `Tune` 及陣列型別 `Tune[]` 等乾淨型別，徹底解除了跨模組型別傳遞的屏障。
+- **全專案型別安全連鎖傳播與 Vite 零錯誤建置**：成功讓 `abc_midi_sequencer.ts` 中的 `sequence` 參數取得 `Tune` 型別，並透過正向傳播自動推導出 `lines: Lines[]`、`line: Lines`、`staves: Staff[]`、`staff: Staff`、`voice: Voice[]` 等一連串精密型別。在此基礎上，轉譯後的 `4_abcTS` 打包建置以 **完全零錯誤** 成功通過。

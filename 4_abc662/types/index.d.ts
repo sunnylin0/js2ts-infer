@@ -6,31 +6,51 @@ interface Tune {
 	metaText: MetaText;
 	metaTextInfo: MetaTextInfo;
 	version: string;
-	addElementToEvents?: Function;
-	addUsefulCallbackInfo?: Function;
-	getTotalTime?: Function;
-	getTotalBeats?: Function;
-	getBarLength?: Function;
-	getBeatLength?: Function;
-	getBeatsPerMeasure?: Function;
-	getBpm?: Function;
-	getMeter?: Function;
-	getMeterFraction?: Function;
-	getPickupLength?: Function;
-	getKeySignature?: Function;
-	getElementFromChar?: Function;
-	makeVoicesArray?: Function;
-	millisecondsPerMeasure?: Function;
-	setupEvents?: Function;
-	setTiming?: Function;
-	setUpAudio?: Function;
-	deline?: Function;
-	findSelectableElement?: Function;
-	getSelectableArray?: Function;
-	meter: Meter;
+	meter: MeterValue;
 	topText: TopText;
 	bottomText: BottomText;
 	engraver: EngraverController;
+
+	reset(): void;
+	copy(dest: any, src: any, prop: any, attrs: any): void;
+	copyTopInfo(src: any): void;
+	copyBottomInfo(src: any): void;
+	getBeatLength(): number;
+	computePickupLength(lines: Lines[], barLength: number): number;
+	getPickupLength(): number;
+	getBarLength(): number;
+	getTotalTime(): number;
+	getTotalBeats(): number;
+	millisecondsPerMeasure(bpmOverride: number): number;
+	getBeatsPerMeasure(): number;
+	getMeter(): Meter;
+	getMeterFraction(): MeterValue;
+	getKeySignature(): KeySignature;
+	// getElementFromChar(char: any): Voice;
+	// addVerticalInfo(timingEvents: any): void;
+	// makeSortedArray(hash: any): any[];
+	//addElementToEvents();
+	//makeVoicesArray(): never[][];
+	//setupEvents(startingDelay: any, timeDivider: any, bpm: any, warp: any): any[];
+	//addUsefulCallbackInfo(timingEvents: any, bpm: any): void;
+	//skipTies(elements: any, index: any): any;
+	//addEndPoints(lines: any, elements: any): void;
+	//getBpm(tempo: any): number;
+	//setTiming(bpm: any, measuresOfDelay: any): any[];
+	noteTimings: any[];
+	totalTime: number;
+	totalBeats: number;
+	// setUpAudio(options: any): {
+	// 	tempo: any;
+	// 	instrument: any;
+	// 	tracks: any[];
+	// 	totalDuration: number;
+	// };
+	//deline(options: any): {staff: any[];}[];
+	//findSelectableElement(target: any): any;
+	//getSelectableArray(): any;
+
+
 }
 
 /** @class EngraverController */
@@ -433,7 +453,7 @@ interface BeamElem {
 	average: number;
 	allrests: boolean;
 	stemHeight: number;
-	beams?: Object; // [Circular: beams]
+	beams: BeamElem[];
 	duration: number;
 	stemsUp: boolean;
 	min: number;
@@ -475,7 +495,7 @@ interface Classes {
 interface Staff {
 	voices: Voice[][];
 	clef: Clef;
-	key: Key;
+	key: KeySignature;
 	bracket: string;
 	title: any[];
 	meter: Meter;
@@ -484,11 +504,14 @@ interface Staff {
 interface Meter {
 	type: string;
 	el_type?: string;
-	abselem?: Object; // [Circular: abselem]
-	value?: Object; // [Circular: value]
+	abselem?: AbsoluteElement;
+	value?: MeterValue;
 }
-
-interface Key {
+interface MeterValue {
+	num: number,
+	den: number
+}
+interface KeySignature {
 	accidentals: Accidentals[];
 	root: string;
 	acc: string;

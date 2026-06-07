@@ -312,3 +312,28 @@
     * `addEndPoints(lines: Lines[], elements: any[]): void` (參數 `lines` 被正確注入為 `Lines[]`，`elements` 成功標註為 `any[]`)。
     * `makeSortedArray(hash: {}): any[]` (回傳值類型標記為 `any[]`)。
 - **Vite 打包通過**：在 `4_abcTS` 目錄下執行 `pnpm run build:vite` 通過，無任何語法或型別編譯錯誤。
+
+---
+
+**時間戳記**：2026-06-07 23:45:00
+
+## 已完成的變更
+- **跨模組與多級型別反向傳播**：
+  - 於 `src/ast-refactorer.ts` 實作 `resolveImportTarget` 與 `resolvePropertyAccessCallee`，打通了預設匯出與類別屬性方法的靜態呼叫關係追蹤。
+  - 重構 `runGlobalReversePropagation` 為 2 輪迭代架構。使外部檔案對 `sequence` 的呼叫型別能成功在第一輪注入到 `sequence` 函數的 `abctune` 參數中，並在第二輪成功被向下傳遞到 `MidiSequencer.sequence` 的 `abctune` 參數中。
+- **全路徑 Import 型別自動解包與還原**：
+  - 於 `src/ast-refactorer.ts` 實作 `unwrapImportType` 輔助函數。成功將 `import("...").default` 及 `import("...").default[]` 自動還原為對應的類別具名型別 `Tune` 與 `Tune[]`，使全域跨模組型別推導與傳播功能真正發揮效力。
+- **鏈式正向型別傳播**：
+  - 在為 `abctune` 成功注入了 `Tune` 型別後，透過 `runGlobalForwardPropagation` 的 3 輪正向型別傳播迭代，成功使後續的局部變數如 `lines: Lines[]`、`line: Lines`、`staves: Staff[]`、`staff: Staff` 與 `voice: Voice[]` 順利推導並打通了全專案的型別相依鏈。
+
+## 驗證結果
+- **重構結果完全正確**：
+  - 轉譯重構指令 `node dist/cli.js generate -i ./4_abc662 -o ./4_abcTS -f` 成功且無錯誤執行。
+  - 檢查重構後的 [abc_midi_sequencer.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/4_abcTS/src/synth/abc_midi_sequencer.ts)：
+    * `sequence(abctune: Tune, options): any[]` 參數 `abctune` 成功獲得 `Tune` 強型別。
+    * `const lines: Lines[] = abctune.lines;` 局部變數 `lines` 成功獲得 `Lines[]`。
+    * `const line: Lines = lines[i];` 局部變數 `line` 成功獲得 `Lines`。
+    * `const staves: Staff[] = line.staff;` 局部變數 `staves` 成功獲得 `Staff[]`。
+    * `const staff: Staff = staves[j];` 局部變數 `staff` 成功獲得 `Staff`。
+    * `const voice: Voice[] = staff.voices[k];` 局部變數 `voice` 成功獲得 `Voice[]`。
+- **打包完全無錯**：在 `4_abcTS` 目錄執行 `pnpm run build:vite` 通過，打包建置以 **0 個編譯錯誤** 的滿分狀態完全成功。

@@ -245,3 +245,27 @@
 - [x] 重新編譯重構工具並對 `4_abc662` 進行 E2E 測試與驗證
 - [x] 檢查 `4_abcTS/src/data/abc_tune.ts` 中的 `computePickupLength`、`addEndPoints` 與 `makeSortedArray` 等關鍵方法之參數與變數型別，確認已從原先 the `undefined[]` 成功標註為 `Lines[]` 與 `any[]`
 - [x] 於 `4_abcTS` 目錄執行 `pnpm run build:vite`，確認專案 100% 通過編譯且無任何 TypeScript 語法錯誤
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-07 23:45:00
+
+- [x] 實現跨模組及多級全域型別傳播與解析
+  - [x] 於 `src/ast-refactorer.ts` 實作靜態 Import 追蹤機制 `resolveImportTarget`，打通預設 default 匯入與具名匯入的跨檔案解析。
+  - [x] 於 `src/ast-refactorer.ts` 實作 `resolvePropertyAccessCallee` 機制，支援 `sequencer.sequence(abctune, options)` 這類屬性方法調用，解析出正確的類別成員方法實體宣告。
+  - [x] 於 `src/ast-refactorer.ts` 實作多級全域型別解析器 `resolveCalleeDeclaration`。
+  - [x] 於 `src/ast-refactorer.ts` 實作 `unwrapImportType` 函數，能夠自動將 TS Compiler 回傳的複雜路徑 `import("...").default` 或 `import("...").Tune` 以及其陣列型別 `import("...").default[]` 還原為乾淨的具名型別 `Tune` / `Tune[]` 等。
+  - [x] 更新 `getCleanTypeText` 所有呼叫點，傳入 `project` 上下文。
+  - [x] 將全專案反向傳播 `runGlobalReversePropagation` 重構為 **雙輪迭代模式**，打通多級反向型別傳遞（如 `abc_tune.ts` 傳遞 `Tune` 給 `sequence` 參數，再傳遞給 `MidiSequencer.sequence` 參數）。
+  - [x] 重新編譯建置 `js2ts-infer` 工具。
+  - [x] 對 `4_abc662` 執行全專案 E2E 轉譯重構。
+  - [x] 驗證 `4_abcTS/src/synth/abc_midi_sequencer.ts` 的型別傳播：
+    * `sequence(abctune: Tune, options): any[]` 成功標註 `abctune: Tune`。
+    * 局部變數 `const lines: Lines[] = abctune.lines;` 成功標註 `lines: Lines[]`。
+    * 局部變數 `const line: Lines = lines[i];` 成功標註 `line: Lines`。
+    * 局部變數 `const staves: Staff[] = line.staff;` 成功標註 `staves: Staff[]`。
+    * 局部變數 `const staff: Staff = staves[j];` 成功標註 `staff: Staff`。
+    * 局部變數 `const voice: Voice[] = staff.voices[k];` 成功標註 `voice: Voice[]`。
+  - [x] 於 `4_abcTS` 目錄執行 `pnpm run build:vite`，確認 Vite 打包 100% 成功，編譯結果為 **完全零錯誤** 狀態。

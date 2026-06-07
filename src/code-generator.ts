@@ -5,7 +5,13 @@ import { Project, SourceFile } from 'ts-morph';
 import chalk from 'chalk';
 import * as diff from 'diff';
 import { globSync } from 'glob';
-import { processFileRefactoring } from './ast-refactorer';
+import {
+	processFileRefactoring,
+	runGlobalReversePropagation,
+	runGlobalForwardPropagation,
+	runGlobalReturnTypePropagation,
+	writeInterfaceDeclarations
+} from './ast-refactorer';
 import { runFeedbackLoop } from './feedback-loop';
 
 /**
@@ -190,13 +196,51 @@ export async function runGeneration(options: any) {
 	console.log(chalk.blue(`📂 正在建立編譯器 TypeChecker 並進行記憶體重構...`));
 	const typeChecker = project.getTypeChecker();
 
+	const fileInterfaces = new Map<string, Record<string, string>>();
+
+	console.log(chalk.blue(`📂 正在執行第一階段：基礎 AST 注入與重構...`));
 	for (const file of filesToProcess) {
 		try {
-			processFileRefactoring(file.sourceFile, typeChecker, typeDB, config, inDir, project);
-			console.log(chalk.green(`✔ 記憶體重構完成: ${file.relPath}`));
+			const interfacesToDeclare: Record<string, string> = {};
+			fileInterfaces.set(file.sourceFile.getFilePath(), interfacesToDeclare);
+
+			processFileRefactoring(file.sourceFile, typeChecker, typeDB, config, inDir, project, interfacesToDeclare);
+			console.log(chalk.green(`✔ 第一階段重構完成: ${file.relPath}`));
 		} catch (err: any) {
-			console.error(chalk.red(`❌ 重構檔案失敗: ${file.relPath}, 錯誤: ${err.message}`));
+			console.error(chalk.red(`❌ 第一階段重構失敗: ${file.relPath}, 錯誤: ${err.message}`));
 			console.error(err.stack);
+		}
+	}
+
+	console.log(chalk.blue(`📂 正在執行第二階段：全專案反向型別傳播...`));
+	try {
+		runGlobalReversePropagation(project);
+		console.log(chalk.green(`✔ 第二階段全專案反向傳播完成`));
+	} catch (err: any) {
+		console.error(chalk.red(`❌ 第二階段傳播失敗, 錯誤: ${err.message}`));
+	}
+
+	console.log(chalk.blue(`📂 正在執行第三階段：全專案局部變數正向型別傳播 (3輪迭代)...`));
+	try {
+		runGlobalForwardPropagation(project);
+		console.log(chalk.green(`✔ 第三階段全專案正向傳播完成`));
+	} catch (err: any) {
+		console.error(chalk.red(`❌ 第三階段傳播失敗, 錯誤: ${err.message}`));
+	}
+
+	console.log(chalk.blue(`📂 正在執行第四階段：全專案回傳型別推導與注入...`));
+	try {
+		runGlobalReturnTypePropagation(project, typeDB, config, fileInterfaces, inDir);
+		console.log(chalk.green(`✔ 第四階段全專案回傳傳播完成`));
+	} catch (err: any) {
+		console.error(chalk.red(`❌ 第四階段傳播失敗, 錯誤: ${err.message}`));
+	}
+
+	console.log(chalk.blue(`📂 正在執行第五階段：寫入所有 Shape 介面宣告...`));
+	for (const file of filesToProcess) {
+		const interfacesToDeclare = fileInterfaces.get(file.sourceFile.getFilePath());
+		if (interfacesToDeclare) {
+			writeInterfaceDeclarations(file.sourceFile, interfacesToDeclare);
 		}
 	}
 

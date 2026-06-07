@@ -541,3 +541,38 @@
 2. 對 `4_abc662` 執行 `node dist/cli.js generate -i ./4_abc662 -o ./4_abcTS -f`。
 3. 檢查 `4_abcTS/src/data/abc_tune.ts` 中 `computePickupLength` 及 `addEndPoints` 方法簽章與內部的局部變數，確保不再包含 `undefined[]` 或 `never[]` 等型別錯誤，而是正確對齊 `Lines[]` 與 `any[]`。
 4. 於 `4_abcTS` 目錄執行 `pnpm install` 與 `pnpm run build:vite`，確認編譯 100% 無錯通過。
+
+---
+
+# 實現跨模組與多級全域型別反向/正向傳播計畫
+
+**時間戳記**：2026-06-07 23:45:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **全專案全域型別傳播 (Global Type Propagation)**：
+>    - 解決 `js2ts-infer` 重構大型專案時，跨模組型別推導與 `this` 上下文解析失準的問題。
+>    - 針對 `abc_midi_sequencer.ts` 中的 `sequence` 方法注入 `abctune: Tune` 型別，並將其鏈式型別正向傳播至其局部變數 `lines: Lines[]`、`line: Lines`、`staves: Staff[]` 等。
+> 2. **雙輪反向傳播與 PropertyAccess 靜態追蹤**：
+>    - 實作屬性方法呼叫（如 `sequencer.sequence(...)`）的靜態 callee 實體宣告解析。
+>    - 實作 2 輪迭代的反向型別傳播，確保多級反向型別（outer 呼叫 -> 導出函數參數 -> 類別方法參數）能夠被順暢注入。
+> 3. **Import 全路徑型別解包與還原 (Import Type Unwrapping)**：
+>    - 解析並解包 TS Compiler 推導的 `import("...").default` 等複雜全路徑型別，將其精準還原為對應的類別或 Interface 具名型別，避免 `getCleanTypeText` 過濾掉這些型別。
+
+## 開放問題
+無。
+
+## 預期變更
+- #### [MODIFY] [ast-refactorer.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/ast-refactorer.ts)
+  - 實作 `resolveImportTarget` 用於追蹤 default 與 named 匯出目標。
+  - 實作 `resolvePropertyAccessCallee` 用於靜態/動態解析 `sequencer.sequence(...)`。
+  - 實作 `unwrapImportType` 用於解包與還原 `import(...)` 全路徑及陣列型別。
+  - 重構 `runGlobalReversePropagation` 為 2 輪迭代架構。
+  - 傳入 `project` 上下文至 `getCleanTypeText` 呼叫點。
+
+## 驗證計畫
+### 自動化與手動驗證
+1. 執行 `pnpm run build` 編譯 CLI 工具。
+2. 對 `4_abc662` 執行全域重構：`node dist/cli.js generate -i ./4_abc662 -o ./4_abcTS -f`。
+3. 檢查 `4_abcTS/src/synth/abc_midi_sequencer.ts` 的 `sequence` 參數及其局部變數的型別標註是否符合預期。
+4. 於 `4_abcTS` 目錄執行 `pnpm run build:vite`，驗證打包建置無錯通過。

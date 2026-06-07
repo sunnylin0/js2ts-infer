@@ -13,7 +13,7 @@
 		"build:basic-min": "npm run webpack -- --mode production --config-name basic",
 		"build:plugin": "npm run webpack -- --mode production --config-name plugin",
 		"test-server": "npx http-server",
-		"test": "concurrently \"http-server\" \"npx opener http://localhost:8080/tests/all.html\"",
+		"test": "concurrently \"vite\" \"npx opener http://localhost:5173/tests/all.html\"",
 		"build:analyze": "npm run build:basic -- --env analyze"
 	},
 	"repository": {
@@ -47,7 +47,9 @@
 		"@tarp/require": "1.4.3",
 		"chai": "4.3.7",
 		"concurrently": "7.6.0",
+		"http-server": "^14.1.1",
 		"mocha": "10.2.0",
+		"opener": "^1.5.2",
 		"typescript": "^6.0.3",
 		"vite": "^6.2.0",
 		"vite-plugin-commonjs": "^0.10.4",

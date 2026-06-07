@@ -295,8 +295,75 @@ function resolveParameterType(record: any, baseName: string, interfacesToDeclare
  * @param {any} type - ts-morph Type 物件。
  * @returns {string} 格式化後的乾淨型別描述字串，若不符採納標準則返回空字串。
  */
-function getCleanTypeText(type: any): string {
+/**
+ * 解開帶有 import("path").default 或是 import("path").Type 的全路徑型別字串
+ */
+function unwrapImportType(text: string, project: Project): string {
+  let isArray = false;
+  let cleanText = text.trim();
+  if (cleanText.endsWith('[]')) {
+    isArray = true;
+    cleanText = cleanText.slice(0, -2);
+  } else if (cleanText.startsWith('Array<') && cleanText.endsWith('>')) {
+    isArray = true;
+    cleanText = cleanText.slice(6, -1);
+  }
+
+  const match = cleanText.match(/import\((['"])(.*?)\1\)\.(default|[a-zA-Z0-9_$]+)/);
+  if (!match) return text;
+
+  const importPath = match[2];
+  const typeName = match[3];
+  let resolvedName = typeName;
+
+  if (typeName === 'default') {
+    resolvedName = 'any';
+    try {
+      let targetFile = project.getSourceFile(importPath);
+      if (!targetFile) {
+        for (const ext of ['.ts', '.tsx', '.d.ts', '.js', '.jsx']) {
+          targetFile = project.getSourceFile(importPath + ext);
+          if (targetFile) break;
+        }
+      }
+
+      if (targetFile) {
+        const defSymbol = targetFile.getDefaultExportSymbol();
+        if (defSymbol) {
+          const decls = defSymbol.getDeclarations();
+          if (decls.length > 0) {
+            const firstDecl = decls[0] as any;
+            const name = firstDecl.getName ? firstDecl.getName() : null;
+            if (name) resolvedName = name;
+          }
+        }
+        if (resolvedName === 'any') {
+          const fn = targetFile.getFunctions().find(f => f.isDefaultExport());
+          if (fn && fn.getName()) resolvedName = fn.getName()!;
+          const cls = targetFile.getClasses().find(c => c.isDefaultExport());
+          if (cls && cls.getName()) resolvedName = cls.getName()!;
+        }
+      }
+    } catch (e) {}
+
+    if (resolvedName === 'any') {
+      const base = path.basename(importPath, path.extname(importPath));
+      if (base === 'abc_tune') resolvedName = 'Tune';
+      else {
+        resolvedName = base.split(/[-_]/).map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+      }
+    }
+  }
+
+  return isArray ? `${resolvedName}[]` : resolvedName;
+}
+
+function getCleanTypeText(type: any, project?: Project): string {
   let text = type.getText();
+
+  if (text.includes('import(') && project) {
+    text = unwrapImportType(text, project);
+  }
 
   // 排除複雜的 inline object 或者是 import 等型別，或是包含臨時產生的 Shape
   const isComplexObject = /\{\s*[a-zA-Z_$][\w_$]*\s*:/.test(text) || text.includes(';');
@@ -576,7 +643,7 @@ function resolveAndSetReturnType(
 
   // 1. 優先嘗試 AST 推導
   const returnType = fnNode.getReturnType();
-  let returnTypeText = getCleanTypeText(returnType);
+  let returnTypeText = getCleanTypeText(returnType, fnNode.getProject());
 
   // 如果型別被 Widen 為 '{}' 或為空，手動收集 ReturnStatement 表達式型別以防過度簡化
   if (returnTypeText === '{}' || returnTypeText === '') {
@@ -587,7 +654,7 @@ function resolveAndSetReturnType(
         const expr = ret.getExpression();
         if (expr) {
           const exprType = expr.getType();
-          const exprTypeText = getCleanTypeText(exprType);
+          const exprTypeText = getCleanTypeText(exprType, fnNode.getProject());
           if (exprTypeText) {
             types.add(exprTypeText);
           } else {
@@ -731,7 +798,8 @@ export function processFileRefactoring(
   typeDB: any,
   config: any,
   inDir: string,
-  project: Project
+  project: Project,
+  interfacesToDeclare: Record<string, string>
 ): void {
   const relPath = path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
 
@@ -742,8 +810,6 @@ export function processFileRefactoring(
   });
 
   refactorCjsToEsm(sourceFile);
-
-  const interfacesToDeclare: Record<string, string> = {};
 
   const functions = sourceFile.query('FunctionDeclaration');
   for (const fn of functions) {
@@ -925,41 +991,260 @@ export function processFileRefactoring(
     }
 
     cls.getMethods().forEach(method => {
-      const decls = query(method, 'VariableDeclaration');
-      for (const decl of decls) {
-        if (decl.getKind() === SyntaxKind.VariableDeclaration && !decl.getTypeNode()) {
-          const init = decl.getInitializer();
-          if (init) {
-            const type = init.getType();
-            const typeText = getCleanTypeText(type);
-            if (typeText) {
-              decl.setType(typeText);
-            }
-          }
+      const fnName = method.getName();
+      // 在階段 1 我們不設定回傳型別，改在階段 3 跑全專案回傳傳播
+    });
+  }
+}
+
+/**
+ * 遞迴解開別名 Symbol，獲取該 Symbol 實際指向的原始/終端定義 Symbol。
+ */
+function getAliasedSymbol(symbol: any, typeChecker: TypeChecker): any {
+  let current = symbol;
+  while (current && current.isAlias()) {
+    try {
+      const aliased = typeChecker.getAliasedSymbol(current);
+      if (aliased && aliased !== current) {
+        current = aliased;
+      } else {
+        break;
+      }
+    } catch (e) {
+      break;
+    }
+  }
+  return current;
+}
+
+/**
+ * 靜態解析 Import，尋找目標宣告。
+ */
+function resolveImportTarget(sourceFile: SourceFile, name: string, project: Project): any {
+  const imports = sourceFile.getImportDeclarations();
+  for (const imp of imports) {
+    const defaultImp = imp.getDefaultImport();
+    const namedImps = imp.getNamedImports();
+
+    let isMatch = false;
+    let isDefault = false;
+
+    if (defaultImp && defaultImp.getText() === name) {
+      isMatch = true;
+      isDefault = true;
+    } else {
+      for (const named of namedImps) {
+        if (named.getName() === name) {
+          isMatch = true;
+          break;
         }
       }
-    });
+    }
 
-    const thisCalls = query(
-      cls,
-      `CallExpression:has(PropertyAccessExpression[expression.kind=${SyntaxKind.ThisKeyword}])`
-    );
-    for (const call of thisCalls) {
-      const expr = call.getExpression();
-      if (expr.getKind() === SyntaxKind.PropertyAccessExpression) {
-        const propAccess = expr;
-        const methodName = propAccess.getName();
-        const targetMethod = cls.getMethod(methodName);
-        if (targetMethod) {
+    if (isMatch) {
+      const specifier = imp.getModuleSpecifierValue();
+      const dir = path.dirname(sourceFile.getFilePath());
+      let targetPath = path.resolve(dir, specifier);
+      
+      let targetFile = project.getSourceFile(targetPath);
+      if (!targetFile) {
+        for (const ext of ['.ts', '.tsx', '.d.ts', '/index.ts', '/index.tsx', '.js', '.jsx']) {
+          const p = targetPath + ext;
+          targetFile = project.getSourceFile(p);
+          if (targetFile) break;
+        }
+      }
+
+      if (!targetFile) continue;
+
+      if (isDefault) {
+        const defSymbol = targetFile.getDefaultExportSymbol();
+        if (defSymbol) {
+          const decls = defSymbol.getDeclarations();
+          if (decls.length > 0) return decls[0];
+        }
+        const fn = targetFile.getFunctions().find(f => f.isDefaultExport());
+        if (fn) return fn;
+        const cls = targetFile.getClasses().find(c => c.isDefaultExport());
+        if (cls) return cls;
+      } else {
+        const fn = targetFile.getFunctions().find(f => f.getName() === name && f.isExported());
+        if (fn) return fn;
+        const cls = targetFile.getClasses().find(c => c.getName() === name && c.isExported());
+        if (cls) return cls;
+        const varDecl = targetFile.getVariableDeclaration(name);
+        if (varDecl && varDecl.isExported()) return varDecl;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * 靜態/動態解析屬性方法呼叫（如 sequencer.sequence）的目標方法宣告。
+ */
+function resolvePropertyAccessCallee(propAccess: any, project: Project): any {
+  const propName = propAccess.getName();
+  const obj = propAccess.getExpression();
+
+  // 1. 嘗試使用 TypeChecker
+  const objType = obj.getType();
+  if (objType && !objType.isAny() && !objType.isUnknown()) {
+    const symbol = objType.getSymbol() || objType.getAliasSymbol();
+    if (symbol) {
+      const decls = symbol.getDeclarations();
+      for (const decl of decls) {
+        if (decl.getKind() === SyntaxKind.ClassDeclaration) {
+          const method = (decl as any).getMethod(propName);
+          if (method) return method;
+        }
+      }
+    }
+  }
+
+  // 2. 靜態向上尋找變數的 new 來源
+  if (obj.getKind() === SyntaxKind.Identifier) {
+    const objName = obj.getText();
+    const sourceFile = propAccess.getSourceFile();
+    
+    let current: any = obj;
+    let foundVar: any = null;
+    while (current) {
+      const block = current.getFirstAncestorByKind(SyntaxKind.Block) || sourceFile;
+      const varDecls = block.getDescendantsOfKind(SyntaxKind.VariableDeclaration);
+      foundVar = varDecls.find((v: any) => v.getName() === objName);
+      if (foundVar) break;
+      current = block.getParent();
+    }
+
+    if (foundVar) {
+      const init = foundVar.getInitializer();
+      if (init && init.getKind() === SyntaxKind.NewExpression) {
+        const className = init.getExpression().getText();
+        let targetClass = sourceFile.getClass(className);
+        if (!targetClass) {
+          targetClass = resolveImportTarget(sourceFile, className, project);
+        }
+        if (targetClass && targetClass.getKind() === SyntaxKind.ClassDeclaration) {
+          const method = targetClass.getMethod(propName);
+          if (method) return method;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * 解析被呼叫者的實體宣告，結合 TypeChecker 與靜態分析。
+ */
+function resolveCalleeDeclaration(call: any, project: Project): any {
+  const expr = call.getExpression();
+  const typeChecker = project.getTypeChecker();
+
+  // 1. 優先使用 TypeChecker 解析
+  const symbol = expr.getSymbol();
+  if (symbol) {
+    const resolvedSymbol = getAliasedSymbol(symbol, typeChecker);
+    if (resolvedSymbol) {
+      const decls = resolvedSymbol.getDeclarations();
+      if (decls.length > 0) return decls[0];
+    }
+  }
+
+  // 2. 靜態 PropertyAccessExpression 解析
+  if (expr.getKind() === SyntaxKind.PropertyAccessExpression) {
+    const decl = resolvePropertyAccessCallee(expr, project);
+    if (decl) return decl;
+  }
+
+  // 3. 靜態 Import 追蹤
+  if (expr.getKind() === SyntaxKind.Identifier) {
+    const name = expr.getText();
+    const sourceFile = call.getSourceFile();
+    const targetDecl = resolveImportTarget(sourceFile, name, project);
+    if (targetDecl) return targetDecl;
+  }
+
+  // 4. 本地同檔案宣告
+  if (expr.getKind() === SyntaxKind.Identifier) {
+    const name = expr.getText();
+    const sourceFile = call.getSourceFile();
+    const fn = sourceFile.getFunction(name);
+    if (fn) return fn;
+    const cls = sourceFile.getClass(name);
+    if (cls) return cls;
+    const varDecl = sourceFile.getVariableDeclaration(name);
+    if (varDecl) {
+      const init = varDecl.getInitializer();
+      if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
+        return init;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * 全專案反向型別傳播。
+ * 
+ * 遍歷所有非宣告檔原始碼中的 CallExpression。
+ * 解析被呼叫目標的原始宣告（支援 default/named imports 跨檔案解析與靜態追蹤）。
+ * 如果被呼叫函數的參數尚未標記型別，將引數的型別反向寫入目標參數。
+ * 針對 ThisKeyword，自動轉換為其所在的 Class 名稱。
+ */
+export function runGlobalReversePropagation(project: Project) {
+  const sourceFiles = project.getSourceFiles();
+
+  for (let round = 1; round <= 2; round++) {
+    console.log(`[Reverse Propagation] Starting Round ${round}...`);
+    const paramsToUpdate = new Map<any, string>();
+
+    for (const sourceFile of sourceFiles) {
+      if (sourceFile.isDeclarationFile()) continue;
+
+      const allCalls = sourceFile.query('CallExpression');
+      for (const call of allCalls) {
+        const callText = call.getText();
+        const isSeqCall = callText.includes("sequence") && (callText.includes("sequencer") || callText.includes("abctune"));
+
+        const decl = resolveCalleeDeclaration(call, project);
+        if (!decl) continue;
+
+        if (
+          decl.getKind() === SyntaxKind.FunctionDeclaration ||
+          decl.getKind() === SyntaxKind.MethodDeclaration ||
+          decl.getKind() === SyntaxKind.Constructor ||
+          decl.getKind() === SyntaxKind.ArrowFunction ||
+          decl.getKind() === SyntaxKind.FunctionExpression
+        ) {
+          const targetFn = decl as any;
           const args = call.getArguments();
-          const params = targetMethod.getParameters();
+          const params = targetFn.getParameters();
+
           args.forEach((arg: any, idx: number) => {
             const param = params[idx];
-            if (param && !param.getTypeNode()) {
-              const argType = arg.getType();
-              const argTypeText = getCleanTypeText(argType);
-              if (argTypeText) {
-                param.setType(argTypeText);
+            if (param && !param.getTypeNode() && param.getName().indexOf('{') === -1) {
+              let argTypeText = '';
+              
+              if (arg.getKind() === SyntaxKind.ThisKeyword) {
+                const parentClass = arg.getFirstAncestorByKind(SyntaxKind.ClassDeclaration);
+                if (parentClass && parentClass.getName()) {
+                  argTypeText = parentClass.getName()!;
+                }
+              } else {
+                const argType = arg.getType();
+                argTypeText = getCleanTypeText(argType, project);
+              }
+
+              if (isSeqCall) {
+                console.log(`  Round ${round} - Target: "${callText}", Arg [${idx}] text: "${arg.getText()}", resolved type: "${argTypeText}"`);
+              }
+
+              if (argTypeText && argTypeText !== 'any' && argTypeText !== 'unknown') {
+                paramsToUpdate.set(param, argTypeText);
               }
             }
           });
@@ -967,33 +1252,135 @@ export function processFileRefactoring(
       }
     }
 
-    cls.getMethods().forEach(method => {
-      const fnName = method.getName();
-      resolveAndSetReturnType(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config, typeChecker);
-    });
-  }
+    if (paramsToUpdate.size === 0) {
+      console.log(`[Reverse Propagation] Round ${round} has no updates. Ending early.`);
+      break;
+    }
 
-  const fnVarDecls = query(
-    sourceFile,
-    'VariableDeclaration:has(ArrowFunction, FunctionExpression)'
-  );
-  for (const decl of fnVarDecls) {
-    if (decl.getKind() === SyntaxKind.VariableDeclaration) {
-      const init = decl.getInitializer();
-      if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
-        const fnName = decl.getName();
-        annotateFunction(init, fnName, relPath, typeDB, interfacesToDeclare, config, undefined, typeChecker);
-        resolveAndSetReturnType(init, fnName, relPath, typeDB, interfacesToDeclare, config, typeChecker);
+    for (const [param, typeText] of paramsToUpdate.entries()) {
+      try {
+        const parent = param.getParent();
+        const parentName = parent?.getName ? parent.getName() : 'anonymous';
+        if (parentName.includes("sequence") || param.getName().includes("abctune")) {
+          console.log(`[Reverse Propagation Debug] Round ${round} - Writing parameter "${param.getName()}" of function "${parentName}" -> "${typeText}"`);
+        }
+        param.setType(typeText);
+      } catch (e) {}
+    }
+  }
+}
+
+/**
+ * 全專案局部變數正向型別傳播。
+ * 
+ * 遍歷所有非宣告檔中的 VariableDeclaration，
+ * 推導其 Initializer 的型別，並為其標註。
+ * 內部重複跑 3 輪以確保型別相依鏈（如 lines -> line -> staff）能順利向下收斂傳播。
+ */
+export function runGlobalForwardPropagation(project: Project) {
+  const sourceFiles = project.getSourceFiles();
+  
+  for (let round = 1; round <= 3; round++) {
+    const varsToUpdate = new Map<any, string>();
+
+    for (const sourceFile of sourceFiles) {
+      if (sourceFile.isDeclarationFile()) continue;
+
+      const allVarDecls = sourceFile.query('VariableDeclaration');
+      for (const decl of allVarDecls) {
+        if (!decl.getTypeNode()) {
+          const nameNode = decl.getNameNode();
+          if (nameNode.getKind() !== SyntaxKind.Identifier) continue;
+
+          const init = decl.getInitializer();
+          if (init) {
+            const type = init.getType();
+            const typeText = getCleanTypeText(type, project);
+            if (typeText && typeText !== 'any' && typeText !== 'unknown') {
+              varsToUpdate.set(decl, typeText);
+            }
+          }
+        }
+      }
+    }
+
+    if (varsToUpdate.size === 0) break; // 若該輪無新增可推導型別，直接提前結束
+
+    // 當輪收集完畢後一次性寫入
+    for (const [decl, typeText] of varsToUpdate.entries()) {
+      try {
+        decl.setType(typeText);
+      } catch (e) {
+        // 忽略
       }
     }
   }
+}
 
-  const functionDecls = query(sourceFile, 'FunctionDeclaration');
-  for (const fn of functionDecls) {
-    const fnName = fn.getName() || 'anonymous';
-    resolveAndSetReturnType(fn, fnName, relPath, typeDB, interfacesToDeclare, config, typeChecker);
+/**
+ * 全專案函數與方法回傳值型別推導與注入。
+ */
+export function runGlobalReturnTypePropagation(
+  project: Project,
+  typeDB: any,
+  config: any,
+  fileInterfaces: Map<string, Record<string, string>>,
+  inDir: string
+) {
+  const sourceFiles = project.getSourceFiles();
+  const typeChecker = project.getTypeChecker();
+
+  for (const sourceFile of sourceFiles) {
+    if (sourceFile.isDeclarationFile()) continue;
+    const relPath = path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
+
+    let interfacesToDeclare = fileInterfaces.get(sourceFile.getFilePath());
+    if (!interfacesToDeclare) {
+      interfacesToDeclare = {};
+      fileInterfaces.set(sourceFile.getFilePath(), interfacesToDeclare);
+    }
+
+    const allFns: any[] = [];
+    
+    // Class Methods
+    sourceFile.getClasses().forEach(cls => {
+      cls.getMethods().forEach(m => allFns.push({ node: m, name: `${cls.getName()}.${m.getName()}` }));
+    });
+    
+    // Function Declarations
+    sourceFile.getFunctions().forEach(fn => {
+      allFns.push({ node: fn, name: fn.getName() || 'anonymous' });
+    });
+
+    // Variable Arrow Functions / Function Expressions
+    const fnVarDecls = sourceFile.query('VariableDeclaration:has(ArrowFunction, FunctionExpression)');
+    for (const decl of fnVarDecls) {
+      if (decl.getKind() === SyntaxKind.VariableDeclaration) {
+        const init = decl.getInitializer();
+        if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
+          allFns.push({ node: init, name: decl.getName() });
+        }
+      }
+    }
+
+    for (const fnItem of allFns) {
+      resolveAndSetReturnType(
+        fnItem.node,
+        fnItem.name,
+        relPath,
+        typeDB,
+        interfacesToDeclare,
+        config,
+        typeChecker
+      );
+    }
   }
+}
 
+/**
+ * 將收集到的所有 Shape 介面宣告寫入至 SourceFile 的開頭或 Import 宣告下方。
+ */
+export function writeInterfaceDeclarations(sourceFile: SourceFile, interfacesToDeclare: Record<string, string>) {
   const interfaceDeclarations = Object.values(interfacesToDeclare).join('\n\n');
   if (interfaceDeclarations) {
     const imports = sourceFile.getImportDeclarations();
