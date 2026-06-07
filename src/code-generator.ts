@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { Project } from 'ts-morph';
+import { Project, SourceFile } from 'ts-morph';
 import chalk from 'chalk';
 import * as diff from 'diff';
 import { globSync } from 'glob';
@@ -33,8 +33,10 @@ function checkGitStatus(dir: string = process.cwd()): boolean {
  * @description
  * 1. 解析輸入與輸出路徑，並讀取專案的設定檔與動態型別側錄檔 `types-observed.json`。
  * 2. 載入輸入目錄下所有 `*.d.ts` 宣告檔至單一 `Project` 實例，作為型別優先對齊之字典。
- * 3. 處理輸出目錄複製，並逐一對所有匹配的 JS 檔案呼叫 AST 重構程式 `processFileRefactoring`。
- * 4. 將重構注入型別後的代碼寫入對應的 `.ts` 檔案，若指定為 `--dry-run` 則僅輸出 Diff Log。
+ * 3. 處理輸出目錄複製。
+ * 4. 進行「全專案語境載入」：讀取所有待轉換的 JS 原始碼，並在 Project 記憶體中建立對應的虛擬 `.ts` 檔案。
+ * 5. 取得單一全域 `TypeChecker` 實例，並以記憶體方式在虛擬節點上重構所有檔案。
+ * 6. 重構完成後執行原子交易落盤：若是 `--dry-run` 模式，直接輸出 Diff；若是寫入模式，一次性存檔並批次移除舊 JS 檔案。
  * 
  * @example
  * await runGeneration({
@@ -141,9 +143,18 @@ export async function runGeneration(options: any) {
 		});
 	}
 
+	const filesToProcess: {
+		absolutePath: string;
+		newPath: string;
+		copiedJsPath: string;
+		relPath: string;
+		sourceFile: SourceFile;
+	}[] = [];
+
+	// 1. 全專案語境載入 (Whole-Project Context)
 	for (const absolutePath of files) {
 		const baseName = path.basename(absolutePath);
-		// 設定檔不轉譯
+		// 設定檔與宣告檔不轉譯
 		if (baseName.startsWith('vite.config') ||
 			baseName.startsWith('webpack.config') ||
 			baseName.endsWith('.d.ts')) {
@@ -160,36 +171,75 @@ export async function runGeneration(options: any) {
 			: absolutePath;
 
 		try {
-			const newContent = processFileRefactoring(absolutePath, typeDB, config, inDir, project);
-
-			if (options.dryRun) {
-				const originalContent = fs.readFileSync(absolutePath, 'utf-8');
-				const fileDiff = diff.createTwoFilesPatch(relPath, relPath.replace(/\.js$/, '.ts'), originalContent, newContent);
-				console.log(chalk.yellow(`\n--- [Dry Run Diff] ${relPath} -> ${relPath.replace(/\.js$/, '.ts')} ---`));
-				console.log(fileDiff);
-			} else {
-				fs.mkdirSync(path.dirname(newPath), { recursive: true });
-				fs.writeFileSync(newPath, newContent, 'utf-8');
-
-				if (outDir) {
-					if (fs.existsSync(copiedJsPath)) {
-						fs.unlinkSync(copiedJsPath);
-					}
-					console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
-				} else {
-					fs.unlinkSync(absolutePath);
-					console.log(chalk.green(`✔ 已轉換並寫入: ${path.relative(process.cwd(), newPath)}`));
-				}
-			}
+			const originalCode = fs.readFileSync(absolutePath, 'utf-8');
+			// 在記憶體中建立虛擬 .ts 檔案並保留在 project 中
+			const sourceFile = project.createSourceFile(newPath, originalCode, { overwrite: true });
+			filesToProcess.push({
+				absolutePath,
+				newPath,
+				copiedJsPath,
+				relPath,
+				sourceFile
+			});
 		} catch (err: any) {
-			console.error(chalk.red(`❌ 轉換檔案失敗: ${relPath}, 錯誤: ${err.message}`));
+			console.error(chalk.red(`❌ 載入檔案至記憶體失敗: ${relPath}, 錯誤: ${err.message}`));
+		}
+	}
+
+	// 2. 單一全域 TypeChecker 快取共用與記憶體重構
+	console.log(chalk.blue(`📂 正在建立編譯器 TypeChecker 並進行記憶體重構...`));
+	const typeChecker = project.getTypeChecker();
+
+	for (const file of filesToProcess) {
+		try {
+			processFileRefactoring(file.sourceFile, typeChecker, typeDB, config, inDir, project);
+			console.log(chalk.green(`✔ 記憶體重構完成: ${file.relPath}`));
+		} catch (err: any) {
+			console.error(chalk.red(`❌ 重構檔案失敗: ${file.relPath}, 錯誤: ${err.message}`));
 			console.error(err.stack);
 		}
 	}
 
+	// 3. 記憶體原子交易落盤 (Memory-based Transaction Commit)
 	if (options.dryRun) {
+		console.log(chalk.yellow('\n--- [Dry Run Diffs] ---'));
+		for (const file of filesToProcess) {
+			const originalContent = fs.readFileSync(file.absolutePath, 'utf-8');
+			const newContent = file.sourceFile.getFullText();
+			const fileDiff = diff.createTwoFilesPatch(file.relPath, file.relPath.replace(/\.js$/, '.ts'), originalContent, newContent);
+			console.log(fileDiff);
+		}
 		console.log(chalk.yellow('\n⚠ 目前為 Dry Run 模式，未對磁碟檔案進行任何修改。'));
 	} else {
+		console.log(chalk.blue(`\n📂 正在將重構後的檔案落盤寫入...`));
+		// 確保目標資料夾存在並存檔
+		for (const file of filesToProcess) {
+			fs.mkdirSync(path.dirname(file.newPath), { recursive: true });
+		}
+		await project.save();
+
+		// 存檔成功後，批次刪除舊的 JS 檔案以達成交易原子性
+		console.log(chalk.blue(`🗑 正在清理原始的 JS 檔案...`));
+		for (const file of filesToProcess) {
+			if (outDir) {
+				if (fs.existsSync(file.copiedJsPath)) {
+					try {
+						fs.unlinkSync(file.copiedJsPath);
+					} catch (e: any) {
+						console.warn(chalk.yellow(`⚠ 刪除暫存 JS 檔案失敗 (Windows 檔案鎖定): ${file.copiedJsPath}, 錯誤: ${e.message}`));
+					}
+				}
+			} else {
+				if (fs.existsSync(file.absolutePath)) {
+					try {
+						fs.unlinkSync(file.absolutePath);
+					} catch (e: any) {
+						console.warn(chalk.yellow(`⚠ 刪除原始 JS 檔案失敗: ${file.absolutePath}, 錯誤: ${e.message}`));
+					}
+				}
+			}
+		}
+
 		const targetDir = outDir || inDir;
 		// 暫時關閉 TSC 診斷與 AI 反饋循環
 		// await runFeedbackLoop(targetDir, config);

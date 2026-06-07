@@ -1,7 +1,39 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Project, SyntaxKind } from 'ts-morph';
+import { Project, SyntaxKind, SourceFile, TypeChecker, VariableDeclarationKind, ts, Node } from 'ts-morph';
+
+// override require cache for typescript to prevent ts-morph version mismatch
+try {
+  require.cache[require.resolve('typescript')] = {
+    exports: ts
+  } as any;
+} catch (e) {}
+
+import { tsquery } from '@phenomnomnominal/tsquery';
 import { mergeSingleVal } from './type-merger';
+
+declare module 'ts-morph' {
+  interface Node {
+    query(selector: string): any[];
+  }
+}
+
+// Extend Node prototype
+(Node.prototype as any).query = function (this: Node, selector: string): any[] {
+  const compilerNode = this.compilerNode || this;
+  const sourceFile = this.getSourceFile();
+  const matches = tsquery(compilerNode as any, selector);
+  return matches.map(n => 
+    (sourceFile as any)._context.compilerFactory.getNodeFromCompilerNode(n, sourceFile)
+  );
+};
+
+/**
+ * 輔助函式：使用 tsquery 查詢 AST 節點，並自動將匹配到的 ts.Node 包裝為 ts-morph Node 物件。
+ */
+function query(node: any, selector: string): any[] {
+  return node.query(selector);
+}
 
 /**
  * 合併一個物件字面量 Shape 的陣列，計算出合併後單一寬化 Shape。
@@ -278,6 +310,19 @@ function getCleanTypeText(type: any): string {
     return '';
   }
 
+  // 排除無效的陣列型別以防阻礙 TypeScript Array Type Evolution (型別演進)
+  const cleanText = text.replace(/\s+/g, '');
+  if (
+    cleanText === 'undefined[]' || 
+    cleanText === 'never[]' || 
+    cleanText === 'null[]' ||
+    cleanText === 'Array<undefined>' || 
+    cleanText === 'Array<never>' || 
+    cleanText === 'Array<null>'
+  ) {
+    return '';
+  }
+
   return widenTypeName(text);
 }
 
@@ -413,8 +458,12 @@ function annotateFunction(
   typeDB: any,
   interfacesToDeclare: Record<string, string>,
   config: any,
-  dtsInterface?: any
+  dtsInterface?: any,
+  typeChecker?: TypeChecker
 ) {
+  if (!fnNode || typeof fnNode.getParameters !== 'function') {
+    return;
+  }
   const confidenceThreshold = config.confidenceThreshold || 5;
   const params = fnNode.getParameters();
 
@@ -518,9 +567,10 @@ function resolveAndSetReturnType(
   relPath: string,
   typeDB: any,
   interfacesToDeclare: Record<string, string>,
-  config: any
+  config: any,
+  typeChecker?: TypeChecker
 ) {
-  if (typeof fnNode.setReturnType !== 'function' || fnNode.getReturnTypeNode()) {
+  if (!fnNode || typeof fnNode.setReturnType !== 'function' || typeof fnNode.getReturnType !== 'function' || fnNode.getReturnTypeNode()) {
     return;
   }
 
@@ -584,73 +634,73 @@ function resolveAndSetReturnType(
  * @param {any} sourceFile - ts-morph SourceFile 原始碼檔案節點對象。
  * @returns {void} 本方法直接修改 AST 節點，無回傳值。
  */
-function refactorCjsToEsm(sourceFile: any) {
-  sourceFile.getVariableStatements().forEach((stmt: any) => {
-    if (stmt.getParent().getKind() !== SyntaxKind.SourceFile) return;
+function refactorCjsToEsm(sourceFile: SourceFile) {
+  // Query all require CallExpressions
+  const requireCalls = sourceFile.query('CallExpression[expression.name="require"]');
 
-    const declarations = stmt.getDeclarations();
-    if (declarations.length === 1) {
-      const decl = declarations[0];
-      const init = decl.getInitializer();
-      if (init && init.getKind() === SyntaxKind.CallExpression) {
-        const call = init;
-        if (call.getExpression().getText() === 'require' && call.getArguments().length === 1) {
-          const moduleSpecifier = call.getArguments()[0].getText().replace(/['"]/g, '');
-          const nameNode = decl.getNameNode();
-          const isDestructured = nameNode.getKind() === SyntaxKind.ObjectBindingPattern;
+  for (const call of requireCalls) {
+    const decl = call.getFirstAncestorByKind(SyntaxKind.VariableDeclaration);
+    if (!decl) continue;
 
-          if (isDestructured) {
-            const elements = nameNode.getElements().map((el: any) => el.getName());
-            sourceFile.addImportDeclaration({
-              namedImports: elements,
-              moduleSpecifier: moduleSpecifier
-            });
-          } else {
-            sourceFile.addImportDeclaration({
-              defaultImport: decl.getName(),
-              moduleSpecifier: moduleSpecifier
-            });
-          }
-          stmt.remove();
-        }
+    const stmt = decl.getFirstAncestorByKind(SyntaxKind.VariableStatement);
+    if (!stmt || stmt.getParent().getKind() !== SyntaxKind.SourceFile) continue;
+
+    if (call.getArguments().length === 1) {
+      const moduleSpecifier = call.getArguments()[0].getText().replace(/['"]/g, '');
+      const nameNode = decl.getNameNode();
+      const isDestructured = nameNode.getKind() === SyntaxKind.ObjectBindingPattern;
+
+      if (isDestructured) {
+        const elements = nameNode.getElements().map((el: any) => el.getName());
+        sourceFile.addImportDeclaration({
+          namedImports: elements,
+          moduleSpecifier: moduleSpecifier
+        });
+      } else {
+        sourceFile.addImportDeclaration({
+          defaultImport: decl.getName(),
+          moduleSpecifier: moduleSpecifier
+        });
       }
+      stmt.remove();
     }
-  });
+  }
 
-  sourceFile.getStatements().forEach((stmt: any) => {
-    if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
-      const expr = stmt.getExpression();
-      if (expr.getKind() === SyntaxKind.BinaryExpression) {
-        const binary = expr;
-        const left = binary.getLeft();
-        const right = binary.getRight();
+  // Query all binary assignments (operator token '=')
+  const binaryAssignments = sourceFile.query(`BinaryExpression[operatorToken.kind=${SyntaxKind.EqualsToken}]`);
 
-        if (left.getText() === 'module.exports') {
-          sourceFile.addExportAssignment({
-            isExportEquals: false,
-            expression: right.getText()
-          });
-          stmt.remove();
-        } else if (left.getText().startsWith('module.exports.')) {
-          const propName = left.getText().replace('module.exports.', '');
-          sourceFile.addVariableStatement({
-            declarationKind: 'const',
-            declarations: [{ name: propName, initializer: right.getText() }],
-            isExported: true
-          });
-          stmt.remove();
-        } else if (left.getText().startsWith('exports.')) {
-          const propName = left.getText().replace('exports.', '');
-          sourceFile.addVariableStatement({
-            declarationKind: 'const',
-            declarations: [{ name: propName, initializer: right.getText() }],
-            isExported: true
-          });
-          stmt.remove();
-        }
-      }
+  for (const binary of binaryAssignments) {
+    const stmt = binary.getFirstAncestorByKind(SyntaxKind.ExpressionStatement);
+    if (!stmt || stmt.getParent().getKind() !== SyntaxKind.SourceFile) continue;
+
+    const left = binary.getLeft();
+    const right = binary.getRight();
+    const leftText = left.getText();
+
+    if (leftText === 'module.exports') {
+      sourceFile.addExportAssignment({
+        isExportEquals: false,
+        expression: right.getText()
+      });
+      stmt.remove();
+    } else if (leftText.startsWith('module.exports.')) {
+      const propName = leftText.replace('module.exports.', '');
+      sourceFile.addVariableStatement({
+        declarationKind: VariableDeclarationKind.Const,
+        declarations: [{ name: propName, initializer: right.getText() }],
+        isExported: true
+      });
+      stmt.remove();
+    } else if (leftText.startsWith('exports.')) {
+      const propName = leftText.replace('exports.', '');
+      sourceFile.addVariableStatement({
+        declarationKind: VariableDeclarationKind.Const,
+        declarations: [{ name: propName, initializer: right.getText() }],
+        isExported: true
+      });
+      stmt.remove();
     }
-  });
+  }
 }
 
 /**
@@ -675,10 +725,15 @@ function refactorCjsToEsm(sourceFile: any) {
  * @param {Project} project - ts-morph Project 專案實例。
  * @returns {string} 重構轉換後的完整 TypeScript 原始碼字串。
  */
-export function processFileRefactoring(filePath: string, typeDB: any, config: any, inDir: string, project: Project): string {
-  const originalCode = fs.readFileSync(filePath, 'utf-8');
-  const sourceFile = project.createSourceFile(filePath.replace(/\.js$/, '.ts'), originalCode, { overwrite: true });
-  const relPath = path.relative(inDir, filePath).replace(/\\/g, '/');
+export function processFileRefactoring(
+  sourceFile: SourceFile,
+  typeChecker: TypeChecker,
+  typeDB: any,
+  config: any,
+  inDir: string,
+  project: Project
+): void {
+  const relPath = path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
 
   sourceFile.getInterfaces().forEach(iface => iface.remove());
 
@@ -690,98 +745,94 @@ export function processFileRefactoring(filePath: string, typeDB: any, config: an
 
   const interfacesToDeclare: Record<string, string> = {};
 
-  sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration).forEach(fn => {
+  const functions = sourceFile.query('FunctionDeclaration');
+  for (const fn of functions) {
     const fnName = fn.getName() || 'anonymous';
     if (typeof fn.removeReturnType === 'function') fn.removeReturnType();
-    annotateFunction(fn, fnName, relPath, typeDB, interfacesToDeclare, config);
-  });
+    annotateFunction(fn, fnName, relPath, typeDB, interfacesToDeclare, config, undefined, typeChecker);
+  }
 
-  sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration).forEach(cls => {
+  const classes = sourceFile.query('ClassDeclaration');
+  for (const cls of classes) {
     const className = cls.getName();
     const dtsInterface = className ? findInterfaceInProject(project, className) : undefined;
     const classMethods = new Set(cls.getMethods().map((m: any) => m.getName()));
 
     const properties = new Set<string>();
-    cls.getDescendantsOfKind(SyntaxKind.BinaryExpression).forEach(expr => {
-      const left = expr.getLeft();
-      if (left.getKind() === SyntaxKind.PropertyAccessExpression) {
-        const propAccess = left as any;
-        if (propAccess.getExpression().getText() === 'this') {
-          const name = propAccess.getName();
-          if (name !== 'constructor') {
-            properties.add(name);
-          }
+    const thisAssignments = cls.query(
+      `BinaryExpression[operatorToken.kind=${SyntaxKind.EqualsToken}]:has(PropertyAccessExpression[expression.kind=${SyntaxKind.ThisKeyword}])`
+    );
+    for (const binaryExpr of thisAssignments) {
+      const left = binaryExpr.getLeft();
+      if (left.getKind() === SyntaxKind.PropertyAccessExpression && left.getExpression().getText() === 'this') {
+        const name = left.getName();
+        if (name !== 'constructor') {
+          properties.add(name);
         }
       }
-    });
+    }
 
     const ctor = cls.getConstructors()[0];
     if (ctor) {
       const ctorParams = ctor.getParameters().map((p: any) => p.getName());
       const localVars = new Set<string>();
-      ctor.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach((decl: any) => {
+      const ctorLocalDecls = ctor.query('VariableDeclaration');
+      for (const decl of ctorLocalDecls) {
         localVars.add(decl.getName());
-      });
+      }
 
-      const statements = ctor.getStatements();
       const propertiesToMigrate: { propName: string; rightText: string; commentText: string }[] = [];
       const collectedPropNames = new Set<string>();
 
-      statements.forEach((stmt: any) => {
-        if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
-          const expr = stmt.getExpression();
-          if (expr.getKind() === SyntaxKind.BinaryExpression) {
-            const binary = expr;
-            const left = binary.getLeft();
-            const right = binary.getRight();
+      const ctorAssignments = ctor.query(
+        `BinaryExpression[operatorToken.kind=${SyntaxKind.EqualsToken}]:has(PropertyAccessExpression[expression.kind=${SyntaxKind.ThisKeyword}])`
+      );
+      for (const binary of ctorAssignments) {
+        const stmt = binary.getFirstAncestorByKind(SyntaxKind.ExpressionStatement);
+        if (!stmt || stmt.getParent() !== ctor.getBody()) continue;
 
-            if (left.getKind() === SyntaxKind.PropertyAccessExpression && binary.getOperatorToken().getText() === '=') {
-              const propAccess = left;
-              if (propAccess.getExpression().getText() === 'this') {
-                const propName = propAccess.getName();
-                const rightText = right.getText();
+        const left = binary.getLeft();
+        const right = binary.getRight();
+        const propName = left.getName();
+        const rightText = right.getText();
 
-                if (classMethods.has(propName)) return;
-                if (collectedPropNames.has(propName)) return;
-                if (rightText.includes('this.')) return;
+        if (classMethods.has(propName)) continue;
+        if (collectedPropNames.has(propName)) continue;
+        if (rightText.includes('this.')) continue;
 
-                let isSafe = true;
-                for (const param of ctorParams) {
-                  const regex = new RegExp(`\\b${param}\\b`);
-                  if (regex.test(rightText)) {
-                    isSafe = false;
-                    break;
-                  }
-                }
-                if (isSafe) {
-                  for (const localVar of localVars) {
-                    const regex = new RegExp(`\\b${localVar}\\b`);
-                    if (regex.test(rightText)) {
-                      isSafe = false;
-                      break;
-                    }
-                  }
-                }
-
-                if (isSafe && propName !== 'constructor') {
-                  const leadingCommentRanges = stmt.getLeadingCommentRanges();
-                  let commentText = '';
-                  if (leadingCommentRanges && leadingCommentRanges.length > 0) {
-                    commentText = leadingCommentRanges.map((r: any) => r.getText()).join('\n');
-                  }
-
-                  collectedPropNames.add(propName);
-                  propertiesToMigrate.push({
-                    propName,
-                    rightText,
-                    commentText
-                  });
-                }
-              }
+        let isSafe = true;
+        for (const param of ctorParams) {
+          const regex = new RegExp(`\\b${param}\\b`);
+          if (regex.test(rightText)) {
+            isSafe = false;
+            break;
+          }
+        }
+        if (isSafe) {
+          for (const localVar of localVars) {
+            const regex = new RegExp(`\\b${localVar}\\b`);
+            if (regex.test(rightText)) {
+              isSafe = false;
+              break;
             }
           }
         }
-      });
+
+        if (isSafe && propName !== 'constructor') {
+          const leadingCommentRanges = stmt.getLeadingCommentRanges();
+          let commentText = '';
+          if (leadingCommentRanges && leadingCommentRanges.length > 0) {
+            commentText = leadingCommentRanges.map((r: any) => r.getText()).join('\n');
+          }
+
+          collectedPropNames.add(propName);
+          propertiesToMigrate.push({
+            propName,
+            rightText,
+            commentText
+          });
+        }
+      }
 
       const propertiesStructures = propertiesToMigrate.map(item => {
         let propType: string | undefined = undefined;
@@ -852,11 +903,11 @@ export function processFileRefactoring(filePath: string, typeDB: any, config: an
     cls.getMethods().forEach(method => {
       const fnName = method.getName();
       if (typeof method.removeReturnType === 'function') method.removeReturnType();
-      annotateFunction(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config, dtsInterface);
+      annotateFunction(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config, dtsInterface, typeChecker);
     });
 
     cls.getConstructors().forEach(ctor => {
-      annotateFunction(ctor, `${cls.getName()}.constructor`, relPath, typeDB, interfacesToDeclare, config, dtsInterface);
+      annotateFunction(ctor, `${cls.getName()}.constructor`, relPath, typeDB, interfacesToDeclare, config, dtsInterface, typeChecker);
     });
 
     if (dtsInterface) {
@@ -874,8 +925,9 @@ export function processFileRefactoring(filePath: string, typeDB: any, config: an
     }
 
     cls.getMethods().forEach(method => {
-      method.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach(decl => {
-        if (!decl.getTypeNode()) {
+      const decls = query(method, 'VariableDeclaration');
+      for (const decl of decls) {
+        if (decl.getKind() === SyntaxKind.VariableDeclaration && !decl.getTypeNode()) {
           const init = decl.getInitializer();
           if (init) {
             const type = init.getType();
@@ -885,53 +937,62 @@ export function processFileRefactoring(filePath: string, typeDB: any, config: an
             }
           }
         }
-      });
-    });
-
-    cls.getDescendantsOfKind(SyntaxKind.CallExpression).forEach(call => {
-      const expr = call.getExpression();
-      if (expr.getKind() === SyntaxKind.PropertyAccessExpression) {
-        const propAccess = expr as any;
-        if (propAccess.getExpression().getText() === 'this') {
-          const methodName = propAccess.getName();
-          const targetMethod = cls.getMethod(methodName);
-          if (targetMethod) {
-            const args = call.getArguments();
-            const params = targetMethod.getParameters();
-            args.forEach((arg, idx) => {
-              const param = params[idx];
-              if (param && !param.getTypeNode()) {
-                const argType = arg.getType();
-                const argTypeText = getCleanTypeText(argType);
-                if (argTypeText) {
-                  param.setType(argTypeText);
-                }
-              }
-            });
-          }
-        }
       }
     });
 
+    const thisCalls = query(
+      cls,
+      `CallExpression:has(PropertyAccessExpression[expression.kind=${SyntaxKind.ThisKeyword}])`
+    );
+    for (const call of thisCalls) {
+      const expr = call.getExpression();
+      if (expr.getKind() === SyntaxKind.PropertyAccessExpression) {
+        const propAccess = expr;
+        const methodName = propAccess.getName();
+        const targetMethod = cls.getMethod(methodName);
+        if (targetMethod) {
+          const args = call.getArguments();
+          const params = targetMethod.getParameters();
+          args.forEach((arg: any, idx: number) => {
+            const param = params[idx];
+            if (param && !param.getTypeNode()) {
+              const argType = arg.getType();
+              const argTypeText = getCleanTypeText(argType);
+              if (argTypeText) {
+                param.setType(argTypeText);
+              }
+            }
+          });
+        }
+      }
+    }
+
     cls.getMethods().forEach(method => {
       const fnName = method.getName();
-      resolveAndSetReturnType(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config);
+      resolveAndSetReturnType(method, `${cls.getName()}.${fnName}`, relPath, typeDB, interfacesToDeclare, config, typeChecker);
     });
-  });
+  }
 
-  sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach((decl: any) => {
-    const init = decl.getInitializer();
-    if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
-      const fnName = decl.getName();
-      annotateFunction(init, fnName, relPath, typeDB, interfacesToDeclare, config);
-      resolveAndSetReturnType(init, fnName, relPath, typeDB, interfacesToDeclare, config);
+  const fnVarDecls = query(
+    sourceFile,
+    'VariableDeclaration:has(ArrowFunction, FunctionExpression)'
+  );
+  for (const decl of fnVarDecls) {
+    if (decl.getKind() === SyntaxKind.VariableDeclaration) {
+      const init = decl.getInitializer();
+      if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
+        const fnName = decl.getName();
+        annotateFunction(init, fnName, relPath, typeDB, interfacesToDeclare, config, undefined, typeChecker);
+        resolveAndSetReturnType(init, fnName, relPath, typeDB, interfacesToDeclare, config, typeChecker);
+      }
     }
-  });
+  }
 
-  sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration).forEach(fn => {
+  const functionDecls = query(sourceFile, 'FunctionDeclaration');
+  for (const fn of functionDecls) {
     const fnName = fn.getName() || 'anonymous';
-    resolveAndSetReturnType(fn, fnName, relPath, typeDB, interfacesToDeclare, config);
-  });
+    resolveAndSetReturnType(fn, fnName, relPath, typeDB, interfacesToDeclare, config, typeChecker);
+  }
 
   const interfaceDeclarations = Object.values(interfacesToDeclare).join('\n\n');
   if (interfaceDeclarations) {
@@ -943,8 +1004,4 @@ export function processFileRefactoring(filePath: string, typeDB: any, config: an
       sourceFile.insertText(0, interfaceDeclarations + '\n\n');
     }
   }
-
-  const newContent = sourceFile.getFullText();
-  project.removeSourceFile(sourceFile);
-  return newContent;
 }

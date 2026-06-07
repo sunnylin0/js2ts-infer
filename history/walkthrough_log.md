@@ -207,7 +207,7 @@
 **時間戳記**：2026-06-05 16:45:00
 
 ## 已完成的變更
-- **字面量型別安全寬化 (Literal Widening)**：於 [ast-refactorer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/ast-refactorer.ts) 新增 `widenTypeName` 函數。它利用 `Number()` 來判斷數字、辨識布林字面量與字串字面量，並且支援 Union 型態（例如 `0 | 4` -> `number`）。我們將其注入至 `resolveParameterType` 與 `getCleanTypeText` 中，解決了變數被強行限制在字面量型態的問題。
+- **字面量型別安全寬化 (Literal Widening)**：於 [ast-refactorer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/ast-refactorer.ts) 新增 `widenTypeName` 函數。它利用 `Number()` 來判斷數字、辨識布林字面量與字串字面量，並且支援 Union 型態拆分再合併的寬化。我們將其注入至 `resolveParameterType` 與 `getCleanTypeText` 中，解決了變數被強行限制在字面量型態的問題。
 - **優化回傳值型別推導與兜底策略**：實作了 `resolveAndSetReturnType` 函數。該函數會優先藉由 AST static type checker 推導出函數的回傳值型別。若推導為 `any` 或是無效型別，才 fallback 至 `typeDB` 動態側錄，徹底解決了原本 `getMeter()` 產生冗餘 `TunegetMeterReturnShape` 介面，或是 `getKeySignature()` 丟失 `Key | {}` 的問題。
 
 ## 驗證結果
@@ -247,7 +247,7 @@
 **時間戳記**：2026-06-06 04:26:00
 
 ## 已完成的變更
-- **產出專案地圖 Blueprint**：在根目錄成功生成了 [agent.md](file:///c:/Users/sunny/Desktop/abc_js2ts/agent.md)，詳細解析了 `js2ts-infer` 的核心技術棧（Node.js / TS / JS）、檔案結構、關鍵入口、開發規範、以及針對 ts-morph 重構、Babel 插樁等高難度實作的 AI 協作備忘錄。
+- **產出專案地圖 Blueprint**：在根目錄成功生成了 [agent.md](file:///c:/Users/sunny/Desktop/abc_js2ts/agent.md), 詳細解析了 `js2ts-infer` 的核心技術棧（Node.js / TS / JS）、檔案結構、關鍵入口、開發規範、以及針對 ts-morph 重構、Babel 插樁等高難度實作的 AI 協作備忘錄。
 
 ## 驗證結果
 - **地圖生成完整**：`agent.md` 的所有預設區塊均已填寫完畢，且包含最完整的專案細節與注意事項。
@@ -265,3 +265,50 @@
 
 ## 驗證結果
 - **TypeScript 編譯無錯通過**：在根目錄執行 `pnpm run build` 成功完成編譯，成功產出所有 ESM 及 CommonJS 檔案，並複製範本資源。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-07 14:06:00
+
+## 已完成的變更
+- **產出 Master 重構與優化提示詞定義檔**：在根目錄成功寫入 [REFACTOR_PROMPT.md](file:///c:/Users/sunny/Desktop/abc_js2ts/REFACTOR_PROMPT.md)。該文件作為高階編譯器架構師指引，詳細定義了重構 `code-generator.ts` 的四大技術指標（全專案語境載入、單一全域 TypeChecker 快取共用、記憶體原子交易落盤、整合 ts-query 選擇器檢索）。
+
+## 驗證結果
+- **提示詞文件結構完整**：`REFACTOR_PROMPT.md` 已成功在工作區落盤，包含完整的角色設定、任務目標、詳細技術要求與預期代碼輸出範例。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-07 15:00:00
+
+## 已完成的變更
+- **記憶體中 TypeScript 模組實例對齊**：在 `ast-refactorer.ts` 頂端透過 require 快取替換攔截，強制使 `tsquery` 共用 `ts-morph` 內部載入的 `ts` 實例，消除了 AST 跨模組無法遍歷的相容性障礙。
+- **外掛 `.query()` 查詢方法至 Node 原型**：擴充 `ts-morph` 的 `Node.prototype` 支援 `query` 成員方法，實作優雅的 AST 選擇器查詢。
+- **修正 `this` AST 節點選取邏輯**：將 AST 檢索選擇器對齊至動態型別安全的 `ThisKeyword` kind，解決建構子成員變數無法識別的底層 Bug。
+
+## 驗證結果
+- **3_Snake E2E 轉換測試完美通過**：
+  - 執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+  - Class properties 宣告欄位（如 `svgCanvas`、`audio`、`currentState` 等）皆順利從建構子提取搬移至類別頂部，並完成了型別或初始值宣告，建構子原有的 duplicate 賦值語句被完美清除。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-07 19:30:00
+
+## 已完成的變更
+- **修正 `this` 呼叫引數之型別反向傳播**：於 [ast-refactorer.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/src/ast-refactorer.ts) 中將 `thisCalls` 選擇器改為 `expression.kind=${SyntaxKind.ThisKeyword}`。這能精確選取 `this.methodName()` 的調用，成功使 `this.computePickupLength(this.lines, barLength)` 的 `this.lines` 型別 (`Lines[]`) 被反向寫入至 `computePickupLength` 的第一個參數。
+- **排除無效陣列型別標註**：於 `getCleanTypeText` 排除 `undefined[]`、`never[]`、`null[]` 等無效陣列型別。這避免了在變數初始化為空陣列 `[]` 時鎖定為無效的 `undefined[]`，使 TypeScript 的 array type evolution 保持啟用，進而推導出 `any[]` 或實際 Push 物件的正確聯集型別，根除了型別感染/污染的 Bug。
+
+## 驗證結果
+- **重新重構並檢查 abc_tune.ts 成果**：
+  - 成功執行：`node dist/cli.js generate -i ./4_abc662 -o ./4_abcTS -f`。
+  - 檢查 [abc_tune.ts](file:///c:/Users/sunny/Desktop/abc_js2ts/4_abcTS/src/data/abc_tune.ts)：
+    * `computePickupLength(lines: Lines[], barLength: number): number` (參數 `lines` 被正確注入為 `Lines[]`，`barLength` 被 widen 為 `number`，回傳值型別正確標註為 `number`)。
+    * `addEndPoints(lines: Lines[], elements: any[]): void` (參數 `lines` 被正確注入為 `Lines[]`，`elements` 成功標註為 `any[]`)。
+    * `makeSortedArray(hash: {}): any[]` (回傳值類型標記為 `any[]`)。
+- **Vite 打包通過**：在 `4_abcTS` 目錄下執行 `pnpm run build:vite` 通過，無任何語法或型別編譯錯誤。

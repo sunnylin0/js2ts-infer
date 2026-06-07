@@ -6,7 +6,7 @@
 ## 使用者審查要求
 > [!IMPORTANT]
 > 1. 本次變更將在 `src/code-generator.ts` 中加入自動型別清洗機制，清除 `types-observed.json` 中已有的空型別參數（例如 `Array<Array<Array<>>>` 將會被安全替換為 `Array<Array<Array<any>>>`）。
-> 2. 我們將重新建置 CLI 工具，並重新執行專案轉換 `generate`，以驗證 Class Fields 重複宣告問題（`play: any`）是否已在 v1.1.9 的安全過濾中被修復。若依然生成，我們將在 `code-generator.ts` 中進一步調整 AST 欄位過濾邏輯。
+> 2. 我們將重新建置 CLI 工具，並重新執行專案轉換 `generate`，以驗證 Class Fields 重重複宣告問題（`play: any`）是否已在 v1.1.9 的安全過濾中被修復。若依然生成，我們將在 `code-generator.ts` 中進一步調整 AST 欄位過濾邏輯。
 
 ## 開放問題
 無。
@@ -111,7 +111,7 @@
 1. 執行 `scan` 驗證 `boundary-map.json` 是否正確生成 `staticCallGraph.classes`。
 2. 執行 `run` 驗證 `types-observed.json` 中動態呼叫鏈是否加上 Class 前綴。
 3. 執行 `generate` 驗證型別標註生成無錯，且 interface 名稱合法。
-4. 執行 `visualize` 驗證「類別級」視覺化顯示正確，並能與動態實線、靜態虛線無縫整合。
+4. 執行 `visualize` 驗證「類別級」視覺化顯示正確，並能與動態實線、靜態灰色虛線無縫整合。
 
 ---
 
@@ -194,7 +194,7 @@
 ### js2ts-infer 重構工具
 
 #### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc_js2ts/src/code-generator.ts)
-- **載入型別定義**：重構 `runGeneration` 以在全域維護單一 `Project` 實例，並在啟動時透過 `globSync` 搜尋並使用 `project.addSourceFileAtPath` 載入專案內所有的 `*.d.ts` 檔案。
+- **載入型別定義**：重構 `runGeneration` 以在全域維護單一 `Project` 實例，並在啟建立時透過 `globSync` 搜尋並使用 `project.addSourceFileAtPath` 載入專案內所有的 `*.d.ts` 檔案。
 - **共享 Project 實例**：將全域 `project` 作為參數傳遞給 `processFileRefactoring`。在每次檔案處理完畢後，呼叫 `project.removeSourceFile(sourceFile)` 以防殘留。
 - **介面尋找與屬性型別覆寫**：
   - 實作 `findInterfaceInProject` 輔助函數，遍歷專案內所有 Interface 定義以查找與 Class 同名的 Interface。
@@ -221,7 +221,7 @@
 ## 使用者審查要求
 > [!IMPORTANT]
 > 1. **區域變數型別正向傳播**：
->    - 依據 Class 已知屬性（例如 `lines: Lines[]`），透過 ts-morph 取得區域變數初始化運算式的推導型別，自動為方法內部的局部變數（例如 `var line: Lines`、`var staff: Staff` 等）加上精確型別標註。
+>    - 依據 Class 已知屬性（例如 `lines: Lines[]`），透過 ts-morph 取得區域變數初始化運算式的推推導型別，自動為方法內部的局部變數（例如 `var line: Lines`、`var staff: Staff` 等）加上精確型別標註。
 > 2. **方法參數型別反向傳播**：
 >    - 掃描 Class 內部的呼叫表達式（例如 `this.computePickupLength(this.lines, barLength)`），取得引數的推導型別，並自動為被呼叫方法的對應參數（例如 `computePickupLength` 的 `lines` 參數）標註型別。
 > 3. **方法傳回值型別傳播**：
@@ -247,7 +247,6 @@
    node dist/cli.js generate -i .\4_abc662 -o .\4_abcTS -f
    ```
 3. 檢查產出之 `4_abcTS/src/data/abc_tune.ts` ，確認 `getElementFromChar`、`computePickupLength`、`getMeter` 等方法及其內部的 `line`、`staff`、`voice` 等局部變數是否被成功標註上正確的 `Voice`、`Lines`、`Staff`、`Voice[]` 型別，並確認 `getMeter(): Meter` 及 `getElementFromChar(): Voice | null` 傳回值型別。
-
 
 ---
 
@@ -463,4 +462,82 @@
 1. 在根目錄下執行 `pnpm run build` 進行編譯。
 2. 確保沒有任何 TypeScript 型別宣告與編譯錯誤。
 
+---
+**時間戳記**：2026-06-07 14:08:00
 
+## 全專案語境與記憶體原子交易落盤重構計畫
+
+### 使用者審查要求
+> [!IMPORTANT]
+> 1. **全專案語境載入 (Whole-Project Context)**：
+>    - 啟動時先將所有待轉換的 `.js` 檔案以虛擬 `.ts` 檔案形式載入至 `Project` 記憶體樹中，連同所有的 `*.d.ts` 宣告檔，維持在記憶體中以建立完整的專案依賴關係。
+> 2. **單一全域 TypeChecker (Performance Caching)**：
+>    - 僅在重構迴圈前呼叫一次 `project.getTypeChecker()`，並將 `typeChecker` 實例向下傳遞，最大化利用 TS Compiler 的快取效能。
+> 3. **記憶體原子交易落盤 (Memory-based Transaction Commit)**：
+>    - 在 AST 轉換過程中完全禁止任何磁碟寫入與刪除。重構完成後，在 Dry Run 模式下比對記憶體與磁碟產出 Diff；在寫入模式下一次性執行寫入（如 `project.save()` 或逐檔寫入）並批次刪除舊 JS 檔案。
+> 4. **整合 `ts-query` 選擇器 (Clean Selector-based AST Queries)**：
+>    - 在 `ast-refactorer.ts` 引入 `@phenomnomnominal/tsquery`，使用 CSS 選擇器簡化 `this.prop = val`、`require` 等繁瑣的節點搜尋邏輯，並透過 `sourceFile.getNodeFromCompilerNode(tsNode)` 包裝回 `ts-morph` 節點。
+
+### 開放問題
+無。
+
+### 預期變更
+- `package.json`
+- `src/code-generator.ts`
+- `src/ast-refactorer.ts`
+
+### 驗證計畫
+1. 執行 `pnpm install` 安裝新依賴。
+2. 執行 `pnpm run build` 編譯 CLI 工具。
+3. 對 `3_Snake` 專案執行 `--dry-run` 與實際 `generate` 驗證，確保代碼轉換無錯，且原本的 JS 檔被批次清除。
+
+---
+
+# 解決 TypeScript AST 遍歷與 Class 屬性提取 AST 重構缺陷
+
+**時間戳記**：2026-06-07 15:00:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **解決 `ts-morph` 與 `tsquery` 版本衝突**：
+>    - 由於 `ts-morph` 內嵌的 `typescript` (5.4.2) 與根目錄的 `typescript` (6.0.3) 實例不對等，導致 `tsquery` 在調用 `forEachChild` 遍歷 `ts-morph` AST 節點時傳回 0 個匹配。本變更將在 `ast-refactorer.ts` 引入 `tsquery` 之前，覆寫 `require.cache['typescript']` 以對齊實例。
+> 2. **Node 類別原型擴充 (Prototype Extension)**：
+>    - 將 `tsquery` 選擇器查詢功能以成員方法形式直接注入至 `ts-morph` 的 `Node.prototype.query(selector)`。
+> 3. **動態 `ThisKeyword` 屬性提取**：
+>    - 原本 `expression.name="this"` 無法在 AST 的 `ThisKeyword` 節點上匹配。本變更將選擇器改為 `expression.kind=${SyntaxKind.ThisKeyword}` 以精確選取成員屬性賦值，進而順利將建構子中的變數提取至 Class 欄位定義。
+
+## 開放問題
+無。
+
+## 預期變更
+- `src/ast-refactorer.ts`
+
+## 驗證計畫
+1. 執行 `pnpm run build` 編譯 CLI 工具。
+2. 對 `3_Snake` 專案執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+3. 檢查 `3_SnakeTS/src/engine/gameEngine.ts` 等 Class 的欄位宣告與 constructor 初始化語法，確保屬性順利提取宣告，原建構子賦值移除。
+
+---
+
+# 修正 AST 方法呼叫傳播選擇器與無效陣列型別標註
+
+**時間戳記**：2026-06-07 19:30:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **修正 `this` 方法呼叫之選擇器限制**：
+>    - 原本 `expression.name="this"` 無法匹配 AST 中的 `ThisKeyword`。本變更將其改為 `expression.kind=${SyntaxKind.ThisKeyword}`，以使所有 class methods 內呼叫 `this.methodName(args)` 的引數型別能正確透過反向型別傳播注入到被呼叫方法的參數上。
+> 2. **排除阻礙型別演進的無效陣列型別**：
+>    - 針對 `var arr = []` 等變數初始化，TypeScript compiler 會推導其初階型別為 `undefined[]` 或 `never[]` 等。若將其寫入程式碼會阻礙陣列型別演進。本變更將在 `getCleanTypeText` 中將這些型別安全排除（返回空字串），由 TypeScript 自行進行 control-flow/array type evolution。
+
+## 開放問題
+無。
+
+## 預期變更
+- `src/ast-refactorer.ts`
+
+## 驗證計畫
+1. 執行 `pnpm run build` 編譯 CLI 工具。
+2. 對 `4_abc662` 執行 `node dist/cli.js generate -i ./4_abc662 -o ./4_abcTS -f`。
+3. 檢查 `4_abcTS/src/data/abc_tune.ts` 中 `computePickupLength` 及 `addEndPoints` 方法簽章與內部的局部變數，確保不再包含 `undefined[]` 或 `never[]` 等型別錯誤，而是正確對齊 `Lines[]` 與 `any[]`。
+4. 於 `4_abcTS` 目錄執行 `pnpm install` 與 `pnpm run build:vite`，確認編譯 100% 無錯通過。

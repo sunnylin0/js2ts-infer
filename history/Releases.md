@@ -97,14 +97,14 @@
 - **TSC 錯誤診斷與 AI 修正**：於 `feedback-loop.ts` 內調用 `typescript` Compiler API 擷取核心型別編譯錯誤（TS2322 等），提取出錯程式碼上下文並調用 Gemini API 自動生成 JSON 修復補丁。
 - **429/503 自動重試與 bypass 開關**：
   * 在 `feedback-loop.ts` 實作自動退避重試，可解析 API 提供的 `retryDelay` 進行休眠等待。
-  * 因測試時遭遇極其嚴重的 Free Tier Rate Limit (429) 與服務不可用 (503) 阻塞，已暫時將 `code-generator.ts` 中的 `runFeedbackLoop` 調用予以註解（AI 修正旁路關閉），避免干擾重構管線的主流程。
+  * 因測試時遭遇極其嚴重的 Free Tier Rate Limit (429) 與服務不可用 (503) 阻塞，已暫時將 `code-generator.ts` 中的 `runFeedbackLoop` 調用處理予以註解（AI 修正旁路關閉），避免干擾重構管線的主流程。
 
 ---
 
 ## [2026-06-05] v1.5.1 - 修正字面量型態收窄與優化 return 型別推導策略
 
 - **字面量型態安全寬化 (Literal Widening)**：
-  - 於 `src/ast-refactorer.ts` 新增全域 `widenTypeName` 輔助函數，精確且安全地將 `'true'`, `'false'`, 數字字面量（以 `Number()` 健全驗證）及引號字串字面量寬化為基礎型別 `'boolean'`, `'number'`, `'string'`。
+  - 於 `src/ast-refactorer.ts` 新增 `widenTypeName` 輔助函數，精確且安全地將 `'true'`, `'false'`, 數字字面量（以 `Number()` 健全驗證）及引號字串字面量寬化為基礎型別 `'boolean'`, `'number'`, `'string'`。
   - 支援對 Union 型態（如 `0 | 4` 等聯集）的自動寬化去重（合併為 `'number'`）。
   - 將其應用至 `resolveParameterType` 與 `getCleanTypeText`，徹底根除 `var pickupLength: 0`、`barLength: 0`、`num: 4` 等型別過度限縮之語法問題。
 - **優化 Method 回傳值推導優先級**：
@@ -134,7 +134,7 @@
 
 ## [2026-06-06] v1.5.4 - 全專案核心工具與命令 JSDoc 註解補全
 
-- **JSDoc/TSDoc 標準化註解補全**：
+- **JSDoc/TSDoc TSDoc 標準化註解補全**：
   - 為專案中所有核心工具檔案與指令程式碼（如 `src/ast-refactorer.ts`、`src/loader-hook.ts` 等）補齊了符合 `JSDOC_GUIDE.md` 規範的頂級說明註解。
 - **解決 JSDoc 編譯衝突**：
   - 修正 `static-analyzer.ts` 中的星號斜線語法標記問題，消除了 TypeScript 編譯階段的語法解析錯誤。
@@ -142,3 +142,25 @@
 - **專案重新編譯建置通過**：
   - 於根目錄執行 `pnpm run build` 通過編譯並成功輸出所有建置產物。
 
+---
+
+## [2026-06-07] v1.5.5 - 產生重構大綱與 code-generator 優化大師提示詞
+
+- **新增 master 重構提示詞文件**：
+  - 於根目錄生成 `REFACTOR_PROMPT.md`。該文件詳細指引 AI 如何將專案的重構機制升級至「全專案語境（Whole-Project Context）」與「記憶體原子交易落盤（Transactional Commit）」，並導入 `ts-query` 進行 CSS 選擇器式的 AST 優雅檢索，大幅優化 TS 編譯器效能。
+
+---
+
+## [2026-06-07] v1.5.6 - 解決 ts-morph 與 tsquery 之 TypeScript 版本衝突，打通屬性提取 AST 重構
+
+- **解決套件版本/實例衝突**：於 `src/ast-refactorer.ts` 頂端透過覆寫 `require.cache['typescript']`，強制使 `@phenomnomnominal/tsquery` 內部與 `ts-morph` 共用同一個 `ts` compiler 實例。此舉成功解決了 `ts.forEachChild` 在跨套件實例時無法遍歷 AST 的嚴重 Bug。
+- **擴充 `ts-morph` 支援 `.query` 選擇器方法**：將 tsquery 選擇器功能透過 `Node.prototype.query` 直接外掛注入至 `ts-morph` 所有節點上，並在 `src/ast-refactorer.ts` 中完全重構相關的 AST 查詢語法。
+- **精確 Class constructor 屬性提取與移除**：將 `this` 賦值的 query selector 由 `expression.name="this"` 修正為動態型別安全的 `expression.kind=${SyntaxKind.ThisKeyword}`。重構 3_Snake 時成功自動偵測並將所有無相依性的 `this.xxx` 初始化成員安全提取至 Class 頂部欄位，並自 `constructor` 中將其移除，完全符合 Codemod 重構標準。
+
+---
+
+## [2026-06-07] v1.5.7 - 修正 This 呼叫反向型別傳播與阻斷無效陣列型別感染
+
+- **修復 ThisKeyword 方法呼叫引數傳播**：將 `src/ast-refactorer.ts` 內查詢 `this.method(...)` 呼叫的選擇器從 `expression.name="this"` 修正為 `expression.kind=${SyntaxKind.ThisKeyword}`，打通 `this` 方法呼叫引數的型別反向傳播機制，使 `computePickupLength(lines: Lines[], ...)` 獲得最精確的宣告檔型別。
+- **排除阻礙型別演進的無效陣列型別**：修改 `getCleanTypeText` 排除 `undefined[]`, `never[]`, `null[]` 等在 empty array `[]` 初始化時產生的初階無效型別，恢復 TypeScript 陣列型別演進能力，徹底根除型別感染/污染問題，使 `addEndPoints` 與 `makeSortedArray` 能夠正確使用 `any[]`。
+- **打包建置無錯通過**：轉譯後的 `4_abcTS` 專案執行 `pnpm run build:vite` 成功編譯通過，建置產物無任何型別或語法錯誤。

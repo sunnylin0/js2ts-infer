@@ -208,4 +208,40 @@
   - [x] 為 `src/` 核心工具檔的所有 Function 撰寫頂級 JSDoc 註解
   - [x] 執行 `pnpm run build` 驗證專案編譯是否成功
 
+---
 
+# 任務進度追蹤
+
+**時間戳記**：2026-06-07 14:09:00
+
+- [x] 安裝 `@phenomnomnominal/tsquery` 依賴
+- [x] 重構 `src/code-generator.ts`（全專案記憶體載入與原子落盤）
+- [x] 重構 `src/ast-refactorer.ts`（API 簽章優化與整合 ts-query）
+- [x] 本地編譯測試與修正編譯錯誤
+- [x] E2E 驗證（對 3_Snake 進行 dry-run 與 generate 重構）
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-07 15:00:00
+
+- [x] 解決 `ts-morph` 與 `@phenomnomnominal/tsquery` 底層 `typescript` 模組 instance 衝突
+  - [x] 於 `src/ast-refactorer.ts` 加入 `require.cache` 攔截，共用同一 `ts` compiler 實例
+- [x] 擴充 `ts-morph` 核心 Node prototype，將選擇器功能外掛至 `.query(selector)` 方法上
+- [x] 修正 `this` 賦值之 AST 檢索選擇器為動態型別安全的 `expression.kind=${SyntaxKind.ThisKeyword}`
+- [x] 重新編譯建置，並對 `3_Snake` 進行 E2E 測試與驗證，確認 class fields 自動提取與建構子清理皆完美運作
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-07 19:30:00
+
+- [x] 修復 `this.method` 呼叫引數之 AST `tsquery` 選擇器 Bug
+  - [x] 將 `expression.name="this"` 修正為 `expression.kind=${SyntaxKind.ThisKeyword}` 確保對 `ThisKeyword` 呼叫引數的型別反向傳播功能生效
+- [x] 排解無效的陣列型別標註（`undefined[]`, `never[]`, `null[]` 等）阻礙 TypeScript 陣列型別演進 (Array Type Evolution)
+  - [x] 於 `getCleanTypeText` 中過濾並排除這些無效的陣列型別
+- [x] 重新編譯重構工具並對 `4_abc662` 進行 E2E 測試與驗證
+- [x] 檢查 `4_abcTS/src/data/abc_tune.ts` 中的 `computePickupLength`、`addEndPoints` 與 `makeSortedArray` 等關鍵方法之參數與變數型別，確認已從原先 the `undefined[]` 成功標註為 `Lines[]` 與 `any[]`
+- [x] 於 `4_abcTS` 目錄執行 `pnpm run build:vite`，確認專案 100% 通過編譯且無任何 TypeScript 語法錯誤
