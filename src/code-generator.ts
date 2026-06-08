@@ -228,6 +228,16 @@ export async function runGeneration(options: any) {
 		console.error(chalk.red(`❌ 第三階段傳播失敗, 錯誤: ${err.message}`));
 	}
 
+	// 第三點五階段：正向傳播後局部變數已有精確型別（staff: Staff, line: Lines 等），
+	// 再次執行反向傳播，讓 TypeChecker 能從 staff.key, staff.meter 等屬性存取推導出型別
+	console.log(chalk.blue(`📂 正在執行第三.五階段：正向傳播後二次反向型別傳播...`));
+	try {
+		runGlobalReversePropagation(project);
+		console.log(chalk.green(`✔ 第三.五階段二次反向傳播完成`));
+	} catch (err: any) {
+		console.error(chalk.red(`❌ 第三.五階段傳播失敗, 錯誤: ${err.message}`));
+	}
+
 	console.log(chalk.blue(`📂 正在執行第四階段：全專案回傳型別推導與注入...`));
 	try {
 		runGlobalReturnTypePropagation(project, typeDB, config, fileInterfaces, inDir);

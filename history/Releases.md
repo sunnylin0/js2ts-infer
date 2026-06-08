@@ -173,3 +173,15 @@
 - **實現屬性方法調用與 Import 靜態追蹤**：實作 `resolveImportTarget` 與 `resolvePropertyAccessCallee`，成功追蹤類別實體的方法呼叫（如 `sequencer.sequence(...)`），將其實體宣告與引數型別進行反向綁定。
 - **實現全路徑 `import(...)` 解包還原**：實作 `unwrapImportType`，自動將編譯器推導的 `import("...").default` 解開並還原為具名的 `Tune` 及陣列型別 `Tune[]` 等乾淨型別，徹底解除了跨模組型別傳遞的屏障。
 - **全專案型別安全連鎖傳播與 Vite 零錯誤建置**：成功讓 `abc_midi_sequencer.ts` 中的 `sequence` 參數取得 `Tune` 型別，並透過正向傳播自動推導出 `lines: Lines[]`、`line: Lines`、`staves: Staff[]`、`staff: Staff`、`voice: Voice[]` 等一連串精密型別。在此基礎上，轉譯後的 `4_abcTS` 打包建置以 **完全零錯誤** 成功通過。
+
+---
+
+## [2026-06-08] v1.6.0 - 通用化全域型別傳播：弱型別覆蓋、多呼叫站 Union、第三.五階段二次反向傳播
+
+- **移除硬編碼 `isSeqCall` 過濾器**：`runGlobalReversePropagation` 不再只針對 `sequence` 方法，改為完全通用的反向型別傳播，適用於所有 class methods 與函數。
+- **弱型別（`{}`、`any`）覆蓋**：反向傳播的更新條件從「僅允許無型別標注的參數」擴大為「允許覆蓋 `{}`、`any`、`unknown` 等弱型別」。讓 `cloneLine(line: {})` 能被呼叫站的 `Lines` 型別覆蓋為 `cloneLine(line: Lines)`。
+- **多呼叫站型別 Union 合併**：將參數更新 Map 從 `Map<param, string>` 改為 `Map<param, Set<string>>`，收集所有呼叫站的推導型別，最終以 union 寫入，防止後者覆蓋前者造成型別遺失。
+- **正向傳播新增 `new ClassName()` 直接命名**：`runGlobalForwardPropagation` 遇到 `new ClassName()` 初始化直接取類別名稱作為型別，不再依賴 TypeChecker 推導可能出現的 `import(...).default` 等複雜型別。
+- **正向傳播新增 `arr[i]` 陣列元素型別推導**：針對 `ElementAccessExpression`（如 `lines[i]`），呼叫 `getArrayElementType()` 取得陣列元素型別，讓 `var line = lines[i]` 直接推導為 `Lines`。
+- **第三.五階段：正向傳播後二次反向傳播**：新增 Pipeline 第三.五階段，在正向傳播確立 `staff: Staff` 等局部變數型別後，再次執行反向傳播讓 TypeChecker 能從 `staff.key: KeySignature`、`staff.meter: Meter` 等屬性存取推導並注入方法參數型別。此次新增後，`getTrackTitle(staff: Staff[])`, `interpretTempo(element: Voice, beatLength: number)`, `cloneLine(line: Lines)` 等方法參數皆成功自動標注。
+

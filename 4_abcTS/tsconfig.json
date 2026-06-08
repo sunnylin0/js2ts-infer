@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "allowJs": true, // 👈 關鍵：必須允許 JS
+        "checkJs": false, // 避免 TS 一直對你的 JS 報錯
+        "outDir": "dist"
+    },
+    "include": [
+        "src/**/*",
+		"types/**/*"
+    ] 
+}

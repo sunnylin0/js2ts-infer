@@ -1200,16 +1200,14 @@ export function runGlobalReversePropagation(project: Project) {
 
   for (let round = 1; round <= 2; round++) {
     console.log(`[Reverse Propagation] Starting Round ${round}...`);
-    const paramsToUpdate = new Map<any, string>();
+    // 收集所有呼叫站的型別，key: param node, value: 所有觀察到的型別 Set
+    const paramsToUpdate = new Map<any, Set<string>>();
 
     for (const sourceFile of sourceFiles) {
       if (sourceFile.isDeclarationFile()) continue;
 
       const allCalls = sourceFile.query('CallExpression');
       for (const call of allCalls) {
-        const callText = call.getText();
-        const isSeqCall = callText.includes("sequence") && (callText.includes("sequencer") || callText.includes("abctune"));
-
         const decl = resolveCalleeDeclaration(call, project);
         if (!decl) continue;
 
@@ -1226,26 +1224,38 @@ export function runGlobalReversePropagation(project: Project) {
 
           args.forEach((arg: any, idx: number) => {
             const param = params[idx];
-            if (param && !param.getTypeNode() && param.getName().indexOf('{') === -1) {
-              let argTypeText = '';
-              
-              if (arg.getKind() === SyntaxKind.ThisKeyword) {
-                const parentClass = arg.getFirstAncestorByKind(SyntaxKind.ClassDeclaration);
-                if (parentClass && parentClass.getName()) {
-                  argTypeText = parentClass.getName()!;
-                }
-              } else {
-                const argType = arg.getType();
-                argTypeText = getCleanTypeText(argType, project);
-              }
+            if (!param || param.getName().indexOf('{') !== -1) return;
 
-              if (isSeqCall) {
-                console.log(`  Round ${round} - Target: "${callText}", Arg [${idx}] text: "${arg.getText()}", resolved type: "${argTypeText}"`);
-              }
+            // 判斷是否需要更新：無型別標註、或是 {} / any 等弱型別
+            const existingTypeNode = param.getTypeNode();
+            const existingTypeText = existingTypeNode?.getText() ?? '';
+            const isWeakType = !existingTypeNode ||
+              existingTypeText === '{}' ||
+              existingTypeText === 'any' ||
+              existingTypeText === 'unknown';
+            if (!isWeakType) return;
 
-              if (argTypeText && argTypeText !== 'any' && argTypeText !== 'unknown') {
-                paramsToUpdate.set(param, argTypeText);
+            let argTypeText = '';
+
+            if (arg.getKind() === SyntaxKind.ThisKeyword) {
+              // this → 取所在 Class 名稱
+              const parentClass = arg.getFirstAncestorByKind(SyntaxKind.ClassDeclaration);
+              if (parentClass && parentClass.getName()) {
+                argTypeText = parentClass.getName()!;
               }
+            } else if (arg.getKind() === SyntaxKind.NewExpression) {
+              // new ClassName(...) → 直接用類別名稱
+              argTypeText = (arg as any).getExpression().getText();
+            } else {
+              const argType = arg.getType();
+              argTypeText = getCleanTypeText(argType, project);
+            }
+
+            if (argTypeText && argTypeText !== 'any' && argTypeText !== 'unknown' && argTypeText !== '{}') {
+              if (!paramsToUpdate.has(param)) {
+                paramsToUpdate.set(param, new Set());
+              }
+              paramsToUpdate.get(param)!.add(argTypeText);
             }
           });
         }
@@ -1257,13 +1267,11 @@ export function runGlobalReversePropagation(project: Project) {
       break;
     }
 
-    for (const [param, typeText] of paramsToUpdate.entries()) {
+    console.log(`[Reverse Propagation] Round ${round} updating ${paramsToUpdate.size} parameters.`);
+    for (const [param, typeSet] of paramsToUpdate.entries()) {
       try {
-        const parent = param.getParent();
-        const parentName = parent?.getName ? parent.getName() : 'anonymous';
-        if (parentName.includes("sequence") || param.getName().includes("abctune")) {
-          console.log(`[Reverse Propagation Debug] Round ${round} - Writing parameter "${param.getName()}" of function "${parentName}" -> "${typeText}"`);
-        }
+        // 多個呼叫站型別取 union；若只有一個就直接用
+        const typeText = Array.from(typeSet).join(' | ');
         param.setType(typeText);
       } catch (e) {}
     }
@@ -1279,7 +1287,7 @@ export function runGlobalReversePropagation(project: Project) {
  */
 export function runGlobalForwardPropagation(project: Project) {
   const sourceFiles = project.getSourceFiles();
-  
+
   for (let round = 1; round <= 3; round++) {
     const varsToUpdate = new Map<any, string>();
 
@@ -1288,31 +1296,46 @@ export function runGlobalForwardPropagation(project: Project) {
 
       const allVarDecls = sourceFile.query('VariableDeclaration');
       for (const decl of allVarDecls) {
-        if (!decl.getTypeNode()) {
-          const nameNode = decl.getNameNode();
-          if (nameNode.getKind() !== SyntaxKind.Identifier) continue;
+        if (decl.getTypeNode()) continue;
+        const nameNode = decl.getNameNode();
+        if (nameNode.getKind() !== SyntaxKind.Identifier) continue;
 
-          const init = decl.getInitializer();
-          if (init) {
-            const type = init.getType();
-            const typeText = getCleanTypeText(type, project);
-            if (typeText && typeText !== 'any' && typeText !== 'unknown') {
-              varsToUpdate.set(decl, typeText);
-            }
+        const init = decl.getInitializer();
+        if (!init) continue;
+
+        let typeText = '';
+
+        // 1. new ClassName() → 直接用類別名稱，最可靠
+        if (init.getKind() === SyntaxKind.NewExpression) {
+          typeText = (init as any).getExpression().getText();
+        }
+        // 2. arr[i] → ElementAccessExpression：取陣列元素型別
+        else if (init.getKind() === SyntaxKind.ElementAccessExpression) {
+          const arrType = (init as any).getExpression().getType();
+          // 若 getArrayElementType() 有值就用，否則從 typeArguments 取
+          const elemType = arrType.getArrayElementType?.();
+          if (elemType) {
+            typeText = getCleanTypeText(elemType, project);
           }
+        }
+        // 3. 一般 initializer 型別推導
+        else {
+          const type = init.getType();
+          typeText = getCleanTypeText(type, project);
+        }
+
+        if (typeText && typeText !== 'any' && typeText !== 'unknown') {
+          varsToUpdate.set(decl, typeText);
         }
       }
     }
 
-    if (varsToUpdate.size === 0) break; // 若該輪無新增可推導型別，直接提前結束
+    if (varsToUpdate.size === 0) break;
 
-    // 當輪收集完畢後一次性寫入
     for (const [decl, typeText] of varsToUpdate.entries()) {
       try {
         decl.setType(typeText);
-      } catch (e) {
-        // 忽略
-      }
+      } catch (e) {}
     }
   }
 }

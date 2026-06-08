@@ -501,8 +501,18 @@ interface Staff {
 	meter: Meter;
 }
 
+/**
+ * 拍號定義。可為具名拍號（如 common_time）或明確指定分子/分母的形式。
+ */
 interface Meter {
-	type: string;
+	type:
+	| 'common_time'
+	| 'cut_time'
+	| 'tempus_perfectum'
+	| 'tempus_imperfectum'
+	| 'tempus_perfectum_prolatio'
+	| 'tempus_imperfectum_prolatio'
+	| 'specified';
 	el_type?: string;
 	abselem?: AbsoluteElement;
 	value?: MeterValue;
@@ -664,14 +674,17 @@ interface Attr {
 	y: number;
 	"data-name": string;
 }
-
+/**
+ * abc-js 格式化系統中使用的字型定義。
+ */
 interface Font {
 	face: string;
 	size: number;
-	decoration: string;
-	style: string;
-	weight: string;
+	weight: 'normal' | 'bold';
+	style: 'normal' | 'italic';
+	decoration: 'none' | 'underline';
 	padding: number;
+	box?: boolean;
 }
 
 /** @element path */

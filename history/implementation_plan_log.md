@@ -576,3 +576,41 @@
 2. 對 `4_abc662` 執行全域重構：`node dist/cli.js generate -i ./4_abc662 -o ./4_abcTS -f`。
 3. 檢查 `4_abcTS/src/synth/abc_midi_sequencer.ts` 的 `sequence` 參數及其局部變數的型別標註是否符合預期。
 4. 於 `4_abcTS` 目錄執行 `pnpm run build:vite`，驗證打包建置無錯通過。
+
+---
+
+# 通用化全域型別傳播：弱型別覆蓋、多呼叫站 Union、第三.五階段二次反向傳播
+
+**時間戳記**：2026-06-08 03:50:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **通用化型別傳播**：將反向傳播從僅處理 `sequence` 方法呼叫的硬編碼邏輯，改為完全通用的機制，覆蓋所有 class methods 與函數。
+> 2. **向下延伸**：`abc_midi_sequencer.ts` 中的 `interpretTempo`, `getTrackTitle`, `addKey`, `addMeter`, `interpretMeter` 等方法，以及 `deline-tune.ts` 中的 `cloneLine(line: Lines)` 均需自動推導型別。
+> 3. **弱型別覆蓋**：已有 `{}` 或 `any` 型別標注的參數，應允許被更精確的推導型別覆蓋。
+> 4. **多呼叫站型別合併**：同一參數被多個不同型別引數呼叫時，應取 Union 型別而非後者覆蓋前者。
+
+## 開放問題
+無。
+
+## 預期變更
+
+### js2ts-infer 重構工具
+
+#### [MODIFY] [ast-refactorer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/ast-refactorer.ts)
+- **移除 `isSeqCall` 硬編碼**：刪除 `runGlobalReversePropagation` 中針對 `"sequence"` 的文字比對邏輯。
+- **弱型別覆蓋**：將 `!param.getTypeNode()` 條件擴大為允許 `'{}'`, `'any'`, `'unknown'` 等弱型別的參數也被更新。
+- **多呼叫站 Union**：將 `paramsToUpdate: Map<any, string>` 改為 `Map<any, Set<string>>`，寫入時取 `Array.from(set).join(' | ')`。
+- **`new ClassName()` 直接命名**：在反向傳播處理 `NewExpression` 引數時，直接取類別名稱作為型別。
+- **`arr[i]` 陣列元素推導**：`runGlobalForwardPropagation` 中，對 `ElementAccessExpression` 呼叫 `getArrayElementType()` 推導陣列元素型別。
+
+#### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/code-generator.ts)
+- **新增第三.五階段**：在第三階段正向傳播之後，再次呼叫 `runGlobalReversePropagation`，利用正向傳播確立的局部變數型別（如 `staff: Staff`）讓 TypeChecker 能推導出 `staff.key: KeySignature` 等屬性型別，進而反向注入方法參數。
+
+## 驗證計畫
+### 自動化與手動驗證
+1. 執行 `pnpm run build` 編譯 CLI 工具。
+2. 執行全域重構：`node dist/cli.js generate -i ./4_abc662 -o ./4_abcTS -f`。
+3. 驗證 `abc_midi_sequencer.ts` 的 `getTrackTitle(staff: Staff[])`, `interpretTempo(element: Voice, beatLength: number)` 等方法簽章正確標注。
+4. 驗證 `deline-tune.ts` 的 `cloneLine(line: Lines)` 參數從 `{}` 正確升級為 `Lines`。
+
