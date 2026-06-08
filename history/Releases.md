@@ -185,3 +185,22 @@
 - **正向傳播新增 `arr[i]` 陣列元素型別推導**：針對 `ElementAccessExpression`（如 `lines[i]`），呼叫 `getArrayElementType()` 取得陣列元素型別，讓 `var line = lines[i]` 直接推導為 `Lines`。
 - **第三.五階段：正向傳播後二次反向傳播**：新增 Pipeline 第三.五階段，在正向傳播確立 `staff: Staff` 等局部變數型別後，再次執行反向傳播讓 TypeChecker 能從 `staff.key: KeySignature`、`staff.meter: Meter` 等屬性存取推導並注入方法參數型別。此次新增後，`getTrackTitle(staff: Staff[])`, `interpretTempo(element: Voice, beatLength: number)`, `cloneLine(line: Lines)` 等方法參數皆成功自動標注。
 
+---
+
+## [2026-06-08] v1.7.0 - ast-refactorer.ts 模組化拆分
+
+- **拆分 `ast-refactorer.ts`（原 1418 行）為 5 個職責單一的模組**，提升可讀性與維護性：
+
+  | 模組 | 路徑 | 說明 |
+  |------|------|------|
+  | `tsquery-ext.ts` | `src/refactor/tsquery-ext.ts` | `Node.prototype.query` Side-Effect patch + `query()` helper |
+  | `type-utils.ts` | `src/refactor/type-utils.ts` | 12 個型別推導工具函式（merge、widen、resolve 等） |
+  | `annotate.ts` | `src/refactor/annotate.ts` | `annotateFunction`、`resolveAndSetReturnType`、`refactorCjsToEsm` |
+  | `process-file.ts` | `src/refactor/process-file.ts` | `processFileRefactoring` 單一檔案 AST 重構主管線 |
+  | `propagation.ts` | `src/refactor/propagation.ts` | 全域傳播函式群（Reverse / Forward / Return Type / writeInterfaceDeclarations） |
+
+- **`ast-refactorer.ts` 縮減為純 re-export 入口（~20 行）**：確保所有呼叫者（`code-generator.ts`）零改動向後相容。
+- **全面加入繁體中文 JSDoc 注解**：所有函式、區段、參數、傳播策略、降級策略皆有詳細中文說明。
+- **驗證**：`pnpm run build` 通過（tsc + ESM 雙編譯 + build-post.js）。
+
+
