@@ -204,7 +204,7 @@ export async function runGeneration(options: any) {
 			const interfacesToDeclare: Record<string, string> = {};
 			fileInterfaces.set(file.sourceFile.getFilePath(), interfacesToDeclare);
 
-			processFileRefactoring(file.sourceFile, typeChecker, typeDB, config, inDir, project, interfacesToDeclare);
+			processFileRefactoring(file.sourceFile, typeChecker, typeDB, config, inDir, project, interfacesToDeclare, file.relPath);
 			console.log(chalk.green(`✔ 第一階段重構完成: ${file.relPath}`));
 		} catch (err: any) {
 			console.error(chalk.red(`❌ 第一階段重構失敗: ${file.relPath}, 錯誤: ${err.message}`));
@@ -222,7 +222,7 @@ export async function runGeneration(options: any) {
 
 	console.log(chalk.blue(`📂 正在執行第三階段：全專案局部變數正向型別傳播 (3輪迭代)...`));
 	try {
-		runGlobalForwardPropagation(project);
+		runGlobalForwardPropagation(project, typeDB, config, fileInterfaces, inDir);
 		console.log(chalk.green(`✔ 第三階段全專案正向傳播完成`));
 	} catch (err: any) {
 		console.error(chalk.red(`❌ 第三階段傳播失敗, 錯誤: ${err.message}`));

@@ -19,6 +19,7 @@ import {
   getPropertyTypeString,
   safeAddProperty,
   cleanCommentToJSDoc,
+  resolveParameterType,
 } from './type-utils';
 import { annotateFunction, refactorCjsToEsm } from './annotate';
 
@@ -53,10 +54,24 @@ export function processFileRefactoring(
   config: any,
   inDir: string,
   project: Project,
-  interfacesToDeclare: Record<string, string>
+  interfacesToDeclare: Record<string, string>,
+  inRelPath?: string
 ): void {
   // 計算相對路徑，作為 typeDB 的 Key 前綴
-  const relPath = path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
+  let relPath = inRelPath
+    ? inRelPath.replace(/\.js$/, '.ts')
+    : path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
+
+  // 防偏斜處理：如果相對路徑中含有 '../'（因 outDir 與 inDir 不同目錄造成），則嘗試從路徑中擷取 /src/ 之後的乾淨相對路徑
+  if (relPath.includes('../')) {
+    const match = sourceFile.getFilePath().replace(/\\/g, '/').match(/\/src\/(.+)$/);
+    if (match) {
+      relPath = 'src/' + match[1];
+    } else {
+      // 根目錄檔案
+      relPath = path.basename(sourceFile.getFilePath());
+    }
+  }
 
   // ── 步驟 1：清除既有 Interface 宣告與所有參數型別 ────────────────────────
   // 目的：確保每次重構都從乾淨的狀態開始，不受舊版殘留型別影響
@@ -75,6 +90,30 @@ export function processFileRefactoring(
   for (const fn of functions) {
     const fnName = fn.getName() || 'anonymous';
     // 先清除回傳型別，讓後續階段重新推導
+    if (typeof fn.removeReturnType === 'function') fn.removeReturnType();
+    annotateFunction(fn, fnName, relPath, typeDB, interfacesToDeclare, config, undefined, typeChecker);
+  }
+
+  // ── 步驟 3.5：標注 ArrowFunction 與 FunctionExpression 的參數型別 ──────────────────
+  const arrowFns = sourceFile.getDescendantsOfKind(SyntaxKind.ArrowFunction);
+  const fnExprs = sourceFile.getDescendantsOfKind(SyntaxKind.FunctionExpression);
+  for (const fn of [...arrowFns, ...fnExprs]) {
+    let fnName = 'anonymous';
+    const propAssign = fn.getParentIfKind(SyntaxKind.PropertyAssignment);
+    if (propAssign) {
+      const propName = propAssign.getName();
+      const varDecl = propAssign.getFirstAncestorByKind(SyntaxKind.VariableDeclaration);
+      if (varDecl) {
+        fnName = `${varDecl.getName()}.${propName}`;
+      } else {
+        fnName = propName;
+      }
+    } else {
+      const parentDecl = fn.getParentIfKind(SyntaxKind.VariableDeclaration);
+      if (parentDecl) {
+        fnName = parentDecl.getName();
+      }
+    }
     if (typeof fn.removeReturnType === 'function') fn.removeReturnType();
     annotateFunction(fn, fnName, relPath, typeDB, interfacesToDeclare, config, undefined, typeChecker);
   }
@@ -212,6 +251,26 @@ export function processFileRefactoring(
           }
         }
 
+        // 若 d.ts 沒有，從 typeDB 中載入對應的 prop 側錄型別
+        if (!propType) {
+          const jsRelPath = relPath.replace(/\.ts$/, '.js');
+          let dbRecord = typeDB[`${jsRelPath}::${className}::prop::${item.propName}`] ||
+                         typeDB[`${relPath}::${className}::prop::${item.propName}`];
+
+          if (!dbRecord) {
+            dbRecord = typeDB[`${jsRelPath}::prop::${item.propName}`] ||
+                       typeDB[`${relPath}::prop::${item.propName}`];
+          }
+
+          if (dbRecord && dbRecord.callCount >= 1) {
+            const baseName = `${className}${item.propName.charAt(0).toUpperCase()}${item.propName.slice(1)}Prop`;
+            const inferred = resolveParameterType(dbRecord, baseName, interfacesToDeclare, project);
+            if (inferred && inferred !== 'any' && inferred !== 'unknown') {
+              propType = inferred;
+            }
+          }
+        }
+
         const struct: any = {
           name: item.propName,
           initializer: item.rightText,
@@ -282,6 +341,26 @@ export function processFileRefactoring(
           const dtsProp = dtsInterface.getProperty(prop);
           if (dtsProp) {
             propType = getPropertyTypeString(dtsProp);
+          }
+        }
+
+        // 若 d.ts 沒有或推導為 any，從 typeDB 中載入對應的 prop 側錄型別
+        if (propType === 'any') {
+          const jsRelPath = relPath.replace(/\.ts$/, '.js');
+          let dbRecord = typeDB[`${jsRelPath}::${className}::prop::${prop}`] ||
+                         typeDB[`${relPath}::${className}::prop::${prop}`];
+
+          if (!dbRecord) {
+            dbRecord = typeDB[`${jsRelPath}::prop::${prop}`] ||
+                       typeDB[`${relPath}::prop::${prop}`];
+          }
+
+          if (dbRecord && dbRecord.callCount >= 1) {
+            const baseName = `${className}${prop.charAt(0).toUpperCase()}${prop.slice(1)}Prop`;
+            const inferred = resolveParameterType(dbRecord, baseName, interfacesToDeclare, project);
+            if (inferred && inferred !== 'any' && inferred !== 'unknown') {
+              propType = inferred;
+            }
           }
         }
         safeAddProperty(cls, prop, propType);

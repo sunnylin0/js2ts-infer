@@ -337,3 +337,98 @@
     * `const staff: Staff = staves[j];` 局部變數 `staff` 成功獲得 `Staff`。
     * `const voice: Voice[] = staff.voices[k];` 局部變數 `voice` 成功獲得 `Voice[]`。
 - **打包完全無錯**：在 `4_abcTS` 目錄執行 `pnpm run build:vite` 通過，打包建置以 **0 個編譯錯誤** 的滿分狀態完全成功。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-12 13:25:00
+
+## 已完成的變更
+- **相容與優化 typeDB 鍵值配對機制**：
+  - 於 `annotateFunction` 與 `resolveAndSetReturnType` 查詢 `typeDB` 時，將 `relPath` 的 `.ts` 自動轉換為 `.js`。
+  - 當查詢含有類別前綴之 `fnName`（如 `Particles.constructor`）在 `typeDB` 中查不到時，自動 fallback 到無前綴的 `shortFn`（如 `constructor`）進行備援比對。
+- **支援局部變數的 typeDB 動態型別注入**：
+  - 擴充 `runGlobalForwardPropagation` 參數以接收 `typeDB` 及相關內容。
+  - 對於局部變數，向上尋找其最接近的函數父節點並計算該函數之 `funcName`（支援類別前綴），並藉此生成 `trackerId` 查詢 `typeDB`。
+  - 當查詢到變數側錄型別時，優先將其作為局部變數的標注型別。
+- **修復全域相對路徑計算偏斜 (Offset) Bug**：
+  - 修復了 `runGlobalForwardPropagation` 與 `runGlobalReturnTypePropagation` 內的 `relPath` 計算邏輯：當因為複寫至輸出目錄 `outDir` 導致相對路徑含 `../` 時，自動擷取並還原以 `src/` 開頭的乾淨相對路徑，徹底解決了側錄字典無法匹配的底層核心問題。
+
+## 驗證結果
+- **E2E 轉譯重構 100% 成功**：
+  - 成功執行重構：`node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+- **Class 參數型別成功套用**：
+  - 檢查 `3_SnakeTS/src/engine/particles.ts`，constructor 成功標註為 `constructor(svg: SVGSVGElement, x: number, y: number, color: string)`。
+  - 檢查 `3_SnakeTS/src/engine/snake.ts`，constructor 成功標註為 `constructor(gridW: number, gridH: number)`，且 `handleKeydown` 方法參數標註為 `e: KeyboardEvent`。
+- **局部變數型別成功套用**：
+  - 檢查 `3_SnakeTS/src/audio.ts`，`playCoin()` 內部變數成功標註為 `now: number`、`osc: OscillatorNode`、`gain: GainNode`。
+  - `playPause()` 內部變數成功標註為 `now: number`、`frequencies: Array<number>`，且內部 `forEach` 中參數與變數標註為 `osc: OscillatorNode`、`gain: GainNode`。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-12 13:36:00
+
+## 已完成的變更
+- **支援 Class 屬性 (this.xxx) 執行期型別側錄**：
+  - 修改 `babel-plugin-js2ts.ts` 的 `visitor`，新增 `AssignmentExpression` 插樁處理。當左值為 `this.prop` 且操作符為 `=` 時，將右值包裝於 `globalThis.__typeTracker` 內以進行側錄，鍵值格式為 `${filePath}::${className}::prop::${propName}`。
+- **Class 欄位重構之側錄型別套用與信心度優化**：
+  - 修改 `process-file.ts` 內 4c（欄位提升）與 4f（漏宣告屬性補齊）的處理，加入從 `typeDB` 讀取並推導 `prop` 側錄型別的 fallback 邏輯。
+  - 對於 Class 屬性的側錄點，將比對信心閾值從預設的 5 降至 1（`callCount >= 1`），以確保即使僅被賦值初始化一次的欄位型別，也能精準注入。
+
+## 驗證結果
+- **測試側錄成功執行**：
+  - 於 `3_Snake` 目錄下執行 `node ../dist/cli.js run "node run-test.js"`，順利生成並在 `types-observed.json` 寫入 `"src/engine/particles.js::Particle::prop::vx"` 等全新成員屬性型別記錄。
+- **E2E 屬性型別生成成功**：
+  - 執行重構 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+  - 檢查 `3_SnakeTS/src/engine/particles.ts`，屬性 `vx`, `vy`, `color`, `x`, `y`, `radius`, `alpha`, `friction`, `decay` 全都成功套用了精確 of `number` 與 `string` 型別。
+  - 檢查 `3_SnakeTS/src/engine/snake.ts`，成員 `body` 成功標註為 `Array<{ [key: string]: any }>`，`inputBuffer` 成功標註為 `Array<any>`。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-12 14:30:00
+
+## 已完成的變更
+- **標注 `ArrowFunction` 與 `FunctionExpression` 參數型別**：
+  - 於 `process-file.ts` 中新增「步驟 3.5」，遍歷檔案中所有的 `ArrowFunction` 與 `FunctionExpression`，並呼叫 `annotateFunction` 進行參數標注。
+- **支援 Callback 參數之 `cb_param::x` 型別查詢與 fallback**：
+  - 於 `annotate.ts` 的 `annotateFunction` 內，當 `fnNode` 是變數宣告 initialization 時，向上追蹤 outer function 與 class 名稱，拼湊出 `${jsRelPath}::${outerFuncName}::var::${varName}::cb_param::${paramIdx}` 比對 `typeDB`，若查到則套用為其型別。
+
+## 驗證結果
+- **重構與型別注入完成**：
+  - 執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f` 成功。
+  - 檢查 `3_SnakeTS/src/engine/gameEngine.ts` 中 `loop` 的型別標注，已成功被標注為 `const loop = (timestamp: number): void => {`。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-06-12 15:05:00
+
+## 已完成的變更
+- **移除變數宣告與賦值 AST 節點插樁的 `.skip()` 阻礙**：
+  - 修改 `src/babel-plugin-js2ts.ts` 內 `VariableDeclarator` 與 `AssignmentExpression`，移去 `skip()` 調用，從而允許 Babel 深度遍歷並插樁 object literal 或物件變數賦值內包含的 nested functions。
+- **物件方法及屬性函數 (Object Properties/Methods) 命名空間支援**：
+  - 修改 `getFunctionName` (在 `src/babel-plugin-js2ts.ts` 與 `src/static-analyzer.ts`)，使其支援將 object property 與 object method 的名稱解析為 `objName.propName` 格式。
+  - 修改 `src/refactor/process-file.ts` 步驟 3.5，使其在 ts-morph AST 層面正確解析 `PropertyAssignment` 函數的名稱為 `objName.propName`。
+
+## 驗證結果
+- **測試側錄成功執行**：
+  - 於 `3_Snake` 目錄下執行 `node ../dist/cli.js run "node run-test.js"`，成功產出 `"src/engine/parseCommon.js::parseCommon.toUpperCase::param::str": { "observedTypes": [ "string" ], ... }`。
+- **E2E 重構與型別標注成功**：
+  - 執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+  - 檢查 `3_SnakeTS/src/engine/parseCommon.ts`：
+    ```typescript
+    export const parseCommon = {
+        toUpperCase: function (str: string) {
+    ```
+    確認參數 `str: string` 已被成功注入。
+  - 檢查 `3_SnakeTS/src/engine/snake.ts` 內 `handleKeydown` 內部的 `log_keyname` 函數：
+    ```typescript
+    let log_keyname = function (keyname: string): string {
+    ```
+    確認參數 `keyname: string` 及 return 型別 `: string` 已被成功注入。

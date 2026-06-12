@@ -269,3 +269,63 @@
     * 局部變數 `const staff: Staff = staves[j];` 成功標註 `staff: Staff`。
     * 局部變數 `const voice: Voice[] = staff.voices[k];` 成功標註 `voice: Voice[]`。
   - [x] 於 `4_abcTS` 目錄執行 `pnpm run build:vite`，確認 Vite 打包 100% 成功，編譯結果為 **完全零錯誤** 狀態。
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-12 13:22:00
+
+- [x] 優化 types-observed.json 型別標注套用與局部變數型別傳播
+  - [x] 優化 `annotate.ts` 中 typeDB 鍵值查詢邏輯（雙重匹配）
+  - [x] 擴充 `propagation.ts` 中 `runGlobalForwardPropagation` 載入與應用 typeDB 中的局部變數型別
+  - [x] 修改 `code-generator.ts` 中呼叫 `runGlobalForwardPropagation` 參數
+  - [x] 重新編譯建置 `pnpm run build`
+  - [x] 執行 E2E 驗證對 `3_Snake` 重新重構
+  - [x] 驗證 `particles.ts`, `snake.ts` 參數型別與 `audio.ts` 局部變數型別是否套用成功
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-12 13:33:00
+
+- [x] 支援 Class 屬性 (this.xxx) 側錄與型別標注
+  - [x] 修改 `babel-plugin-js2ts.ts` 對 `this.xxx = yyy` 進行插樁與側錄
+  - [x] 修改 `process-file.ts` 欄位提升（4c）與補齊（4f）時讀取 typeDB 的成員屬性側錄型別
+  - [x] 重新編譯 `pnpm run build`
+  - [x] 執行 `node dist/cli.js run "node 3_Snake/run-test.js"` 進行 E2E 側錄
+  - [x] 驗證 `types-observed.json` 中是否含有 `prop::` 側錄點
+  - [x] 執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f` 進行重構
+  - [x] 驗證 `particles.ts` 與 `snake.ts` 中的 Class 屬性型別是否正確生成
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-12 14:22:00
+
+- [x] 支援 Callback 參數 (cb_param::x) 型別標注
+  - [x] 修改 `process-file.ts`，新增「步驟 3.5」來標注 ArrowFunction 與 FunctionExpression 參數
+  - [x] 修改 `annotate.ts` 的 `annotateFunction` 以支援從 typeDB 取得 cb_param 的型別
+  - [x] 重新編譯 `pnpm run build`
+  - [x] 執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f` 進行重構
+  - [x] 驗證 `gameEngine.ts` 中的 `loop` 函數參數是否成功加上 `timestamp: number`
+
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-12 15:05:00
+
+- [x] 支援物件字面量函數屬性 (Object Property) 執行期型別側錄與自動標註
+  - [x] 修改 `src/babel-plugin-js2ts.ts` 內 `VariableDeclarator` 與 `AssignmentExpression`，移去 `.skip()` 以允許遞迴遍歷與插樁 object literal 內部 function
+  - [x] 升級 `getFunctionName` (在 `src/babel-plugin-js2ts.ts` 與 `src/static-analyzer.ts`)，使其支援將 object property 與 object method 名稱解析為 `objName.propName` 格式
+  - [x] 升級 `src/refactor/process-file.ts` 步驟 3.5，使其在 ts-morph AST 層面正確解析 `PropertyAssignment` 函數的名稱為 `objName.propName`
+  - [x] 重新編譯並執行型別側錄 `node ../dist/cli.js run "node run-test.js"`
+  - [x] 執行重構，並驗證 `parseCommon.ts` 內 `toUpperCase` 的 `str` 參數及 `snake.ts` 內 `log_keyname` 的 `keyname` 參數均成功標註為 `string`
+
+
+
+
+

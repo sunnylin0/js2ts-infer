@@ -614,3 +614,153 @@
 3. 驗證 `abc_midi_sequencer.ts` 的 `getTrackTitle(staff: Staff[])`, `interpretTempo(element: Voice, beatLength: number)` 等方法簽章正確標注。
 4. 驗證 `deline-tune.ts` 的 `cloneLine(line: Lines)` 參數從 `{}` 正確升級為 `Lines`。
 
+---
+
+# 優化 types-observed.json 型別標注套用與局部變數型別傳播
+
+**時間戳記**：2026-06-12 13:20:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **修正 Class 建構子與成員方法參數型別遺漏**：
+>    - 解決 `snake.ts` 和 `particles.ts` 中 constructor 參數與 `handleKeydown` 參數沒有套用型別的問題。
+>    - 讓 `annotateFunction` 與 `resolveAndSetReturnType` 在查詢 `typeDB` (也就是 `types-observed.json`) 時，自動支援 `.ts` 到 `.js` 的路徑替換，並提供移除 class 名稱前綴的 fallback 匹配。
+> 2. **擴充局部變數 (Local Variables) 支援 types-observed.json 動態型別標注**：
+>    - 解決 `audio.ts` 中的 `now`, `osc`, `gain` 等變數未被加上型別的問題。
+>    - 升級 `runGlobalForwardPropagation` 及重構管線，使其能載入並查詢 `typeDB` 中的變數記錄，為局部變數注入精確的側錄型別。
+
+## 開放問題
+無。
+
+## 預期變更
+
+### js2ts-infer 重構工具
+
+#### [MODIFY] [annotate.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/refactor/annotate.ts)
+- 於 `annotateFunction` 查詢 `typeDB` 時，將 `relPath` 的 `.ts` 轉換成 `.js`，並在查詢失敗時嘗試拿掉 `fnName` 的 class 前綴（例如 `Particles.constructor` -> `constructor`）進行備援匹配。
+- 於 `resolveAndSetReturnType` 進行相同的轉換與 fallback 匹配。
+
+#### [MODIFY] [propagation.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/refactor/propagation.ts)
+- 修改 `runGlobalForwardPropagation` 函數簽章，傳入 `typeDB`、`config`、`fileInterfaces` 及 `inDir`。
+- 對於每個 `VariableDeclaration` 節點，向上尋找其最接近的函數 parent，以此計算其 `funcName`（若為類別方法或 constructor 則包含 class 前綴，比對時支援 fallback 查詢）。
+- 當在 `typeDB` 中匹配到該變數的側錄記錄且滿足 `confidenceThreshold` 時，呼叫 `resolveParameterType` 推導型別並套用。
+
+#### [MODIFY] [code-generator.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/code-generator.ts)
+- 修改第三階段 `runGlobalForwardPropagation` 的呼叫點，傳入 `typeDB`、`config`、`fileInterfaces` 及 `inDir`。
+
+## 驗證計畫
+### 自動化與手動驗證
+1. 執行 `pnpm run build` 編譯 CLI 工具。
+2. 執行全域重構：`node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+3. 驗證 `3_SnakeTS/src/engine/particles.ts` 內的 constructor 參數型別。
+4. 驗證 `3_SnakeTS/src/engine/snake.ts` 內的 constructor 與 `handleKeydown` 參數型別。
+5. 驗證 `3_SnakeTS/src/audio.ts` 內局部變數 `now`, `osc`, `gain` 等型別套用。
+
+---
+
+# 支援 Class 屬性 (this.xxx) 側錄與型別標注
+
+**時間戳記**：2026-06-12 13:32:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **在執行期側錄 `this.xxx` 變數與成員屬性型別**：
+>    - 目前側錄工具完全沒有收集 Class 屬性（如 `this.vx`, `this.body`）的型別，造成重構後 Class 欄位型別皆為 `any`。
+>    - 我們將在 `babel-plugin-js2ts.ts` 中，對符合 `this.prop = right` 的 `AssignmentExpression` 進行插樁，將右值包裝在 `globalThis.__typeTracker` 內。
+> 2. **在重構時套用 Class 屬性側錄型別**：
+>    - 升級 `process-file.ts` 中的 `processFileRefactoring`：在建構子欄位提升（4c）與補齊其他 this 屬性宣告（4f）時，若 d.ts 沒有該屬性，則自動從 `typeDB` 中載入對應的 `prop` 側錄型別（如 `Particles::prop::vx`），為欄位標上精確型別。
+
+## 開放問題
+無。
+
+## 預期變更
+
+### js2ts-infer 重構與側錄工具
+
+#### [MODIFY] [babel-plugin-js2ts.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/babel-plugin-js2ts.ts)
+- 在 `visitor` 底下新增對 `AssignmentExpression` 的插樁處理，當 `operator === '='` 且左值為 `this.xxx` 時，將右值以 `__typeTracker` 包裹，側錄點格式為 `${filePath}::${className}::prop::${propName}`。
+
+#### [MODIFY] [process-file.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/refactor/process-file.ts)
+- 於 `propertiesToMigrate` 欄位提升（4c）時，加入從 `typeDB` 讀取並推導屬性型別的 fallback 邏輯。
+- 於補齊其他 `this` 屬性宣告（4f）時，加入相同的 `typeDB` 查詢與推導邏輯。
+
+## 驗證計畫
+### 自動化與手動驗證
+1. 執行 `pnpm run build` 編譯工具。
+2. 執行 `node dist/cli.js run "node 3_Snake/run-test.js"`，這會啟動側錄並執行測試，寫入全新的屬性型別記錄至 `3_Snake/types-observed.json` 中。
+3. 檢查 `3_Snake/types-observed.json`，確認是否已成功包含 `"src/engine/particles.js::Particle::prop::vx"` 等欄位記錄。
+4. 執行全域重構：`node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+5. 檢查 `3_SnakeTS/src/engine/particles.ts` 與 `3_SnakeTS/src/engine/snake.ts` 中的 Class 屬性宣告，驗證型別（如 `vx: number`, `body: Array<{ x: number, y: number }>`）是否已精確生成。
+
+---
+
+# 支援 Callback 參數 (cb_param::x) 型別標注
+
+**時間戳記**：2026-06-12 14:21:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **標注 `ArrowFunction` 與 `FunctionExpression` 的參數型別**：
+>    - 解決 `gameEngine.ts` 中 `const loop = (timestamp) => {}` 的 `timestamp` 沒有被加上型別的問題。
+>    - 目前 types-observed.json 中已成功側錄到 `"src/engine/gameEngine.js::start::var::loop::cb_param::0"`，但重構時被漏掉了。
+> 2. **在 `annotateFunction` 中新增 Callback 格式比對**：
+>    - 當被標注的函數是變數宣告的 initializer 時，向上追蹤其所在的最接近函數與變數名稱，拼湊出 `cb_param` 格式的 `trackerId` 進行 typeDB 比對（例如 `${jsRelPath}::${outerFuncName}::var::${varName}::cb_param::${paramIdx}`）。
+>    - 當正常的 `param::` 匹配不到或信心度不足時，Fallback 使用 Callback 的側錄型別。
+> 3. **在重構管線中全面掃描與標注箭頭函數**：
+>    - 在 `process-file.ts` 中新增步驟 3.5：遍歷檔案內所有的 `ArrowFunction` 與 `FunctionExpression`，並呼叫 `annotateFunction` 進行參數標注。
+
+## 開放問題
+無。
+
+## 預期變更
+
+### js2ts-infer 重構工具
+
+#### [MODIFY] [annotate.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/refactor/annotate.ts)
+- 於 `annotateFunction` 遍歷參數時，新增 Callback 參數檢索邏輯：若 `fnNode` 為變數宣告初始化，向上追蹤 outer function 計算 `outerFuncName`（支援 class 前綴 fallback 查詢），取得 `cb_param::x` 鍵值，若匹配成功則覆蓋或做為備援 record 套用。
+
+#### [MODIFY] [process-file.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/refactor/process-file.ts)
+- 於 `processFileRefactoring` 中新增「步驟 3.5」，遍歷檔案內所有的 `ArrowFunction` 與 `FunctionExpression` 節點，並呼叫 `annotateFunction` 標注其參數。
+
+## 驗證計畫
+### 自動化與手動驗證
+1. 執行 `pnpm run build` 編譯工具。
+2. 執行全域重構：`node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+3. 檢查 `3_SnakeTS/src/engine/gameEngine.ts:L28`，驗證 `loop` 函數是否正確變為 `const loop = (timestamp: number): void => {`。
+
+---
+
+## 執行與完成紀錄
+- **時間戳記**：2026-06-12 14:28:00
+- **狀態**：已成功執行並驗證通過。`gameEngine.ts` 的 `loop` 函數參數已成功加上 `timestamp: number` 型別。
+
+---
+
+# 支援物件字面量函數屬性 (Object Property) 型別側錄與標注計畫
+
+**時間戳記**：2026-06-12 15:05:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **支援物件屬性中函數的型別側錄與標注**：
+>    - 解決 `parseCommon.ts` 中 `toUpperCase` 的參數 `str` 與 `snake.ts` 內 `log_keyname` 參數 `keyname` 漏型別標注的問題。
+>    - 修改 `src/babel-plugin-js2ts.ts` 中 `VariableDeclarator` 與 `AssignmentExpression` 內誤用 `.skip()` 造成子節點函數被跳過插樁的問題。
+>    - 修改 `getFunctionName` 與重構流程中的 `process-file.ts`，支援正確識別物件屬性與方法的命名空間（格式為 `objName.propName`）。
+
+## 預期變更
+- **[babel-plugin-js2ts.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/babel-plugin-js2ts.ts)**:
+  - 移除 `VariableDeclarator` 與 `AssignmentExpression` 內的 `skip()`。
+  - 修改 `getFunctionName`，在 `isObjectMethod()` 以及父節點是 `isObjectProperty()` 且其第一層函數父節點與屬性父節點相同時，回傳 `objName.propName`。
+- **[static-analyzer.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/static-analyzer.ts)**:
+  - 對 `getFunctionName` 進行相同優化，保持靜態分析一致性。
+- **[process-file.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/refactor/process-file.ts)**:
+  - 於步驟 3.5 中加入對 `PropertyAssignment` 父節點的檢索，推導其對應的物件欄位函數名 `objName.propName`。
+
+## 執行與完成紀錄
+- **狀態**：已成功編譯並執行側錄與 E2E 重構。經檢查，`3_SnakeTS/src/engine/parseCommon.ts` 中的 `toUpperCase(str: string)` 及 `snake.ts` 內的 `log_keyname(keyname: string): string` 均成功標注了 `string` 型別。
+
+
+
+
+
+

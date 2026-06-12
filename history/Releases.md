@@ -218,3 +218,41 @@
   - constructor body 直接子節點比對由 JS 物件參考（`!==`）改為 `Block kind + getPos()` 比較，避免 nested if/else 內賦值被誤判。
 
 - **驗證**：`3_Snake` 執行 `generate` 後 `gameEngine.ts` 成功恢復所有 `this.xxx` 提升至 class 頂部，含 JSDoc 注解轉換。
+
+---
+
+## [2026-06-12] v1.7.2 - 優化 types-observed.json 型別套用與局部變數型別傳播
+
+- **優化 typeDB 鍵值比對與 fallback 機制**：修復了 `annotateFunction` 與 `resolveAndSetReturnType` 在查詢側錄字典時，因為相對路徑副檔名不合（`.ts` vs `.js`）以及類別方法前綴不一致（`Particles.constructor` vs `constructor`）造成的型別遺漏。現已提供自動轉換與無類別前綴之 `shortFn` fallback 比對。
+- **支援局部變數型別側錄套用**：升級 `runGlobalForwardPropagation` 參數與實作，使局部變數在靜態推導之餘，也能讀取並套用來自 `types-observed.json` 中對應的型別記錄（例如 `now: number`, `osc: OscillatorNode`, `gain: GainNode`）。
+- **修復全專案相對路徑計算偏斜 Bug**：修復了 `propagation.ts` 內 `relPath` 計算：當因為複寫至輸出目錄 `outDir` 導致相對路徑偏斜（含 `../`）時，自動擷取並還原以 `src/` 開頭的乾淨路徑，徹底打通了型別傳播與兜底的最後一哩路。
+- **E2E 驗證**：在 `3_SnakeTS` 專案中，`particles.ts` 類別 constructor、`snake.ts` 類別 constructor 及 `handleKeydown` 方法參數、`audio.ts` 內所有局部變數型別均已被精密套用並 100% 通過建置。
+
+---
+
+## [2026-06-12] v1.7.3 - 支援 Class 屬性 (this.xxx) 執行期型別側錄與自動標註
+
+- **新增 Class 屬性 (this.xxx) 側錄插樁**：於 `babel-plugin-js2ts.ts` 中加入對 `this.xxx = yyy` 賦值表達式的插樁，透過 `globalThis.__typeTracker` 收集執行期欄位的型別。
+- **支援重構 Class 屬性型別套用**：升級 `process-file.ts` 重構逻辑，當對 Class 屬性進行提升（4c）與漏宣告補齊（4f）時，自動從 `typeDB` 載入對應的 `prop` 側錄型別。
+- **屬性信心度優化**：針對 Class 屬性的側錄信心度閾值調整為 `callCount >= 1`，確保僅被賦值初始化一次的成員欄位型別，也能精確生成。
+- **E2E 驗證**：在 `3_SnakeTS` 專案中，`Particle` 與 `Snake` 類別內的所有成員欄位（如 `vx: number`, `body: Array<{ [key: string]: any }>` 等）皆成功被標註了精準的成員屬性型別。
+
+---
+
+## [2026-06-12] v1.7.4 - 支援 Callback 參數 (cb_param::x) 型別標注與箭頭函數參數注入
+
+- **遍歷與標注箭頭函數/函數表達式**：在 `process-file.ts` 中新增步驟 3.5，遍歷所有 `ArrowFunction` 與 `FunctionExpression`，呼叫 `annotateFunction` 標注參數。
+- **補全 Callback `cb_param` 比對邏輯**：在 `annotateFunction` 中，當標注函數是變數宣告 initialization 時，向上追蹤 outer function 與 class 前綴，拼湊出 `cb_param` 格式鍵值查詢 `typeDB`，在一般 `param::` 匹配不到時 fallback 套用。
+- **E2E 驗證**：在 `3_SnakeTS` 中，`gameEngine.ts` 的 `loop` 函數參數成功被標注為 `loop = (timestamp: number): void => {`。
+
+---
+
+## [2026-06-12] v1.7.5 - 支援物件字面量屬性/方法 (Object Property/Method) 型別側錄與自動標註
+
+- **打通物件字面量內部函數的遍歷與插樁**：移除 `babel-plugin-js2ts.ts` 內 `VariableDeclarator` 與 `AssignmentExpression` 的 `.skip()`，允許 Babel 遞迴訪問並插樁 object literal 或成員變數賦值內部的 function，全面修復物件函數被略過的問題。
+- **物件屬性與方法命名空間化**：升級 `getFunctionName` (在 `src/babel-plugin-js2ts.ts` 與 `src/static-analyzer.ts`)，將 object property 與 object method 的名稱解析為 `objName.propName`，並升級 `process-file.ts` 的 TS 重構流程以支援相同的命名解析。
+- **E2E 驗證**：在 `3_SnakeTS` 中，`parseCommon.ts` 內 `toUpperCase` 的 `str` 參數及 `snake.ts` 內 `log_keyname` 的 `keyname` 參數均成功標註為 `string` 型別。
+
+
+
+

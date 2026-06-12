@@ -40,12 +40,45 @@ function getFunctionName(pathNode: any): string {
   if (node.id && node.id.name) {
     return node.id.name;
   }
-  if (pathNode.isClassMethod() || pathNode.isObjectMethod()) {
+  if (pathNode.isClassMethod()) {
     if (node.key && node.key.type === 'Identifier') {
       return node.key.name;
     }
     return 'computed_method';
   }
+  if (pathNode.isObjectMethod()) {
+    if (node.key && node.key.type === 'Identifier') {
+      const propName = node.key.name;
+      const parentDecl = pathNode.findParent((p: any) => p.isVariableDeclarator());
+      if (parentDecl && parentDecl.node.id && parentDecl.node.id.type === 'Identifier') {
+        return `${parentDecl.node.id.name}.${propName}`;
+      }
+      const parentAssign = pathNode.findParent((p: any) => p.isAssignmentExpression());
+      if (parentAssign && parentAssign.node.left && parentAssign.node.left.type === 'Identifier') {
+        return `${parentAssign.node.left.name}.${propName}`;
+      }
+      return propName;
+    }
+    return 'computed_method';
+  }
+
+  const objectProp = pathNode.findParent((p: any) => p.isObjectProperty());
+  if (objectProp && objectProp.node.key && objectProp.node.key.type === 'Identifier') {
+    const firstFunc = pathNode.findParent((p: any) => p.isFunction() && p !== pathNode);
+    const propFunc = objectProp.findParent((p: any) => p.isFunction());
+    if (firstFunc === propFunc) {
+      const propName = objectProp.node.key.name;
+      const parentDecl = objectProp.findParent((p: any) => p.isVariableDeclarator());
+      if (parentDecl && parentDecl.node.id && parentDecl.node.id.type === 'Identifier') {
+        return `${parentDecl.node.id.name}.${propName}`;
+      }
+      const parentAssign = objectProp.findParent((p: any) => p.isAssignmentExpression());
+      if (parentAssign && parentAssign.node.left && parentAssign.node.left.type === 'Identifier') {
+        return `${parentAssign.node.left.name}.${propName}`;
+      }
+    }
+  }
+
   const parentDecl = pathNode.findParent((p: any) => p.isVariableDeclarator());
   if (parentDecl && parentDecl.node.id && parentDecl.node.id.type === 'Identifier') {
     return parentDecl.node.id.name;

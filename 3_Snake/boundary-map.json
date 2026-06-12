@@ -83,6 +83,14 @@
       {
         "from": "src/engine/gameEngine.js",
         "to": "src/audio.js"
+      },
+      {
+        "from": "run-test.js",
+        "to": "src/engine/particles.js"
+      },
+      {
+        "from": "run-test.js",
+        "to": "src/engine/snake.js"
       }
     ],
     "functions": [

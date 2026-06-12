@@ -106,9 +106,35 @@ export default function (babel: any) {
 
     if (pathNode.isObjectMethod()) {
       if (t.isIdentifier(pathNode.node.key)) {
-        return pathNode.node.key.name;
+        const propName = pathNode.node.key.name;
+        const parentDecl = pathNode.findParent((p: any) => p.isVariableDeclarator());
+        if (parentDecl && t.isIdentifier(parentDecl.node.id)) {
+          return `${parentDecl.node.id.name}.${propName}`;
+        }
+        const parentAssign = pathNode.findParent((p: any) => p.isAssignmentExpression());
+        if (parentAssign && t.isIdentifier(parentAssign.node.left)) {
+          return `${parentAssign.node.left.name}.${propName}`;
+        }
+        return propName;
       }
       return 'computed_method';
+    }
+
+    const objectProp = pathNode.findParent((p: any) => p.isObjectProperty());
+    if (objectProp && t.isIdentifier(objectProp.node.key)) {
+      const firstFunc = pathNode.findParent((p: any) => p.isFunction() && p !== pathNode);
+      const propFunc = objectProp.findParent((p: any) => p.isFunction());
+      if (firstFunc === propFunc) {
+        const propName = objectProp.node.key.name;
+        const parentDecl = objectProp.findParent((p: any) => p.isVariableDeclarator());
+        if (parentDecl && t.isIdentifier(parentDecl.node.id)) {
+          return `${parentDecl.node.id.name}.${propName}`;
+        }
+        const parentAssign = objectProp.findParent((p: any) => p.isAssignmentExpression());
+        if (parentAssign && t.isIdentifier(parentAssign.node.left)) {
+          return `${parentAssign.node.left.name}.${propName}`;
+        }
+      }
     }
 
     const parentDecl = pathNode.findParent((p: any) => p.isVariableDeclarator());
@@ -322,7 +348,36 @@ export default function (babel: any) {
             [t.stringLiteral(trackerId), init]
           )
         );
-        declPath.skip();
+      },
+
+      AssignmentExpression(assignPath: any, state: any) {
+        const left = assignPath.node.left;
+        const right = assignPath.node.right;
+        
+        if (assignPath.node.operator !== '=') return;
+        
+        // 偵測 this.xxx = yyy
+        if (
+          t.isMemberExpression(left) &&
+          t.isThisExpression(left.object) &&
+          t.isIdentifier(left.property)
+        ) {
+          const propName = left.property.name;
+          const classDecl = assignPath.findParent((p: any) => p.isClassDeclaration());
+          const className = classDecl && classDecl.node.id ? classDecl.node.id.name : 'UnknownClass';
+          const filePath = state.filePath;
+          const trackerId = `${filePath}::${className}::prop::${propName}`;
+          
+          assignPath.get('right').replaceWith(
+            t.callExpression(
+              t.memberExpression(
+                t.identifier('globalThis'),
+                t.identifier('__typeTracker')
+              ),
+              [t.stringLiteral(trackerId), right]
+            )
+          );
+        }
       }
     }
   };

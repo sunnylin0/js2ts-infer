@@ -12,6 +12,6 @@
   ],
   "trackerPort": 9002,
   "maxDepth": 5,
-  "confidenceThreshold": 3,
+  "confidenceThreshold": 1,
   "interfaceThreshold": 3
 }

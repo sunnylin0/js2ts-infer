@@ -403,8 +403,15 @@ export function runGlobalReversePropagation(project: Project) {
  *
  * @param project - ts-morph Project 實例
  */
-export function runGlobalForwardPropagation(project: Project) {
+export function runGlobalForwardPropagation(
+  project: Project,
+  typeDB: any,
+  config: any,
+  fileInterfaces: Map<string, Record<string, string>>,
+  inDir: string
+) {
   const sourceFiles = project.getSourceFiles();
+  const confidenceThreshold = config?.confidenceThreshold || 5;
 
   for (let round = 1; round <= 3; round++) {
     // 收集本輪需要更新的變數宣告與推導型別
@@ -412,6 +419,23 @@ export function runGlobalForwardPropagation(project: Project) {
 
     for (const sourceFile of sourceFiles) {
       if (sourceFile.isDeclarationFile()) continue;
+
+      let relPath = path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
+      if (relPath.includes('../')) {
+        const match = sourceFile.getFilePath().replace(/\\/g, '/').match(/\/src\/(.+)$/);
+        if (match) {
+          relPath = 'src/' + match[1];
+        } else {
+          relPath = path.basename(sourceFile.getFilePath());
+        }
+      }
+      const jsRelPath = relPath.replace(/\.ts$/, '.js');
+
+      let interfacesToDeclare = fileInterfaces.get(sourceFile.getFilePath());
+      if (!interfacesToDeclare) {
+        interfacesToDeclare = {};
+        fileInterfaces.set(sourceFile.getFilePath(), interfacesToDeclare);
+      }
 
       // 改用 getDescendantsOfKind 避免 tsquery 版本衝突
       const allVarDecls = sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration);
@@ -423,25 +447,81 @@ export function runGlobalForwardPropagation(project: Project) {
         const nameNode = decl.getNameNode();
         if (nameNode.getKind() !== SyntaxKind.Identifier) continue;
 
+        const varName = decl.getName();
         const init = decl.getInitializer();
         if (!init) continue;
 
         let typeText = '';
 
-        if (init.getKind() === SyntaxKind.NewExpression) {
-          // `new ClassName()` → 直接取類別名稱，最可靠
-          typeText = (init as any).getExpression().getText();
-        } else if (init.getKind() === SyntaxKind.ElementAccessExpression) {
-          // `arr[i]` → 取陣列元素型別（如 `Lines[]` → `Lines`）
-          const arrType = (init as any).getExpression().getType();
-          const elemType = arrType.getArrayElementType?.();
-          if (elemType) {
-            typeText = getCleanTypeText(elemType, project);
+        // 1. 嘗試查詢 typeDB 側錄
+        // 尋找此變數所在的最接近函數或方法
+        const parentClass = decl.getFirstAncestorByKind(SyntaxKind.ClassDeclaration);
+        const clsName = parentClass ? parentClass.getName() : undefined;
+
+        let fnNode = decl.getFirstAncestor(node => {
+          const kind = node.getKind();
+          return kind === SyntaxKind.FunctionDeclaration ||
+                 kind === SyntaxKind.MethodDeclaration ||
+                 kind === SyntaxKind.Constructor ||
+                 kind === SyntaxKind.ArrowFunction ||
+                 kind === SyntaxKind.FunctionExpression;
+        });
+
+        let funcName = 'global';
+        if (fnNode) {
+          const kind = fnNode.getKind();
+          if (kind === SyntaxKind.FunctionDeclaration) {
+            funcName = (fnNode as any).getName() || 'anonymous';
+          } else if (kind === SyntaxKind.MethodDeclaration) {
+            const mName = (fnNode as any).getName();
+            funcName = clsName ? `${clsName}.${mName}` : mName;
+          } else if (kind === SyntaxKind.Constructor) {
+            funcName = clsName ? `${clsName}.constructor` : 'constructor';
+          } else {
+            // ArrowFunction / FunctionExpression
+            const varDecl = fnNode.getFirstAncestorByKind(SyntaxKind.VariableDeclaration);
+            if (varDecl) {
+              funcName = varDecl.getName();
+            } else {
+              funcName = 'anonymous';
+            }
           }
-        } else {
-          // 一般 initializer：透過 TypeChecker 推導
-          const type = init.getType();
-          typeText = getCleanTypeText(type, project);
+        }
+
+        let dbRecord = typeDB[`${jsRelPath}::${funcName}::var::${varName}`] ||
+                       typeDB[`${relPath}::${funcName}::var::${varName}`];
+
+        if (!dbRecord && funcName.includes('.')) {
+          const shortFn = funcName.split('.').pop()!;
+          dbRecord = typeDB[`${jsRelPath}::${shortFn}::var::${varName}`] ||
+                     typeDB[`${relPath}::${shortFn}::var::${varName}`];
+        }
+
+        if (dbRecord && dbRecord.callCount >= confidenceThreshold) {
+          const baseName = `${varName.charAt(0).toUpperCase()}${varName.slice(1)}Type`;
+          const inferred = resolveParameterType(dbRecord, baseName, interfacesToDeclare, project);
+          if (inferred && inferred !== 'any' && inferred !== 'unknown') {
+            typeText = inferred;
+          }
+        }
+
+        // 2. 若 typeDB 沒有，採用原本的靜態推導
+        if (!typeText) {
+          if (init.getKind() === SyntaxKind.NewExpression) {
+            // `new ClassName()` → 直接取類別名稱，最可靠
+            typeText = (init as any).getExpression().getText();
+          } else if (init.getKind() === SyntaxKind.ElementAccessExpression) {
+            // `arr[i]` → 取陣列元素型別（如 `Lines[]` → `Lines`）
+            const arrType = (init as any).getExpression().getType();
+            const elemType = arrType.getArrayElementType?.();
+            if (elemType) {
+              typeText = getCleanTypeText(elemType, project);
+            }
+          } else {
+            // 一般 initializer：透過 TypeChecker 推導
+            const type = init.getType();
+            typeText = getCleanTypeText(type, project);
+          }
         }
 
         if (typeText && typeText !== 'any' && typeText !== 'unknown') {
@@ -493,7 +573,15 @@ export function runGlobalReturnTypePropagation(
   for (const sourceFile of sourceFiles) {
     if (sourceFile.isDeclarationFile()) continue;
 
-    const relPath = path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
+    let relPath = path.relative(inDir, sourceFile.getFilePath()).replace(/\\/g, '/');
+    if (relPath.includes('../')) {
+      const match = sourceFile.getFilePath().replace(/\\/g, '/').match(/\/src\/(.+)$/);
+      if (match) {
+        relPath = 'src/' + match[1];
+      } else {
+        relPath = path.basename(sourceFile.getFilePath());
+      }
+    }
 
     // 確保此檔案的 interfacesToDeclare 已存在（若無則建立空物件）
     let interfacesToDeclare = fileInterfaces.get(sourceFile.getFilePath());

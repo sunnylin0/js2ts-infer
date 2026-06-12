@@ -1,3 +1,4 @@
+import { parseCommon } from './parseCommon.js';
 /**
  * 蛇的核心邏輯類別 (Snake)
  * 處理身體移動、增長、自撞判定，並包含「輸入緩衝佇列」技術防止極速連續轉彎的反向自殺
@@ -20,18 +21,18 @@ export class Snake {
 
     // 初始移動方向：右
     this.direction = { x: 1, y: 0 };
-    
+
     // 輸入緩衝佇列，最多緩衝 2 個按鍵輸入
     this.inputBuffer = [];
-    
+
     // 暫存上次移動時被 pop 掉的尾巴，以利 grow() 時無縫加回
     this.lastPopped = null;
 
     // 方向向量對照表
     this.DIR_MAP = {
-      'up':    { x: 0, y: -1 },
-      'down':  { x: 0, y: 1 },
-      'left':  { x: -1, y: 0 },
+      'up': { x: 0, y: -1 },
+      'down': { x: 0, y: 1 },
+      'left': { x: -1, y: 0 },
       'right': { x: 1, y: 0 }
     };
   }
@@ -42,6 +43,9 @@ export class Snake {
    */
   handleKeydown(e) {
     let dir = null;
+    let log_keyname = function (keyname) {
+      return "你按下了" + parseCommon.toUpperCase(keyname);
+    }
     switch (e.key) {
       case 'w':
       case 'W':
@@ -64,7 +68,8 @@ export class Snake {
         dir = 'right';
         break;
     }
-
+    let log_keyname_str = log_keyname(dir);
+    console.log(log_keyname_str);
     if (dir) {
       e.preventDefault(); // 防止網頁捲動
       this.pushDirection(dir);
@@ -84,14 +89,14 @@ export class Snake {
 
     // 取得最新要比較的參考方向
     // 如果緩衝區有方向，則拿最新的；若無，則拿目前正前進的方向
-    const referenceDir = this.inputBuffer.length > 0 
-      ? this.inputBuffer[this.inputBuffer.length - 1] 
+    const referenceDir = this.inputBuffer.length > 0
+      ? this.inputBuffer[this.inputBuffer.length - 1]
       : this.direction;
 
     // 檢查推入方向是否與參考方向互為反方向 (180度)
     // 如果是反向，直接過濾掉以防自殺
-    const isOpposite = (targetDirVector.x + referenceDir.x === 0) && 
-                        (targetDirVector.y + referenceDir.y === 0);
+    const isOpposite = (targetDirVector.x + referenceDir.x === 0) &&
+      (targetDirVector.y + referenceDir.y === 0);
 
     if (!isOpposite) {
       this.inputBuffer.push(targetDirVector);
@@ -106,7 +111,7 @@ export class Snake {
     // 從輸入緩衝佇列首部彈出一個轉向指令
     if (this.inputBuffer.length > 0) {
       const nextDir = this.inputBuffer.shift();
-      
+
       // 二次安全閥：確認此指令非當前蛇身實際正反向 (當身體大於 1 時)
       let actualCurrentDir = this.direction;
       if (this.body.length > 1) {
@@ -116,8 +121,8 @@ export class Snake {
         };
       }
 
-      const isOpposite = (nextDir.x + actualCurrentDir.x === 0) && 
-                          (nextDir.y + actualCurrentDir.y === 0);
+      const isOpposite = (nextDir.x + actualCurrentDir.x === 0) &&
+        (nextDir.y + actualCurrentDir.y === 0);
 
       if (!isOpposite) {
         this.direction = nextDir;
@@ -133,7 +138,7 @@ export class Snake {
 
     // 插在陣列最前端
     this.body.unshift(newHead);
-    
+
     // 預先剪去尾巴並暫存
     this.lastPopped = this.body.pop();
 

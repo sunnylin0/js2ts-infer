@@ -112,8 +112,69 @@ export function annotateFunction(
       }
     } else {
       // 2. 查詢 typeDB 側錄
-      const trackerId = `${relPath}::${fnName}::param::${paramName}`;
-      const record = typeDB[trackerId];
+      const jsRelPath = relPath.replace(/\.ts$/, '.js');
+      let record = typeDB[`${jsRelPath}::${fnName}::param::${paramName}`] ||
+                   typeDB[`${relPath}::${fnName}::param::${paramName}`];
+
+      if (!record && fnName.includes('.')) {
+        const shortFn = fnName.split('.').pop()!;
+        record = typeDB[`${jsRelPath}::${shortFn}::param::${paramName}`] ||
+                 typeDB[`${relPath}::${shortFn}::param::${paramName}`];
+      }
+
+      // 3. 嘗試以 Callback 參數格式查詢 (例如 變數宣告為 const loop = (timestamp) => {} 時)
+      if (!record || record.callCount < confidenceThreshold) {
+        const parentVarDecl = fnNode.getParentIfKind(SyntaxKind.VariableDeclaration);
+        if (parentVarDecl) {
+          const varName = parentVarDecl.getName();
+          // 尋找這個變數宣告所在的最接近父函數，以決定它的 funcName
+          const parentClass = parentVarDecl.getFirstAncestorByKind(SyntaxKind.ClassDeclaration);
+          const clsName = parentClass ? parentClass.getName() : undefined;
+          
+          const outerFn = parentVarDecl.getFirstAncestor(node => {
+            const kind = node.getKind();
+            return kind === SyntaxKind.FunctionDeclaration ||
+                   kind === SyntaxKind.MethodDeclaration ||
+                   kind === SyntaxKind.Constructor ||
+                   kind === SyntaxKind.ArrowFunction ||
+                   kind === SyntaxKind.FunctionExpression;
+          });
+
+          let outerFuncName = 'global';
+          if (outerFn) {
+            const kind = outerFn.getKind();
+            if (kind === SyntaxKind.FunctionDeclaration) {
+              outerFuncName = (outerFn as any).getName() || 'anonymous';
+            } else if (kind === SyntaxKind.MethodDeclaration) {
+              const mName = (outerFn as any).getName();
+              outerFuncName = clsName ? `${clsName}.${mName}` : mName;
+            } else if (kind === SyntaxKind.Constructor) {
+              outerFuncName = clsName ? `${clsName}.constructor` : 'constructor';
+            } else {
+              const outerVar = outerFn.getFirstAncestorByKind(SyntaxKind.VariableDeclaration);
+              if (outerVar) {
+                outerFuncName = outerVar.getName();
+              } else {
+                outerFuncName = 'anonymous';
+              }
+            }
+          }
+
+          let cbRecord = typeDB[`${jsRelPath}::${outerFuncName}::var::${varName}::cb_param::${paramIdx}`] ||
+                         typeDB[`${relPath}::${outerFuncName}::var::${varName}::cb_param::${paramIdx}`];
+
+          // 支援無類別前綴 fallback 查詢
+          if (!cbRecord && outerFuncName.includes('.')) {
+            const shortOuter = outerFuncName.split('.').pop()!;
+            cbRecord = typeDB[`${jsRelPath}::${shortOuter}::var::${varName}::cb_param::${paramIdx}`] ||
+                       typeDB[`${relPath}::${shortOuter}::var::${varName}::cb_param::${paramIdx}`];
+          }
+
+          if (cbRecord && cbRecord.callCount >= confidenceThreshold) {
+            record = cbRecord;
+          }
+        }
+      }
 
       if (record && record.callCount >= confidenceThreshold) {
         // 信賴度足夠：推導型別並標注
@@ -230,8 +291,15 @@ export function resolveAndSetReturnType(
 
   // 2. AST 無法推導有效型別：使用 typeDB 兜底
   const confidenceThreshold = config.confidenceThreshold || 5;
-  const returnTrackerId = `${relPath}::${fnName}::return`;
-  const returnRecord = typeDB[returnTrackerId];
+  const jsRelPath = relPath.replace(/\.ts$/, '.js');
+  let returnRecord = typeDB[`${jsRelPath}::${fnName}::return`] ||
+                     typeDB[`${relPath}::${fnName}::return`];
+
+  if (!returnRecord && fnName.includes('.')) {
+    const shortFn = fnName.split('.').pop()!;
+    returnRecord = typeDB[`${jsRelPath}::${shortFn}::return`] ||
+                   typeDB[`${relPath}::${shortFn}::return`];
+  }
 
   if (returnRecord && returnRecord.callCount >= confidenceThreshold) {
     const sanitizedFnName = fnName.replace(/\./g, '');
