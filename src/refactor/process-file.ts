@@ -70,7 +70,8 @@ export function processFileRefactoring(
   refactorCjsToEsm(sourceFile);
 
   // ── 步驟 3：標注一般 FunctionDeclaration 的參數型別 ─────────────────────
-  const functions = sourceFile.query('FunctionDeclaration');
+  // 改用 ts-morph 原生 API（tsquery 有版本衝突，靜默失敗）
+  const functions = sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration);
   for (const fn of functions) {
     const fnName = fn.getName() || 'anonymous';
     // 先清除回傳型別，讓後續階段重新推導
@@ -79,7 +80,12 @@ export function processFileRefactoring(
   }
 
   // ── 步驟 4：處理每個 ClassDeclaration ───────────────────────────────────
-  const classes = sourceFile.query('ClassDeclaration');
+  // 改用 ts-morph 原生 API（tsquery 有版本衝突，靜默失敗）
+  const classes = sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration);
+
+  // 用於在 class loop 結束後一次性清理磥留的孤立注解（stmt.remove() 不移除 leading trivia）
+  const movedComments: string[] = [];
+
   for (const cls of classes) {
     const className = cls.getName();
 
@@ -90,20 +96,19 @@ export function processFileRefactoring(
     const classMethods = new Set(cls.getMethods().map((m: any) => m.getName()));
 
     // ── 4a：收集所有 this 賦值的屬性名（來自整個類別，非只限建構子）──────
+    // 用 getDescendantsOfKind 找所有 BinaryExpression，再手動過濾 this.xxx = yyy
     const properties = new Set<string>();
-    const thisAssignments = cls.query(
-      `BinaryExpression[operatorToken.kind=${SyntaxKind.EqualsToken}]:has(PropertyAccessExpression[expression.kind=${SyntaxKind.ThisKeyword}])`
+    const allBinaries = cls.getDescendantsOfKind(SyntaxKind.BinaryExpression);
+    const thisAssignments = allBinaries.filter(b =>
+      b.getOperatorToken().getKind() === SyntaxKind.EqualsToken &&
+      b.getLeft().getKind() === SyntaxKind.PropertyAccessExpression &&
+      (b.getLeft() as any).getExpression().getKind() === SyntaxKind.ThisKeyword
     );
     for (const binaryExpr of thisAssignments) {
-      const left = binaryExpr.getLeft();
-      if (
-        left.getKind() === SyntaxKind.PropertyAccessExpression &&
-        left.getExpression().getText() === 'this'
-      ) {
-        const name = left.getName();
-        if (name !== 'constructor') {
-          properties.add(name);
-        }
+      const left = binaryExpr.getLeft() as any;
+      const name = left.getName();
+      if (name !== 'constructor') {
+        properties.add(name);
       }
     }
 
@@ -113,26 +118,41 @@ export function processFileRefactoring(
       const ctorParams = ctor.getParameters().map((p: any) => p.getName());
 
       // 收集建構子內所有的局部變數名（避免提升含局部變數的賦值）
+      // 改用 ts-morph 原生 API，避免 tsquery 版本衝突靜默失敗
       const localVars = new Set<string>();
-      const ctorLocalDecls = ctor.query('VariableDeclaration');
+      const ctorLocalDecls = ctor.getDescendantsOfKind(SyntaxKind.VariableDeclaration);
       for (const decl of ctorLocalDecls) {
         localVars.add(decl.getName());
       }
 
       // 收集可安全提升的屬性（rightText 不依賴建構子參數或局部變數）
-      const propertiesToMigrate: { propName: string; rightText: string; commentText: string }[] = [];
+      const propertiesToMigrate: { propName: string; rightText: string; commentText: string; trailingComment: string }[] = [];
       const collectedPropNames = new Set<string>();
 
-      const ctorAssignments = ctor.query(
-        `BinaryExpression[operatorToken.kind=${SyntaxKind.EqualsToken}]:has(PropertyAccessExpression[expression.kind=${SyntaxKind.ThisKeyword}])`
+      // 同樣改用 getDescendantsOfKind 避免 tsquery 版本衝突
+      const ctorBinaries = ctor.getDescendantsOfKind(SyntaxKind.BinaryExpression);
+      const ctorAssignments = ctorBinaries.filter(b =>
+        b.getOperatorToken().getKind() === SyntaxKind.EqualsToken &&
+        b.getLeft().getKind() === SyntaxKind.PropertyAccessExpression &&
+        (b.getLeft() as any).getExpression().getKind() === SyntaxKind.ThisKeyword
       );
 
       for (const binary of ctorAssignments) {
         const stmt = binary.getFirstAncestorByKind(SyntaxKind.ExpressionStatement);
         // 只處理建構子 body 直接子語句（不處理嵌套 if 內的賦值）
-        if (!stmt || stmt.getParent() !== ctor.getBody()) continue;
+        // 注意：tsquery 包裝的節點每次可能回傳不同物件，不能用 !== 做參考比較，
+        // 改用 getPos() 比較位置，或檢查 parent 的 kind 是否為建構子的 Block
+        const ctorBody = ctor.getBody();
+        if (!stmt || !ctorBody) continue;
+        // 確認 stmt 的直接 parent 是 ctorBody（Block），而非嵌套 if/else 等區塊
+        const stmtParent = stmt.getParent();
+        if (
+          !stmtParent ||
+          stmtParent.getKind() !== SyntaxKind.Block ||
+          stmtParent.getPos() !== ctorBody.getPos()
+        ) continue;
 
-        const left = binary.getLeft();
+        const left = binary.getLeft() as any;
         const right = binary.getRight();
         const propName = left.getName();
         const rightText = right.getText();
@@ -162,15 +182,22 @@ export function processFileRefactoring(
         }
 
         if (isSafe && propName !== 'constructor') {
-          // 收集前導注解（Leading Comment Ranges），用於生成 JSDoc
+          // 收集前導注解（Leading Comment Ranges）
           const leadingCommentRanges = stmt.getLeadingCommentRanges();
           let commentText = '';
           if (leadingCommentRanges && leadingCommentRanges.length > 0) {
             commentText = leadingCommentRanges.map((r: any) => r.getText()).join('\n');
           }
 
+          // 收集行尾 inline 注解（Trailing Comment Ranges），例如 "// 每個 step 的毫秒數"
+          const trailingCommentRanges = stmt.getTrailingCommentRanges();
+          let trailingComment = '';
+          if (trailingCommentRanges && trailingCommentRanges.length > 0) {
+            trailingComment = trailingCommentRanges.map((r: any) => r.getText()).join(' ');
+          }
+
           collectedPropNames.add(propName);
-          propertiesToMigrate.push({ propName, rightText, commentText });
+          propertiesToMigrate.push({ propName, rightText, commentText, trailingComment });
         }
       }
 
@@ -191,9 +218,10 @@ export function processFileRefactoring(
           type: propType,
           hasQuestionToken: false
         };
-        // 若有注解，轉換為 JSDoc 格式
-        if (item.commentText) {
-          struct.docs = [cleanCommentToJSDoc(item.commentText)];
+        // 合併 leading block comment 與 trailing inline comment 為 JSDoc
+        const allComments = [item.commentText, item.trailingComment].filter(Boolean).join('\n');
+        if (allComments) {
+          struct.docs = [cleanCommentToJSDoc(allComments)];
         }
         return struct;
       });
@@ -208,28 +236,37 @@ export function processFileRefactoring(
       });
 
       // ── 4e：移除建構子中已提升的 this.xxx = yyy 語句 ─────────────────
+      // 使用 stmt.remove() （不會使其他節點失效）
+      // 前導注解的清理待 class loop 結束後由 movedComments 陣列統一處理
       const migratedPropsSet = new Set(propertiesToMigrate.map(x => x.propName));
+
+      // 收集已移動的前導注解文字，供後續清理
+      propertiesToMigrate.forEach(item => {
+        if (item.commentText) {
+          // commentText 可能含多行，拆分後分別加入
+          item.commentText.split('\n').forEach(line => {
+            const t = line.trim();
+            if (t) movedComments.push(t);
+          });
+        }
+      });
+
+      // 從後往前依序移除語句（不包含前導注解）
       const currentStatements = ctor.getStatements();
-      // 從後往前刪除，避免索引偏移問題
       for (let i = currentStatements.length - 1; i >= 0; i--) {
         const stmt = currentStatements[i] as any;
-        if (stmt.getKind() === SyntaxKind.ExpressionStatement) {
-          const expr = stmt.getExpression();
-          if (expr.getKind() === SyntaxKind.BinaryExpression) {
-            const left = expr.getLeft();
-            if (
-              left.getKind() === SyntaxKind.PropertyAccessExpression &&
-              expr.getOperatorToken().getText() === '='
-            ) {
-              const propAccess = left;
-              if (propAccess.getExpression().getText() === 'this') {
-                const propName = propAccess.getName();
-                if (migratedPropsSet.has(propName)) {
-                  stmt.remove();
-                }
-              }
-            }
-          }
+        if (stmt.getKind() !== SyntaxKind.ExpressionStatement) continue;
+        const expr = stmt.getExpression();
+        if (expr.getKind() !== SyntaxKind.BinaryExpression) continue;
+        const left = expr.getLeft() as any;
+        if (
+          left.getKind() !== SyntaxKind.PropertyAccessExpression ||
+          expr.getOperatorToken().getText() !== '=' ||
+          left.getExpression().getKind() !== SyntaxKind.ThisKeyword
+        ) continue;
+        const propName = left.getName();
+        if (migratedPropsSet.has(propName)) {
+          stmt.remove(); // 僅移除語句本身，保留前導注解（稍後清理）
         }
       }
     }
@@ -298,5 +335,23 @@ export function processFileRefactoring(
     }
 
     // 注：回傳型別標注統一在後續的全域 Stage 3 進行，此處不處理
+  }
+
+  // ── 後處理：清理 constructor 內殘留的孤立注解行 ─────────────────────────
+  // stmt.remove() 不移除 leading trivia，已移至 class 欄位 JSDoc 的注解會殘留
+  // 所有 class 處理完成後，一次性用文字替換移除這些特定注解行
+  if (movedComments.length > 0) {
+    let text = sourceFile.getFullText();
+    const originalText = text;
+    for (const comment of movedComments) {
+      const trimmed = comment.trim();
+      if (!trimmed) continue;
+      const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // 移除該注解行（包含前導空白與換行符）
+      text = text.replace(new RegExp('[ \\t]*' + escaped + '[ \\t]*(?:\\r?\\n|$)', 'g'), '');
+    }
+    if (text !== originalText) {
+      sourceFile.replaceWithText(text);
+    }
   }
 }

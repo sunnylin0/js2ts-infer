@@ -203,4 +203,18 @@
 - **全面加入繁體中文 JSDoc 注解**：所有函式、區段、參數、傳播策略、降級策略皆有詳細中文說明。
 - **驗證**：`pnpm run build` 通過（tsc + ESM 雙編譯 + build-post.js）。
 
+---
 
+## [2026-06-12] v1.7.1 - 修復 Class Field Hoisting 因 tsquery 版本衝突靜默失敗
+
+- **根本原因診斷**：
+  - `@phenomnomnominal/tsquery` 使用的 TypeScript 實例（v6.0.3）與 `ts-morph` 內嵌實例（v5.4.2）不同，即使 `tsquery-ext.ts` 已嘗試 patch `require.cache`，tsquery 仍然無法正確遍歷 ts-morph 建立的 AST 節點，導致所有 `.query()` 呼叫靜默回傳空陣列。
+  - 具體影響：`processFileRefactoring` 中的 `ClassDeclaration` 選取、`BinaryExpression` 搜尋及 `FunctionDeclaration` 遍歷全部失效，造成 constructor 屬性提升（Class Field Hoisting）不再運作。
+
+- **修復方案（`src/refactor/process-file.ts`）**：
+  - `sourceFile.query('FunctionDeclaration')` → `getDescendantsOfKind(SyntaxKind.FunctionDeclaration)`
+  - `sourceFile.query('ClassDeclaration')` → `getDescendantsOfKind(SyntaxKind.ClassDeclaration)`
+  - `cls.query('BinaryExpression[...]')` / `ctor.query(...)` → `getDescendantsOfKind(SyntaxKind.BinaryExpression).filter(...)` 手動判斷 `EqualsToken` + `ThisKeyword`
+  - constructor body 直接子節點比對由 JS 物件參考（`!==`）改為 `Block kind + getPos()` 比較，避免 nested if/else 內賦值被誤判。
+
+- **驗證**：`3_Snake` 執行 `generate` 後 `gameEngine.ts` 成功恢復所有 `this.xxx` 提升至 class 頂部，含 JSDoc 注解轉換。

@@ -298,7 +298,8 @@ export function runGlobalReversePropagation(project: Project) {
     for (const sourceFile of sourceFiles) {
       if (sourceFile.isDeclarationFile()) continue;
 
-      const allCalls = sourceFile.query('CallExpression');
+      // 改用 getDescendantsOfKind 避免 tsquery 版本衝突靜默失敗
+      const allCalls = sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression);
       for (const call of allCalls) {
         // 解析呼叫目標的宣告節點
         const decl = resolveCalleeDeclaration(call, project);
@@ -412,10 +413,11 @@ export function runGlobalForwardPropagation(project: Project) {
     for (const sourceFile of sourceFiles) {
       if (sourceFile.isDeclarationFile()) continue;
 
-      const allVarDecls = sourceFile.query('VariableDeclaration');
+      // 改用 getDescendantsOfKind 避免 tsquery 版本衝突
+      const allVarDecls = sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration);
       for (const decl of allVarDecls) {
         // 跳過已有型別標注的宣告
-        if (decl.getTypeNode()) continue;
+        if (typeof (decl as any).getTypeNode === 'function' && (decl as any).getTypeNode()) continue;
 
         // 跳過解構宣告（非簡單識別子）
         const nameNode = decl.getNameNode();
@@ -516,19 +518,17 @@ export function runGlobalReturnTypePropagation(
     });
 
     // 箭頭函數 / 函數表達式（來自變數宣告）
-    const fnVarDecls = sourceFile.query('VariableDeclaration:has(ArrowFunction, FunctionExpression)');
-    for (const decl of fnVarDecls) {
-      if (decl.getKind() === SyntaxKind.VariableDeclaration) {
+    // 算法：進入每個變數宣告節點，判斷其 initializer 是否為 ArrowFunction / FunctionExpression
+    sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach(decl => {
         const init = decl.getInitializer();
         if (
           init &&
           (init.getKind() === SyntaxKind.ArrowFunction ||
             init.getKind() === SyntaxKind.FunctionExpression)
         ) {
-          allFns.push({ node: init, name: decl.getName() });
-        }
+        allFns.push({ node: init, name: decl.getName() });
       }
-    }
+    });
 
     // 對每個函數節點推導並注入回傳型別
     for (const fnItem of allFns) {
