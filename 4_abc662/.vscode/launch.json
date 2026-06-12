@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+		{
+			"type": "chrome",
+			"request": "launch",
+			"name": "localhost (Chrome)",
+			"runtimeExecutable": "pnpm",
+			// 👇 確保執行的指令是 "run dev" 或你的啟動腳本
+			"runtimeArgs": [
+				"run",
+				"dev"
+			],
+			"url": "http://localhost:8080",
+			"webRoot": "${workspaceFolder}"
+		}
+  ]
+}

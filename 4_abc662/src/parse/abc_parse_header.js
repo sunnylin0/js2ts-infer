@@ -2,40 +2,42 @@ import parseCommon from './abc_common';
 import parseDirective from './abc_parse_directive';
 import parseKeyVoice from './abc_parse_key_voice';
 export default class ParseHeader {
-    constructor(tokenizer, warn, multilineVars, tune, tuneBuilder) {
-        this.tempoString = {
-            larghissimo: 20,
-            adagissimo: 24,
-            sostenuto: 28,
-            grave: 32,
-            largo: 40,
-            lento: 50,
-            larghetto: 60,
-            adagio: 68,
-            adagietto: 74,
-            andante: 80,
-            andantino: 88,
-            "marcia moderato": 84,
-            "andante moderato": 100,
-            moderato: 112,
-            allegretto: 116,
-            "allegro moderato": 120,
-            allegro: 126,
-            animato: 132,
-            agitato: 140,
-            veloce: 148,
-            "mosso vivo": 156,
-            vivace: 164,
-            vivacissimo: 172,
-            allegrissimo: 176,
-            presto: 184,
-            prestissimo: 210,
-        };
-        this.metaTextHeaders = {
-            A: 'author', B: 'book', C: 'composer', D: 'discography', F: 'url', G: 'group', I: 'instruction',
-            N: 'notes', O: 'origin', R: 'rhythm', S: 'source', W: 'unalignedWords', Z: 'transcription'
-        };
-        this.reset(tokenizer, warn, multilineVars, tune, tuneBuilder);
+    tempoString = {
+        larghissimo: 20,
+        adagissimo: 24,
+        sostenuto: 28,
+        grave: 32,
+        largo: 40,
+        lento: 50,
+        larghetto: 60,
+        adagio: 68,
+        adagietto: 74,
+        andante: 80,
+        andantino: 88,
+        "marcia moderato": 84,
+        "andante moderato": 100,
+        moderato: 112,
+        allegretto: 116,
+        "allegro moderato": 120,
+        allegro: 126,
+        animato: 132,
+        agitato: 140,
+        veloce: 148,
+        "mosso vivo": 156,
+        vivace: 164,
+        vivacissimo: 172,
+        allegrissimo: 176,
+        presto: 184,
+        prestissimo: 210,
+    };
+    metaTextHeaders = {
+        A: 'author', B: 'book', C: 'composer', D: 'discography', F: 'url', G: 'group', I: 'instruction',
+        N: 'notes', O: 'origin', R: 'rhythm', S: 'source', W: 'unalignedWords', Z: 'transcription'
+    };
+
+    constructor(_tokenizer, _warn, _multilineVars, _tune, _tuneBuilder) {
+
+        this.reset(_tokenizer, _warn, _multilineVars, _tune, _tuneBuilder);
     }
     reset(tokenizer, warn, multilineVars, tune, tuneBuilder) {
         this.tokenizer = tokenizer;

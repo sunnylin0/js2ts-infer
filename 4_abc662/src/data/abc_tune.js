@@ -22,6 +22,7 @@ export default class Tune {
         this.lineNum = 0;
         this.runningFonts = {};
         this.tempoLocations = {};
+        this.engraver = {};
         this.reset();
     }
     reset() {

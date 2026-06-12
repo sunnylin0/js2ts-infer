@@ -1,98 +1,102 @@
 import { noteToMidi, midiToNote } from '../../synth/note-to-midi';
 export default class TabNote {
-    constructor(note, clefTranspose) {
-        this.pitchAltered = 0;
-        this.isSharp = false;
-        this.isKeySharp = false;
-        this.isDouble = false;
-        this.isAltered = false;
-        this.isFlat = false;
-        this.isKeyFlat = false;
-        this.natural = null;
-        this.quarter = null;
-        let pitch = noteToMidi(note);
-        if (clefTranspose)
-            pitch += clefTranspose;
-        let newNote = midiToNote(pitch);
-        let isFlat = false;
-        let isSharp = false;
-        let isAltered = false;
-        let natural = null;
-        let quarter = null;
-        let isDouble = false;
-        let acc = 0;
+    // 💡 1. 固定初始值的變數全部移到外面宣告
+    pitchAltered = 0;
+    isSharp = false;
+    isKeySharp = false;
+    isDouble = false;
+    isAltered = false;
+    isFlat = false;
+    isKeyFlat = false;
+    natural = null;
+    quarter = null;
+    acc = 0;
+
+    // 這些是後面會動態賦值的屬性，在外面先宣告可以讓類別結構更清晰
+    pitch;
+    name;
+    hasComma = 0;
+    isQuoted = 0;
+    isLower = false;
+    courtesy = false;
+
+    constructor(note, clefTranspose = 0) {
+        // 💡 2. constructor 只留下需要動態計算的邏輯
+        this.pitch = noteToMidi(note) + clefTranspose;
+
+        let newNote = note;
+
+        // 解析 ABC 記譜法的變音符號 (Accidentals)
         if (note.startsWith('_')) {
-            isFlat = true;
-            acc = -1;
+            this.isFlat = true;
+            this.acc = -1;
             if (note[1] === '/') {
-                isFlat = false;
-                quarter = "v";
-                acc = 0;
-            }
-            else if (note[1] === '_') {
-                isDouble = true;
-                acc -= 1;
-            }
-        }
-        else if (note.startsWith('^')) {
-            isSharp = true;
-            acc = +1;
-            if (note[1] === '/') {
-                isSharp = false;
-                quarter = "^";
-                acc = 0;
-            }
-            else if (note[1] === '^') {
-                isDouble = true;
-                acc += 1;
-            }
-        }
-        else if (note.startsWith('=')) {
-            natural = true;
-            acc = 0;
-        }
-        isAltered = isFlat || isSharp || (quarter != null);
-        if (isAltered || natural) {
-            if ((quarter != null) || (isDouble)) {
+                this.isFlat = false;
+                this.quarter = "v";
+                this.acc = 0;
                 newNote = note.slice(2);
-            }
-            else {
+            } else if (note[1] === '_') {
+                this.isDouble = true;
+                this.acc = -2;
+                newNote = note.slice(2);
+            } else {
                 newNote = note.slice(1);
             }
+        } else if (note.startsWith('^')) {
+            this.isSharp = true;
+            this.acc = 1;
+            if (note[1] === '/') {
+                this.isSharp = false;
+                this.quarter = "^";
+                this.acc = 0;
+                newNote = note.slice(2);
+            } else if (note[1] === '^') {
+                this.isDouble = true;
+                this.acc = 2;
+                newNote = note.slice(2);
+            } else {
+                newNote = note.slice(1);
+            }
+        } else if (note.startsWith('=')) {
+            this.natural = true;
+            this.acc = 0;
+            newNote = note.slice(1);
         }
-        const hasComma = (newNote.match(/,/g) || []).length;
-        const hasQuote = (newNote.match(/'/g) || []).length;
-        this.pitch = pitch;
-        this.name = newNote;
-        this.acc = acc;
-        this.isSharp = isSharp;
-        this.isDouble = isDouble;
-        this.isAltered = isAltered;
-        this.isFlat = isFlat;
-        this.natural = natural;
-        this.quarter = quarter;
-        this.isLower = (this.name === this.name.toLowerCase());
-        this.name = this.name[0].toUpperCase();
-        this.hasComma = hasComma;
-        this.isQuoted = hasQuote;
-        const currentMidiNote = midiToNote(pitch);
-        this.courtesy = note === currentMidiNote; // Simplified approximation of original logic
+
+        this.isAltered = this.isFlat || this.isSharp || (this.quarter != null);
+
+        // 解析音高名稱與八度記號 (, 與 ')
+        this.hasComma = (newNote.match(/,/g) || []).length;
+        this.isQuoted = (newNote.match(/'/g) || []).length;
+
+        // 移除八度記號，留下純音名
+        const pureName = newNote.replace(/[',]/g, '');
+        this.isLower = (pureName === pureName.toLowerCase());
+        this.name = pureName[0].toUpperCase();
+
+        // 禮貌記號 (Courtesy Accidental) 判斷
+        this.courtesy = note === midiToNote(this.pitch);
     }
+
     clone() {
         const newTabNote = new TabNote(this.emit());
-        newTabNote.pitch = this.pitch;
-        newTabNote.hasComma = this.hasComma;
-        newTabNote.isLower = this.isLower;
-        newTabNote.isQuoted = this.isQuoted;
-        newTabNote.isSharp = this.isSharp;
-        newTabNote.isKeySharp = this.isKeySharp;
-        newTabNote.isFlat = this.isFlat;
-        newTabNote.isKeyFlat = this.isKeyFlat;
+        Object.assign(newTabNote, {
+            pitch: this.pitch,
+            hasComma: this.hasComma,
+            isLower: this.isLower,
+            isQuoted: this.isQuoted,
+            isSharp: this.isSharp,
+            isKeySharp: this.isKeySharp,
+            isFlat: this.isFlat,
+            isKeyFlat: this.isKeyFlat
+        });
         return newTabNote;
     }
+
     sameNoteAs(note) {
         return note.pitch === this.pitch;
     }
+
     isLowerThan(note) {
         return note.pitch > this.pitch;
     }
@@ -100,44 +104,26 @@ export default class TabNote {
         if (this.isAltered || this.natural)
             return;
         const upperName = this.name.toUpperCase();
+        // 優先處理小節內臨時記號
         if (measureAccidentals[upperName]) {
-            switch (measureAccidentals[upperName]) {
-                case "__":
-                    this.acc = -2;
-                    this.pitchAltered = -2;
-                    break;
-                case "_":
-                    this.acc = -1;
-                    this.pitchAltered = -1;
-                    break;
-                case "=":
-                    this.acc = 0;
-                    this.pitchAltered = 0;
-                    break;
-                case "^":
-                    this.acc = 1;
-                    this.pitchAltered = 1;
-                    break;
-                case "^^":
-                    this.acc = 2;
-                    this.pitchAltered = 2;
-                    break;
-            }
+            const accKey = measureAccidentals[upperName]
+            const accMapping = { "__": -2, "_": -1, "=": 0, "^": 1, "^^^": 2 };
+            const alteredValue = accMapping[accKey] ?? 0;
+            this.acc = alteredValue;
+            this.pitchAltered = alteredValue;
+            return;
         }
         else if (accidentals) {
-            for (let i = 0; i < accidentals.length; i++) {
-                const curAcc = accidentals[i];
-                if (upperName === curAcc.note.toUpperCase()) {
-                    if (curAcc.acc === 'flat') {
-                        this.acc = -1;
-                        this.isKeyFlat = true;
-                        this.pitchAltered = -1;
-                    }
-                    else if (curAcc.acc === 'sharp') {
-                        this.acc = 1;
-                        this.isKeySharp = true;
-                        this.pitchAltered = 1;
-                    }
+            const target = accidentals.find(curAcc => upperName === curAcc.note.toUpperCase());
+            if (target) {
+                if (target.acc === 'flat') {
+                    this.acc = -1;
+                    this.isKeyFlat = true;
+                    this.pitchAltered = -1;
+                } else if (target.acc === 'sharp') {
+                    this.acc = 1;
+                    this.isKeySharp = true;
+                    this.pitchAltered = 1;
                 }
             }
         }
@@ -166,40 +152,35 @@ export default class TabNote {
         const note = midiToNote(this.pitch - 1 + this.pitchAltered);
         return new TabNote(note);
     }
-    emitNoAccidentals() {
-        let returned = this.name;
-        if (this.isLower)
-            returned = returned.toLowerCase();
-        for (let i = 0; i < this.isQuoted; i++)
-            returned += "'";
-        for (let j = 0; j < this.hasComma; j++)
-            returned += ",";
-        return returned;
+    // 抽取共用的純音名與八度後綴邏輯
+    _getBaseNoteString() {
+        let baseName = this.isLower ? this.name.toLowerCase() : this.name;
+        return baseName + "'".repeat(this.isQuoted) + ",".repeat(this.hasComma);
     }
+
+    emitNoAccidentals() {
+        return this._getBaseNoteString();
+    }
+
+
+
+    /**
+     * 還原成原始的 ABC 記譜法字串
+     * @returns {string}
+     */
     emit() {
-        let returned = this.name;
-        if (this.isSharp || this.isKeySharp) {
-            returned = '^' + returned;
-            if (this.isDouble)
-                returned = '^' + returned;
-        }
-        if (this.isFlat || this.isKeyFlat) {
-            returned = '_' + returned;
-            if (this.isDouble)
-                returned = '_' + returned;
-        }
+        let prefix = '';
+
         if (this.quarter) {
-            returned = (this.quarter === "^" ? "^/" : "_/") + returned;
+            prefix = this.quarter === "^" ? "^/" : "_/";
+        } else if (this.natural) {
+            prefix = '=';
+        } else if (this.isSharp || this.isKeySharp) {
+            prefix = this.isDouble ? '^^' : '^';
+        } else if (this.isFlat || this.isKeyFlat) {
+            prefix = this.isDouble ? '__' : '_';
         }
-        if (this.natural)
-            returned = '=' + returned;
-        for (let i = 1; i <= this.hasComma; i++)
-            returned += ',';
-        if (this.isLower) {
-            returned = returned.toLowerCase();
-            for (let j = 1; j <= this.isQuoted; j++)
-                returned += "'";
-        }
-        return returned;
+
+        return prefix + this._getBaseNoteString();
     }
 }

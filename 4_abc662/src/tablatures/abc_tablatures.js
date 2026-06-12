@@ -22,6 +22,12 @@ const abcTablatures = {
             tune.warnings = [msg];
         }
     },
+    /**
+     * @param {Tune} tune
+     * @param {number} tuneNumber
+     * @param {any} params
+     * @returns {any}
+     */
     preparePlugins: function (tune, tuneNumber, params) {
         if (!this.inited) {
             this.register(AbcStringTab());

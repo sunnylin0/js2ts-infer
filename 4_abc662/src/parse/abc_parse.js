@@ -11,315 +11,9 @@ export default class Parse {
     constructor() {
         this.wordsContinuation = '';
         this.symbolContinuation = '';
-        this.addWarning = (str) => {
-            if (!this.multilineVars.warnings)
-                this.multilineVars.warnings = [];
-            this.multilineVars.warnings.push(str);
-        };
-        this.addWarningObject = (warningObject) => {
-            if (!this.multilineVars.warningObjects)
-                this.multilineVars.warningObjects = [];
-            this.multilineVars.warningObjects.push(warningObject);
-        };
-        this.encode = (str) => {
-            let ret = str.replace(/\x12/g, ' ');
-            ret = ret.replace(/&/g, '&amp;');
-            ret = ret.replace(/</g, '&lt;');
-            return ret.replace(/>/g, '&gt;');
-        };
-        this.warn = (str, line, col_num) => {
-            if (!line)
-                line = " ";
-            let bad_char = line[col_num];
-            if (bad_char === ' ' || !bad_char)
-                bad_char = "SPACE";
-            const clean_line = this.encode(line.substring(col_num - 64, col_num)) + '<span style="text-decoration:underline;font-size:1.3em;font-weight:bold;">' + bad_char + '</span>' + this.encode(line.substring(col_num + 1).substring(0, 64));
-            this.addWarning("Music Line:" + this.tokenizer.lineIndex + ":" + (col_num + 1) + ': ' + str + ":  " + clean_line);
-            this.addWarningObject({ message: str, line: line, startChar: this.multilineVars.iChar + col_num, column: col_num });
-        };
-        this.addWords = (line, words) => {
-            if (words.indexOf('\x12') >= 0) {
-                this.wordsContinuation += words;
-                return;
-            }
-            words = this.wordsContinuation + words;
-            this.wordsContinuation = '';
-            if (!line) {
-                this.warn("Can't add words before the first line of music", line, 0);
-                return;
-            }
-            words = parseCommon.strip(words);
-            if (words[words.length - 1] !== '-')
-                words = words + ' ';
-            const word_list = [];
-            let last_divider = 0;
-            let replace = false;
-            const addWord = (i) => {
-                let word = parseCommon.strip(words.substring(last_divider, i));
-                word = word.replace(/\\([-_*|~])/g, '$1');
-                last_divider = i + 1;
-                if (word.length > 0) {
-                    if (replace)
-                        word = word.replace(/~/g, ' ');
-                    let div = words[i];
-                    if (div !== '_' && div !== '-')
-                        div = ' ';
-                    word_list.push({ syllable: this.tokenizer.translateString(word), divider: div });
-                    replace = false;
-                    return true;
-                }
-                return false;
-            };
-            let escNext = false;
-            for (let i = 0; i < words.length; i++) {
-                switch (words[i]) {
-                    case ' ':
-                    case '\x12':
-                        addWord(i);
-                        break;
-                    case '-':
-                        if (!escNext && !addWord(i) && word_list.length > 0) {
-                            parseCommon.last(word_list).divider = '-';
-                            word_list.push({ skip: true, to: 'next' });
-                        }
-                        break;
-                    case '_':
-                        if (!escNext) {
-                            addWord(i);
-                            word_list.push({ skip: true, to: 'slur' });
-                        }
-                        break;
-                    case '*':
-                        if (!escNext) {
-                            addWord(i);
-                            word_list.push({ skip: true, to: 'next' });
-                        }
-                        break;
-                    case '|':
-                        if (!escNext) {
-                            addWord(i);
-                            word_list.push({ skip: true, to: 'bar' });
-                        }
-                        break;
-                    case '~':
-                        if (!escNext) {
-                            replace = true;
-                        }
-                        break;
-                }
-                escNext = words[i] === '\\';
-            }
-            let inSlur = false;
-            line.forEach((el) => {
-                if (word_list.length !== 0) {
-                    if (word_list[0].skip) {
-                        switch (word_list[0].to) {
-                            case 'next':
-                                if (el.el_type === 'note' && el.pitches !== null && !inSlur)
-                                    word_list.shift();
-                                break;
-                            case 'slur':
-                                if (el.el_type === 'note' && el.pitches !== null)
-                                    word_list.shift();
-                                break;
-                            case 'bar':
-                                if (el.el_type === 'bar')
-                                    word_list.shift();
-                                break;
-                        }
-                        if (el.el_type !== 'bar') {
-                            if (el.lyric === undefined)
-                                el.lyric = [{ syllable: "", divider: " " }];
-                            else
-                                el.lyric.push({ syllable: "", divider: " " });
-                        }
-                    }
-                    else {
-                        if (el.el_type === 'note' && el.rest === undefined && !inSlur) {
-                            const lyric = word_list.shift();
-                            if (lyric.syllable)
-                                lyric.syllable = lyric.syllable.replace(/ +/g, '\xA0');
-                            if (el.lyric === undefined)
-                                el.lyric = [lyric];
-                            else
-                                el.lyric.push(lyric);
-                        }
-                    }
-                }
-            });
-        };
-        this.addSymbols = (line, words) => {
-            if (words.indexOf('\x12') >= 0) {
-                this.symbolContinuation += words;
-                return;
-            }
-            words = this.symbolContinuation + words;
-            this.symbolContinuation = '';
-            if (!line) {
-                this.warn("Can't add symbols before the first line of music", line, 0);
-                return;
-            }
-            words = parseCommon.strip(words);
-            if (words[words.length - 1] !== '-')
-                words = words + ' ';
-            const word_list = [];
-            let last_divider = 0;
-            let replace = false;
-            const addWord = (i) => {
-                let word = parseCommon.strip(words.substring(last_divider, i));
-                last_divider = i + 1;
-                if (word.length > 0) {
-                    if (replace)
-                        word = word.replace(/~/g, ' ');
-                    let div = words[i];
-                    if (div !== '_' && div !== '-')
-                        div = ' ';
-                    word_list.push({ syllable: this.tokenizer.translateString(word), divider: div });
-                    replace = false;
-                    return true;
-                }
-                return false;
-            };
-            for (let i = 0; i < words.length; i++) {
-                switch (words[i]) {
-                    case ' ':
-                    case '\x12':
-                        addWord(i);
-                        break;
-                    case '-':
-                        if (!addWord(i) && word_list.length > 0) {
-                            parseCommon.last(word_list).divider = '-';
-                            word_list.push({ skip: true, to: 'next' });
-                        }
-                        break;
-                    case '_':
-                        addWord(i);
-                        word_list.push({ skip: true, to: 'slur' });
-                        break;
-                    case '*':
-                        addWord(i);
-                        word_list.push({ skip: true, to: 'next' });
-                        break;
-                    case '|':
-                        addWord(i);
-                        word_list.push({ skip: true, to: 'bar' });
-                        break;
-                    case '~':
-                        replace = true;
-                        break;
-                }
-            }
-            let inSlur = false;
-            line.forEach((el) => {
-                if (word_list.length !== 0) {
-                    if (word_list[0].skip) {
-                        switch (word_list[0].to) {
-                            case 'next':
-                                if (el.el_type === 'note' && el.pitches !== null && !inSlur)
-                                    word_list.shift();
-                                break;
-                            case 'slur':
-                                if (el.el_type === 'note' && el.pitches !== null)
-                                    word_list.shift();
-                                break;
-                            case 'bar':
-                                if (el.el_type === 'bar')
-                                    word_list.shift();
-                                break;
-                        }
-                    }
-                    else {
-                        if (el.el_type === 'note' && el.rest === undefined && !inSlur) {
-                            const lyric = word_list.shift();
-                            if (el.lyric === undefined)
-                                el.lyric = [lyric];
-                            else
-                                el.lyric.push(lyric);
-                        }
-                    }
-                }
-            });
-        };
-        this.parseLine = (line) => {
-            if (parseCommon.startsWith(line, '%%')) {
-                const err = parseDirective.addDirective(line.substring(2));
-                if (err)
-                    this.warn(err, line, 2);
-                return;
-            }
-            let i = line.indexOf('%');
-            if (i >= 0)
-                line = line.substring(0, i);
-            line = line.replace(/\s+$/, '');
-            if (line.length === 0)
-                return;
-            if (this.wordsContinuation) {
-                this.addWords(this.tuneBuilder.getCurrentVoice(), line.substring(2));
-                return;
-            }
-            if (this.symbolContinuation) {
-                this.addSymbols(this.tuneBuilder.getCurrentVoice(), line.substring(2));
-                return;
-            }
-            if (line.length < 2 || line[1] !== ':' || this.music.lineContinuation) {
-                this.music.parseMusic(line);
-                return;
-            }
-            const ret = this.header.parseHeader(line);
-            if (ret.regular)
-                this.music.parseMusic(line);
-            if (ret.newline)
-                this.music.startNewLine();
-            if (ret.words)
-                this.addWords(this.tuneBuilder.getCurrentVoice(), line.substring(2));
-            if (ret.symbols)
-                this.addSymbols(this.tuneBuilder.getCurrentVoice(), line.substring(2));
-        };
-        this.appendLastMeasure = (voice, nextVoice) => {
-            voice.push({
-                el_type: 'hint'
-            });
-            for (let i = 0; i < nextVoice.length; i++) {
-                const element = nextVoice[i];
-                const hint = Object.assign({}, element);
-                voice.push(hint);
-                if (element.el_type === 'bar')
-                    return;
-            }
-        };
-        this.addHintMeasure = (staff, nextStaff) => {
-            for (let i = 0; i < staff.length; i++) {
-                const stave = staff[i];
-                const nextStave = nextStaff[i];
-                if (nextStave) {
-                    for (let j = 0; j < nextStave.voices.length; j++) {
-                        const nextVoice = nextStave.voices[j];
-                        const voice = stave.voices[j];
-                        if (voice) {
-                            this.appendLastMeasure(voice, nextVoice);
-                        }
-                    }
-                }
-            }
-        };
-        this.addHintMeasures = () => {
-            for (let i = 0; i < this.tune.lines.length; i++) {
-                const line = this.tune.lines[i].staff;
-                if (line) {
-                    let j = i + 1;
-                    while (j < this.tune.lines.length && this.tune.lines[j].staff === undefined)
-                        j++;
-                    if (j < this.tune.lines.length) {
-                        const nextLine = this.tune.lines[j].staff;
-                        this.addHintMeasure(line, nextLine);
-                    }
-                }
-            }
-        };
+
         this.tune = new Tune();
         this.tuneBuilder = new TuneBuilder(this.tune);
-        this.wordsContinuation = '';
-        this.symbolContinuation = '';
         this.multilineVars = {
             reset: () => {
                 for (const property in this.multilineVars) {
@@ -445,6 +139,311 @@ export default class Parse {
             },
         };
     }
+    addWarning = (str) => {
+        if (!this.multilineVars.warnings)
+            this.multilineVars.warnings = [];
+        this.multilineVars.warnings.push(str);
+    };
+    addWarningObject = (warningObject) => {
+        if (!this.multilineVars.warningObjects)
+            this.multilineVars.warningObjects = [];
+        this.multilineVars.warningObjects.push(warningObject);
+    };
+    encode = (str) => {
+        let ret = str.replace(/\x12/g, ' ');
+        ret = ret.replace(/&/g, '&amp;');
+        ret = ret.replace(/</g, '&lt;');
+        return ret.replace(/>/g, '&gt;');
+    };
+    warn = (str, line, col_num) => {
+        if (!line)
+            line = " ";
+        let bad_char = line[col_num];
+        if (bad_char === ' ' || !bad_char)
+            bad_char = "SPACE";
+        const clean_line = this.encode(line.substring(col_num - 64, col_num)) + '<span style="text-decoration:underline;font-size:1.3em;font-weight:bold;">' + bad_char + '</span>' + this.encode(line.substring(col_num + 1).substring(0, 64));
+        this.addWarning("Music Line:" + this.tokenizer.lineIndex + ":" + (col_num + 1) + ': ' + str + ":  " + clean_line);
+        this.addWarningObject({ message: str, line: line, startChar: this.multilineVars.iChar + col_num, column: col_num });
+    };
+    addWords = (line, words) => {
+        if (words.indexOf('\x12') >= 0) {
+            this.wordsContinuation += words;
+            return;
+        }
+        words = this.wordsContinuation + words;
+        this.wordsContinuation = '';
+        if (!line) {
+            this.warn("Can't add words before the first line of music", line, 0);
+            return;
+        }
+        words = parseCommon.strip(words);
+        if (words[words.length - 1] !== '-')
+            words = words + ' ';
+        const word_list = [];
+        let last_divider = 0;
+        let replace = false;
+        const addWord = (i) => {
+            let word = parseCommon.strip(words.substring(last_divider, i));
+            word = word.replace(/\\([-_*|~])/g, '$1');
+            last_divider = i + 1;
+            if (word.length > 0) {
+                if (replace)
+                    word = word.replace(/~/g, ' ');
+                let div = words[i];
+                if (div !== '_' && div !== '-')
+                    div = ' ';
+                word_list.push({ syllable: this.tokenizer.translateString(word), divider: div });
+                replace = false;
+                return true;
+            }
+            return false;
+        };
+        let escNext = false;
+        for (let i = 0; i < words.length; i++) {
+            switch (words[i]) {
+                case ' ':
+                case '\x12':
+                    addWord(i);
+                    break;
+                case '-':
+                    if (!escNext && !addWord(i) && word_list.length > 0) {
+                        parseCommon.last(word_list).divider = '-';
+                        word_list.push({ skip: true, to: 'next' });
+                    }
+                    break;
+                case '_':
+                    if (!escNext) {
+                        addWord(i);
+                        word_list.push({ skip: true, to: 'slur' });
+                    }
+                    break;
+                case '*':
+                    if (!escNext) {
+                        addWord(i);
+                        word_list.push({ skip: true, to: 'next' });
+                    }
+                    break;
+                case '|':
+                    if (!escNext) {
+                        addWord(i);
+                        word_list.push({ skip: true, to: 'bar' });
+                    }
+                    break;
+                case '~':
+                    if (!escNext) {
+                        replace = true;
+                    }
+                    break;
+            }
+            escNext = words[i] === '\\';
+        }
+        let inSlur = false;
+        line.forEach((el) => {
+            if (word_list.length !== 0) {
+                if (word_list[0].skip) {
+                    switch (word_list[0].to) {
+                        case 'next':
+                            if (el.el_type === 'note' && el.pitches !== null && !inSlur)
+                                word_list.shift();
+                            break;
+                        case 'slur':
+                            if (el.el_type === 'note' && el.pitches !== null)
+                                word_list.shift();
+                            break;
+                        case 'bar':
+                            if (el.el_type === 'bar')
+                                word_list.shift();
+                            break;
+                    }
+                    if (el.el_type !== 'bar') {
+                        if (el.lyric === undefined)
+                            el.lyric = [{ syllable: "", divider: " " }];
+                        else
+                            el.lyric.push({ syllable: "", divider: " " });
+                    }
+                }
+                else {
+                    if (el.el_type === 'note' && el.rest === undefined && !inSlur) {
+                        const lyric = word_list.shift();
+                        if (lyric.syllable)
+                            lyric.syllable = lyric.syllable.replace(/ +/g, '\xA0');
+                        if (el.lyric === undefined)
+                            el.lyric = [lyric];
+                        else
+                            el.lyric.push(lyric);
+                    }
+                }
+            }
+        });
+    };
+    addSymbols = (line, words) => {
+        if (words.indexOf('\x12') >= 0) {
+            this.symbolContinuation += words;
+            return;
+        }
+        words = this.symbolContinuation + words;
+        this.symbolContinuation = '';
+        if (!line) {
+            this.warn("Can't add symbols before the first line of music", line, 0);
+            return;
+        }
+        words = parseCommon.strip(words);
+        if (words[words.length - 1] !== '-')
+            words = words + ' ';
+        const word_list = [];
+        let last_divider = 0;
+        let replace = false;
+        const addWord = (i) => {
+            let word = parseCommon.strip(words.substring(last_divider, i));
+            last_divider = i + 1;
+            if (word.length > 0) {
+                if (replace)
+                    word = word.replace(/~/g, ' ');
+                let div = words[i];
+                if (div !== '_' && div !== '-')
+                    div = ' ';
+                word_list.push({ syllable: this.tokenizer.translateString(word), divider: div });
+                replace = false;
+                return true;
+            }
+            return false;
+        };
+        for (let i = 0; i < words.length; i++) {
+            switch (words[i]) {
+                case ' ':
+                case '\x12':
+                    addWord(i);
+                    break;
+                case '-':
+                    if (!addWord(i) && word_list.length > 0) {
+                        parseCommon.last(word_list).divider = '-';
+                        word_list.push({ skip: true, to: 'next' });
+                    }
+                    break;
+                case '_':
+                    addWord(i);
+                    word_list.push({ skip: true, to: 'slur' });
+                    break;
+                case '*':
+                    addWord(i);
+                    word_list.push({ skip: true, to: 'next' });
+                    break;
+                case '|':
+                    addWord(i);
+                    word_list.push({ skip: true, to: 'bar' });
+                    break;
+                case '~':
+                    replace = true;
+                    break;
+            }
+        }
+        let inSlur = false;
+        line.forEach((el) => {
+            if (word_list.length !== 0) {
+                if (word_list[0].skip) {
+                    switch (word_list[0].to) {
+                        case 'next':
+                            if (el.el_type === 'note' && el.pitches !== null && !inSlur)
+                                word_list.shift();
+                            break;
+                        case 'slur':
+                            if (el.el_type === 'note' && el.pitches !== null)
+                                word_list.shift();
+                            break;
+                        case 'bar':
+                            if (el.el_type === 'bar')
+                                word_list.shift();
+                            break;
+                    }
+                }
+                else {
+                    if (el.el_type === 'note' && el.rest === undefined && !inSlur) {
+                        const lyric = word_list.shift();
+                        if (el.lyric === undefined)
+                            el.lyric = [lyric];
+                        else
+                            el.lyric.push(lyric);
+                    }
+                }
+            }
+        });
+    };
+    parseLine = (line) => {
+        if (parseCommon.startsWith(line, '%%')) {
+            const err = parseDirective.addDirective(line.substring(2));
+            if (err)
+                this.warn(err, line, 2);
+            return;
+        }
+        let i = line.indexOf('%');
+        if (i >= 0)
+            line = line.substring(0, i);
+        line = line.replace(/\s+$/, '');
+        if (line.length === 0)
+            return;
+        if (this.wordsContinuation) {
+            this.addWords(this.tuneBuilder.getCurrentVoice(), line.substring(2));
+            return;
+        }
+        if (this.symbolContinuation) {
+            this.addSymbols(this.tuneBuilder.getCurrentVoice(), line.substring(2));
+            return;
+        }
+        if (line.length < 2 || line[1] !== ':' || this.music.lineContinuation) {
+            this.music.parseMusic(line);
+            return;
+        }
+        const ret = this.header.parseHeader(line);
+        if (ret.regular)
+            this.music.parseMusic(line);
+        if (ret.newline)
+            this.music.startNewLine();
+        if (ret.words)
+            this.addWords(this.tuneBuilder.getCurrentVoice(), line.substring(2));
+        if (ret.symbols)
+            this.addSymbols(this.tuneBuilder.getCurrentVoice(), line.substring(2));
+    };
+    appendLastMeasure = (voice, nextVoice) => {
+        voice.push({
+            el_type: 'hint'
+        });
+        for (let i = 0; i < nextVoice.length; i++) {
+            const element = nextVoice[i];
+            const hint = Object.assign({}, element);
+            voice.push(hint);
+            if (element.el_type === 'bar')
+                return;
+        }
+    };
+    addHintMeasure = (staff, nextStaff) => {
+        for (let i = 0; i < staff.length; i++) {
+            const stave = staff[i];
+            const nextStave = nextStaff[i];
+            if (nextStave) {
+                for (let j = 0; j < nextStave.voices.length; j++) {
+                    const nextVoice = nextStave.voices[j];
+                    const voice = stave.voices[j];
+                    if (voice) {
+                        this.appendLastMeasure(voice, nextVoice);
+                    }
+                }
+            }
+        }
+    };
+    addHintMeasures = () => {
+        for (let i = 0; i < this.tune.lines.length; i++) {
+            const line = this.tune.lines[i].staff;
+            if (line) {
+                let j = i + 1;
+                while (j < this.tune.lines.length && this.tune.lines[j].staff === undefined)
+                    j++;
+                if (j < this.tune.lines.length) {
+                    const nextLine = this.tune.lines[j].staff;
+                    this.addHintMeasure(line, nextLine);
+                }
+            }
+        }
+    };
     getTune() {
         const t = {
             formatting: this.tune.formatting,

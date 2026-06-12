@@ -17,9 +17,11 @@ export default defineConfig({
 	],
 	/* 🛠️ 加上 server 設定 */
 	server: {
-		open: '/editor.html' // 👈 啟動時自動在瀏覽器打開 editor.html
+		open: '/editor.html' // 啟動時自動在瀏覽器打開 editor.html
 	},
 	build: {
+		// 關閉壓縮 (預設是 'esbuild')
+		minify: false,
 		// 禁用 CSS 代碼拆分，讓樣式跟著打包，或獨立為單一 css
 		cssCodeSplit: false,
 		lib: {

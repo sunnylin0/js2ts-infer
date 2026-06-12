@@ -58,6 +58,7 @@ export function renderEngine(callback, output, abc, params) {
     // parse the abc string
     var book = new TuneBook(abc);
     var abcParser = new Parse();
+    window.abcParse = abcParser;
     // output each tune, if it exists. Otherwise clear the div.
     for (var i = 0; i < output.length; i++) {
         var div = output[i];

@@ -1,67 +1,5 @@
 export default class TimingCallbacks {
     constructor(target, params) {
-        this.doTiming = (timestamp) => {
-            if (this.lastTimestamp === timestamp)
-                return;
-            this.lastTimestamp = timestamp;
-            if (!this.isPaused && this.isRunning) {
-                if (!this.startTime) {
-                    this.startTime = timestamp;
-                }
-                this.currentTime = timestamp - this.startTime;
-                this.currentTime += 16;
-                while (this.noteTimings.length > this.currentEvent && this.noteTimings[this.currentEvent].milliseconds < this.currentTime) {
-                    if (this.eventCallback && this.noteTimings[this.currentEvent].type === 'event') {
-                        var thisStartTime = this.startTime;
-                        this.eventCallback(this.noteTimings[this.currentEvent]);
-                        if (thisStartTime !== this.startTime) {
-                            this.currentTime = timestamp - this.startTime;
-                        }
-                    }
-                    this.currentEvent++;
-                }
-                if (this.lineEndCallback && this.lineEndTimings.length > this.currentLine && this.lineEndTimings[this.currentLine].milliseconds < this.currentTime && this.currentEvent < this.noteTimings.length) {
-                    var leftEvent = this.noteTimings[this.currentEvent].milliseconds === this.currentTime ? this.noteTimings[this.currentEvent] : this.noteTimings[this.currentEvent - 1];
-                    this.lineEndCallback(this.lineEndTimings[this.currentLine], leftEvent, { line: this.currentLine, endTimings: this.lineEndTimings, currentTime: this.currentTime });
-                    this.currentLine++;
-                }
-                if (this.currentTime < this.lastMoment) {
-                    requestAnimationFrame(this.doTiming);
-                    if (this.currentBeat < this.beatStarts.length && this.beatStarts[this.currentBeat].ts <= this.currentTime) {
-                        var ret = this.doBeatCallback(timestamp);
-                        this.currentBeat++;
-                        if (ret !== null)
-                            this.currentTime = ret;
-                    }
-                }
-                else if (this.currentBeat <= this.totalBeats) {
-                    if (this.beatCallback) {
-                        var ret2 = this.doBeatCallback(timestamp);
-                        this.currentBeat++;
-                        if (ret2 !== null)
-                            this.currentTime = ret2;
-                        requestAnimationFrame(this.doTiming);
-                    }
-                }
-                if (this.currentTime >= this.lastMoment) {
-                    if (this.eventCallback) {
-                        var promise = this.eventCallback(null);
-                        this.shouldStop(promise).then((shouldStop) => {
-                            if (shouldStop)
-                                this.stop();
-                        });
-                    }
-                    else
-                        this.stop();
-                }
-            }
-        };
-        this.animationJogger = () => {
-            if (this.isRunning) {
-                this.doTiming(performance.now());
-                this.joggerTimer = setTimeout(this.animationJogger, 60);
-            }
-        };
         if (!params)
             params = {};
         this.qpm = params.qpm ? parseInt(params.qpm, 10) : null;
@@ -80,6 +18,68 @@ export default class TimingCallbacks {
         this.joggerTimer = null;
         this.replaceTarget(target);
     }
+    doTiming = (timestamp) => {
+        if (this.lastTimestamp === timestamp)
+            return;
+        this.lastTimestamp = timestamp;
+        if (!this.isPaused && this.isRunning) {
+            if (!this.startTime) {
+                this.startTime = timestamp;
+            }
+            this.currentTime = timestamp - this.startTime;
+            this.currentTime += 16;
+            while (this.noteTimings.length > this.currentEvent && this.noteTimings[this.currentEvent].milliseconds < this.currentTime) {
+                if (this.eventCallback && this.noteTimings[this.currentEvent].type === 'event') {
+                    var thisStartTime = this.startTime;
+                    this.eventCallback(this.noteTimings[this.currentEvent]);
+                    if (thisStartTime !== this.startTime) {
+                        this.currentTime = timestamp - this.startTime;
+                    }
+                }
+                this.currentEvent++;
+            }
+            if (this.lineEndCallback && this.lineEndTimings.length > this.currentLine && this.lineEndTimings[this.currentLine].milliseconds < this.currentTime && this.currentEvent < this.noteTimings.length) {
+                var leftEvent = this.noteTimings[this.currentEvent].milliseconds === this.currentTime ? this.noteTimings[this.currentEvent] : this.noteTimings[this.currentEvent - 1];
+                this.lineEndCallback(this.lineEndTimings[this.currentLine], leftEvent, { line: this.currentLine, endTimings: this.lineEndTimings, currentTime: this.currentTime });
+                this.currentLine++;
+            }
+            if (this.currentTime < this.lastMoment) {
+                requestAnimationFrame(this.doTiming);
+                if (this.currentBeat < this.beatStarts.length && this.beatStarts[this.currentBeat].ts <= this.currentTime) {
+                    var ret = this.doBeatCallback(timestamp);
+                    this.currentBeat++;
+                    if (ret !== null)
+                        this.currentTime = ret;
+                }
+            }
+            else if (this.currentBeat <= this.totalBeats) {
+                if (this.beatCallback) {
+                    var ret2 = this.doBeatCallback(timestamp);
+                    this.currentBeat++;
+                    if (ret2 !== null)
+                        this.currentTime = ret2;
+                    requestAnimationFrame(this.doTiming);
+                }
+            }
+            if (this.currentTime >= this.lastMoment) {
+                if (this.eventCallback) {
+                    var promise = this.eventCallback(null);
+                    this.shouldStop(promise).then((shouldStop) => {
+                        if (shouldStop)
+                            this.stop();
+                    });
+                }
+                else
+                    this.stop();
+            }
+        }
+    };
+    animationJogger = () => {
+        if (this.isRunning) {
+            this.doTiming(performance.now());
+            this.joggerTimer = setTimeout(this.animationJogger, 60);
+        }
+    };
     replaceTarget(newTarget) {
         this.noteTimings = newTarget.setTiming(this.qpm, this.extraMeasuresAtBeginning);
         if (newTarget.noteTimings.length === 0)

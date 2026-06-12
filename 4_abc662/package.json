@@ -1,20 +1,14 @@
 {
-	"name": "abcjs",
-	"version": "6.6.3",
+	"name": "abc662",
+	"version": "6.6.2",
 	"description": "Renderer for abc music notation",
 	"main": "index.js",
 	"types": "types/index.d.ts",
 	"scripts": {
 		"dev": "vite",
-		"build:vite": "vite build",
-		"webpack": "webpack",
-		"build": "npm run build:basic && npm run webpack",
-		"build:basic": "npm run webpack -- --mode development --config-name basic",
-		"build:basic-min": "npm run webpack -- --mode production --config-name basic",
-		"build:plugin": "npm run webpack -- --mode production --config-name plugin",
+		"build": "vite build",
 		"test-server": "npx http-server",
-		"test": "concurrently \"vite\" \"npx opener http://localhost:5173/tests/all.html\"",
-		"build:analyze": "npm run build:basic -- --env analyze"
+		"test": "concurrently \"vite\" \"npx opener http://localhost:5173/tests/all.html\""
 	},
 	"repository": {
 		"type": "git",
@@ -44,6 +38,12 @@
 	},
 	"homepage": "https://abcjs.net",
 	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@vitejs/plugin-vue": "^6.0.6",
+		"eslint": "^10.2.1",
+		"eslint-plugin-oxlint": "~1.60.0",
+		"eslint-plugin-vue": "~10.8.0",
+		"globals": "^17.5.0",
 		"@tarp/require": "1.4.3",
 		"chai": "4.3.7",
 		"concurrently": "7.6.0",
