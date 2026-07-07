@@ -45,6 +45,7 @@
     "MidiFlattener": "src/synth/abc_midi_flattener.js",
     "TuneBuilder": "src/parse/tune-builder.js",
     "Tokenizer": "src/parse/abc_tokenizer.js",
+    "MusicParser": "src/parse/abc_parse_music.js",
     "ParseHeader": "src/parse/abc_parse_header.js",
     "Parse": "src/parse/abc_parse.js",
     "Editor": "src/edit/abc_editor.js",
@@ -1167,6 +1168,12 @@
     {
       "filePath": "index.js",
       "exportName": "abcjs",
+      "type": "unknown",
+      "isDefault": true
+    },
+    {
+      "filePath": "eslint.config.js",
+      "exportName": "default",
       "type": "unknown",
       "isDefault": true
     }
@@ -3848,6 +3855,14 @@
         "to": "src/synth/note-to-midi.js::midiToNote"
       },
       {
+        "from": "src/tablatures/instruments/tab-note.js::emitNoAccidentals",
+        "to": "src/tablatures/instruments/tab-note.js::_getBaseNoteString"
+      },
+      {
+        "from": "src/tablatures/instruments/tab-note.js::emit",
+        "to": "src/tablatures/instruments/tab-note.js::_getBaseNoteString"
+      },
+      {
         "from": "src/tablatures/instruments/string-patterns.js::buildPatterns",
         "to": "src/tablatures/instruments/tab-notes.js::default"
       },
@@ -5041,79 +5056,11 @@
       },
       {
         "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::letter_to_spacer"
+        "to": "src/parse/abc_parse_music.js::startNewLine"
       },
       {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::letter_to_chord"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::letter_to_accent"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::letter_to_grace"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::letter_to_bar"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::isFirstVoice"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::letter_to_overlay"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::letter_to_open_slurs_and_triplets"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::getCoreNote"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::isInTie"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::setIsInTie"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::addEndBeam"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::getBrokenRhythm"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::parseMusic",
-        "to": "src/parse/abc_parse_music.js::durationOfMeasure"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::letter_to_grace",
-        "to": "src/parse/abc_parse_music.js::getCoreNote"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::startNewLine",
-        "to": "src/parse/abc_parse_music.js::isFirstVoice"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::getCoreNote",
+        "from": "src/parse/abc_parse_music.js::anonymous",
         "to": "src/parse/abc_parse_music.js::isComplete"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::getCoreNote",
-        "to": "src/parse/abc_parse_music.js::addEndBeam"
-      },
-      {
-        "from": "src/parse/abc_parse_music.js::getCoreNote",
-        "to": "src/parse/abc_parse_music.js::getBrokenRhythm"
       },
       {
         "from": "src/parse/abc_parse_key_voice.js::parseKeyVoice",
@@ -5296,20 +5243,16 @@
         "to": "src/parse/abc_parse_directive.js::interpretPercMap"
       },
       {
-        "from": "src/parse/abc_parse.js::addWords",
-        "to": "src/parse/abc_parse.js::addWord"
-      },
-      {
-        "from": "src/parse/abc_parse.js::addSymbols",
-        "to": "src/parse/abc_parse.js::addWord"
-      },
-      {
         "from": "src/parse/abc_parse.js::multilineVars",
         "to": "src/parse/abc_parse.js::addPositioning"
       },
       {
         "from": "src/parse/abc_parse.js::multilineVars",
         "to": "src/parse/abc_parse.js::addFont"
+      },
+      {
+        "from": "src/parse/abc_parse.js::anonymous",
+        "to": "src/parse/abc_parse.js::addWord"
       },
       {
         "from": "src/parse/abc_parse.js::parse",
@@ -5624,20 +5567,20 @@
         "to": "src/api/abc_tunebook.js::parseOnly"
       },
       {
-        "from": "src/api/abc_timing_callbacks.js::doTiming",
+        "from": "src/api/abc_timing_callbacks.js::constructor",
+        "to": "src/api/abc_timing_callbacks.js::replaceTarget"
+      },
+      {
+        "from": "src/api/abc_timing_callbacks.js::anonymous",
         "to": "src/api/abc_timing_callbacks.js::doBeatCallback"
       },
       {
-        "from": "src/api/abc_timing_callbacks.js::doTiming",
+        "from": "src/api/abc_timing_callbacks.js::anonymous",
         "to": "src/api/abc_timing_callbacks.js::shouldStop"
       },
       {
-        "from": "src/api/abc_timing_callbacks.js::doTiming",
+        "from": "src/api/abc_timing_callbacks.js::anonymous",
         "to": "src/api/abc_timing_callbacks.js::stop"
-      },
-      {
-        "from": "src/api/abc_timing_callbacks.js::constructor",
-        "to": "src/api/abc_timing_callbacks.js::replaceTarget"
       },
       {
         "from": "src/api/abc_timing_callbacks.js::replaceTarget",

@@ -253,6 +253,14 @@
 - **物件屬性與方法命名空間化**：升級 `getFunctionName` (在 `src/babel-plugin-js2ts.ts` 與 `src/static-analyzer.ts`)，將 object property 與 object method 的名稱解析為 `objName.propName`，並升級 `process-file.ts` 的 TS 重構流程以支援相同的命名解析。
 - **E2E 驗證**：在 `3_SnakeTS` 中，`parseCommon.ts` 內 `toUpperCase` 的 `str` 參數及 `snake.ts` 內 `log_keyname` 的 `keyname` 參數均成功標註為 `string` 型別。
 
+---
+
+## [2026-06-12] v1.7.6 - 支援物件方法 (Object Method) 回傳型別 (Return Type) 推導與注入
+
+- **擴充第四階段回傳型別遍歷範圍**：升級 `propagation.ts` 內 `runGlobalReturnTypePropagation` 函數，由原先僅搜尋 `VariableDeclaration` 初始化器改為全面掃描 `ArrowFunction` 與 `FunctionExpression`，支援 `PropertyAssignment` 內部的物件方法與屬性函數。
+- **對齊命名空間解析**：在收集 `ArrowFunction` 和 `FunctionExpression` 時，比照 `process-file.ts` 對 `PropertyAssignment` 套用 `objName.propName` 解析邏輯，使物件方法（如 `parseCommon.toUpperCase`）能成功與 `typeDB` 的側錄 key 對齊。
+- **E2E 驗證**：在 `3_SnakeTS` 中，`parseCommon.ts` 的 `toUpperCase` 成功自動標註回傳型別 `: string`。
+
 
 
 

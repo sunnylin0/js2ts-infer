@@ -605,18 +605,28 @@ export function runGlobalReturnTypePropagation(
       allFns.push({ node: fn, name: fn.getName() || 'anonymous' });
     });
 
-    // 箭頭函數 / 函數表達式（來自變數宣告）
-    // 算法：進入每個變數宣告節點，判斷其 initializer 是否為 ArrowFunction / FunctionExpression
-    sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration).forEach(decl => {
-        const init = decl.getInitializer();
-        if (
-          init &&
-          (init.getKind() === SyntaxKind.ArrowFunction ||
-            init.getKind() === SyntaxKind.FunctionExpression)
-        ) {
-        allFns.push({ node: init, name: decl.getName() });
+    // 箭頭函數 / 函數表達式（來自變數宣告或物件屬性）
+    const arrowFns = sourceFile.getDescendantsOfKind(SyntaxKind.ArrowFunction);
+    const fnExprs = sourceFile.getDescendantsOfKind(SyntaxKind.FunctionExpression);
+    for (const fn of [...arrowFns, ...fnExprs]) {
+      let fnName = 'anonymous';
+      const propAssign = fn.getParentIfKind(SyntaxKind.PropertyAssignment);
+      if (propAssign) {
+        const propName = propAssign.getName();
+        const varDecl = propAssign.getFirstAncestorByKind(SyntaxKind.VariableDeclaration);
+        if (varDecl) {
+          fnName = `${varDecl.getName()}.${propName}`;
+        } else {
+          fnName = propName;
+        }
+      } else {
+        const parentDecl = fn.getParentIfKind(SyntaxKind.VariableDeclaration);
+        if (parentDecl) {
+          fnName = parentDecl.getName();
+        }
       }
-    });
+      allFns.push({ node: fn, name: fnName });
+    }
 
     // 對每個函數節點推導並注入回傳型別
     for (const fnItem of allFns) {

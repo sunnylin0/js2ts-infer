@@ -1,0 +1,58 @@
+import highlight from '../interactive/highlight';
+import unhighlight from '../interactive/unhighlight';
+class Selectables {
+    selectTypes: any;
+    tuneNumber: number;
+    paper: Svg;
+    elements: Array<any> = [];
+
+    constructor(paper: Svg, selectTypes: any, tuneNumber: number) {
+        this.paper = paper;
+        this.tuneNumber = tuneNumber;
+        this.selectTypes = selectTypes;
+    }
+    getElements(): any[] {
+        return this.elements;
+    }
+    add(absEl: AbsoluteElement, svgEl: SVGTextElement | SVGGElement | SVGPathElement, isNoteOrTabNumber: boolean, staffPos: any): void {
+        if (!this.canSelect(absEl))
+            return;
+        let params;
+        if (this.selectTypes === undefined)
+            params = { selectable: false, "data-index": this.elements.length }; // This is the old behavior.
+        else
+            params = { selectable: true, tabindex: 0, "data-index": this.elements.length };
+        this.paper.setAttributeOnElement(svgEl, params);
+        const sel = { absEl: absEl, svgEl: svgEl, isDraggable: isNoteOrTabNumber };
+        if (staffPos !== undefined)
+            sel.staffPos = staffPos;
+        this.elements.push(sel);
+    }
+    canSelect(absEl: AbsoluteElement): boolean {
+        if (this.selectTypes === false)
+            return false;
+        if (!absEl || !absEl.abcelem)
+            return false;
+        if (this.selectTypes === true)
+            return true;
+        if (this.selectTypes === undefined) {
+            // by default, only notes and tab numbers can be clicked.
+            if (absEl.abcelem.el_type === 'note' || absEl.abcelem.el_type === 'tabNumber') {
+                return true;
+            }
+            return false;
+        }
+        return this.selectTypes.indexOf(absEl.abcelem.el_type) >= 0;
+    }
+  wrapSvgEl(abcelem: Abcelem, el: SVGTextElement | SVGPathElement | SVGGElement): void {
+        const absEl = {
+            tuneNumber: this.tuneNumber,
+            abcelem: abcelem,
+            elemset: [el],
+            highlight: highlight,
+            unhighlight: unhighlight
+        };
+        this.add(absEl as AbsoluteElement, el, false,null);
+    }
+}
+export default Selectables;

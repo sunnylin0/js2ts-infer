@@ -759,6 +759,33 @@
 ## 執行與完成紀錄
 - **狀態**：已成功編譯並執行側錄與 E2E 重構。經檢查，`3_SnakeTS/src/engine/parseCommon.ts` 中的 `toUpperCase(str: string)` 及 `snake.ts` 內的 `log_keyname(keyname: string): string` 均成功標注了 `string` 型別。
 
+---
+
+# 支援物件方法 (Object Method) 回傳型別推導與注入計畫
+
+**時間戳記**：2026-06-12 15:38:00
+
+## 使用者審查要求
+> [!IMPORTANT]
+> 1. **擴充第四階段回傳型別推導的遍歷對象**：
+>    - 解決物件方法 `toUpperCase: function (str: string)` 回傳型別沒有自動注入的問題。
+>    - 讓 `runGlobalReturnTypePropagation` 除了遍歷一般函數與類別方法外，亦支援 `PropertyAssignment` 內部的 `ArrowFunction` 與 `FunctionExpression`。
+> 2. **物件方法名稱的命名空間解析**：
+>    - 在 `runGlobalReturnTypePropagation` 收集物件屬性中的箭頭函數與函數表達式時，需正確計算出其 `fnName` 為 `objName.propName`，以利查詢 typeDB。
+
+## 預期變更
+
+### js2ts-infer 重構工具
+
+#### [MODIFY] [propagation.ts](file:///c:/Users/ESAO_NB27/Desktop/abc-js2ts/src/refactor/propagation.ts)
+- 於 `runGlobalReturnTypePropagation` 中，改以 `getDescendantsOfKind` 檢索所有的 `ArrowFunction` 與 `FunctionExpression`，並對 `PropertyAssignment` 套用與 `process-file.ts` 一致的命名空間推導（`objName.propName`），使物件屬性方法的回傳型別能正確匹配。
+
+## 驗證計畫
+### 自動化與手動驗證
+1. 執行 `pnpm run build` 編譯工具。
+2. 執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+3. 驗證 `3_SnakeTS/src/engine/parseCommon.ts` 中的 `toUpperCase` 是否正確變為 `toUpperCase: function (str: string): string {`。
+
 
 
 

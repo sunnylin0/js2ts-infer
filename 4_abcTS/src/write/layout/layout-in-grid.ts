@@ -1,0 +1,78 @@
+import getLeftEdgeOfStaff from './get-left-edge-of-staff';
+function layoutInGrid(renderer: Renderer, staffGroup, timeBasedLayout): number {
+    const leftEdge: number = getLeftEdgeOfStaff(renderer, staffGroup.getTextSize, staffGroup.voices, staffGroup.brace, staffGroup.bracket);
+    const ret = getTotalDuration(staffGroup, timeBasedLayout.minPadding);
+    const totalDuration: number = ret.totalDuration;
+    const minSpacing: number = ret.minSpacing;
+    let totalWidth: number = minSpacing * totalDuration;
+    if (timeBasedLayout.minWidth)
+        totalWidth = Math.max(totalWidth, timeBasedLayout.minWidth);
+    const leftAlignPadding: number = timeBasedLayout.minPadding ? timeBasedLayout.minPadding / 2 : 2;
+    staffGroup.startx = leftEdge;
+    staffGroup.w = totalWidth + leftEdge;
+    for (let i: number = 0; i < staffGroup.voices.length; i++) {
+        const voice = staffGroup.voices[i];
+        voice.startx = leftEdge;
+        voice.w = totalWidth + leftEdge;
+        let x: number = leftEdge;
+        let afterFixedLeft: boolean = false;
+        let durationUnit: number = 0;
+        for (let j: number = 0; j < voice.children.length; j++) {
+            const child = voice.children[j];
+            if (!afterFixedLeft) {
+                if (child.duration !== 0) {
+                    // We got to the first music element on the line
+                    afterFixedLeft = true;
+                    durationUnit = (totalWidth + leftEdge - x) / totalDuration;
+                    staffGroup.gridStart = x;
+                }
+                else {
+                    // We are still doing the preliminary stuff - clef, time sig, etc.
+                    child.x = x;
+                    x += child.w + child.minspacing;
+                }
+            }
+            if (afterFixedLeft) {
+                if (timeBasedLayout.align === 'center')
+                    child.x = x + (child.duration * durationUnit) / 2 - child.w / 2;
+                else {
+                    // left align with padding - but no padding for barlines, they should be right aligned.
+                    if (child.duration === 0) {
+                        child.x = x + 1 - child.w;
+                    }
+                    else {
+                        // child.extraw has the width of the accidentals - push the note to the right to take that into consideration.
+                        child.x = x + leftAlignPadding - child.extraw;
+                    }
+                }
+                x += child.duration * durationUnit;
+            }
+            for (let k: number = 0; k < child.children.length; k++) {
+                const grandchild = child.children[k];
+                const dx = grandchild.dx ? grandchild.dx : 0;
+                grandchild.x = child.x + dx;
+            }
+        }
+        staffGroup.gridEnd = x;
+    }
+    return totalWidth;
+}
+function getTotalDuration(staffGroup, minPadding) {
+    let maxSpacing: number = 0;
+    let maxCount: number = 0;
+    for (let i: number = 0; i < staffGroup.voices.length; i++) {
+        let count: number = 0;
+        const voice = staffGroup.voices[i];
+        for (let j: number = 0; j < voice.children.length; j++) {
+            const element = voice.children[j];
+            count += element.duration;
+            if (element.duration) {
+                const width: number = (element.w + (minPadding || 0)) / element.duration;
+                maxSpacing = Math.max(maxSpacing, width);
+            }
+        }
+        maxCount = Math.max(maxCount, count);
+    }
+    return { totalDuration: maxCount, minSpacing: maxSpacing };
+}
+export default layoutInGrid;

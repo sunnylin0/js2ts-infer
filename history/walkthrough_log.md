@@ -432,3 +432,26 @@
     let log_keyname = function (keyname: string): string {
     ```
     確認參數 `keyname: string` 及 return 型別 `: string` 已被成功注入。
+
+---
+
+**時間戳記**：2026-06-12 15:38:00
+
+## 已完成的變更
+- **擴充物件方法之回傳型別推導與注入**：
+  - 於 `src/refactor/propagation.ts` 的 `runGlobalReturnTypePropagation` 函數中，改以 `getDescendantsOfKind` 全面蒐集檔案內所有的 `ArrowFunction` 與 `FunctionExpression` 節點。
+  - 加入了對 `PropertyAssignment` 物件屬性之命名空間解析，使其 `fnName` 可以正確推導為 `objName.propName`（如 `parseCommon.toUpperCase`），並用於匹配 typeDB 回傳型別字典，以注入對應的回傳型別。
+
+## 驗證結果
+- **物件方法回傳型別注入成功**：
+  - 執行重構 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
+  - 檢查 `3_SnakeTS/src/engine/parseCommon.ts`：
+    ```typescript
+    export const parseCommon = {
+        // 1. 全部改大寫
+        toUpperCase: function (str: string): string {
+            if (typeof str !== 'string') return '';
+            return str.toUpperCase();
+        },
+    ```
+    驗證 `toUpperCase` 函數之參數與回傳型別均已成功自動標註為 `str: string` 與 `: string`。

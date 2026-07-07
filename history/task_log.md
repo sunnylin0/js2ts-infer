@@ -325,6 +325,19 @@
   - [x] 重新編譯並執行型別側錄 `node ../dist/cli.js run "node run-test.js"`
   - [x] 執行重構，並驗證 `parseCommon.ts` 內 `toUpperCase` 的 `str` 參數及 `snake.ts` 內 `log_keyname` 的 `keyname` 參數均成功標註為 `string`
 
+---
+
+# 任務進度追蹤
+
+**時間戳記**：2026-06-12 15:38:00
+
+- [x] 支援物件方法 (Object Method) 回傳型別 (Return Type) 推導與注入
+  - [x] 修改 `src/refactor/propagation.ts` 中的 `runGlobalReturnTypePropagation`，將原本僅掃描 `VariableDeclaration` 擴展為掃描所有 `ArrowFunction` 與 `FunctionExpression`
+  - [x] 對 `PropertyAssignment` 表達式引進 `objName.propName` 的命名空間解析邏輯，對齊與 `typeDB` 的鍵值命名
+  - [x] 重新編譯專案 `pnpm run build`
+  - [x] 重新執行重構：`node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`
+  - [x] 驗證 `3_SnakeTS/src/engine/parseCommon.ts` 內的 `toUpperCase` 是否成功標註為 `toUpperCase: function (str: string): string {`
+
 
 
 
