@@ -786,8 +786,66 @@
 2. 執行 `node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`。
 3. 驗證 `3_SnakeTS/src/engine/parseCommon.ts` 中的 `toUpperCase` 是否正確變為 `toUpperCase: function (str: string): string {`。
 
+---
 
+# 為純靜態前端專案 5_abc010 建立 Vite 6 型別側錄環境
 
+**時間戳記**：2026-07-10 14:31:00
+
+## 使用者審查要求
+> [!NOTE]
+> 1. 提供在 5_abc010 目錄下無 Vite 的替代解決方案（已提供 run-static.ts 腳本）。
+> 2. 安裝 Vite 6 版本 (vite@^6.0.0)，並提供相對應的 package.json 與 vite.config.js 設定。
+
+- `5_abc010/package.json` [NEW]
+- `5_abc010/vite.config.js` [NEW]
+
+---
+
+# 修正 5_abc010 目錄下 Vite 6 無法啟動問題
+
+**時間戳記**：2026-07-10 14:34:00
+
+## 使用者審查要求
+> [!NOTE]
+> 1. 解決 Vite 6 在 ESM 模式下動態載入 CommonJS 插件的 `Dynamic require of ... is not supported` 錯誤。
+> 2. 解決過時的 XHTML DOCTYPE 導致 Vite 6 自帶的 parse5 出現 `non-conforming-doctype` 錯誤。
+
+## 影響檔案
+- `5_abc010/vite.config.js` [MODIFY]
+- `5_abc010/workspace.html` [MODIFY]
+- `5_abc010/abc_editor.html` [MODIFY]
+- `5_abc010/abc_plugin.html` [MODIFY]
+- `5_abc010/font_gen.html` [MODIFY]
+
+---
+
+# 實作前端型別側錄自動防禦兜底（Fallback noop）
+
+**時間戳記**：2026-07-10 14:42:00
+
+## 使用者審查要求
+> [!NOTE]
+> 1. 當使用者未啟動收集器背景伺服器（9002 連接埠）而直接啟動 Vite 時，防範頁面因找不到 `globalThis.__typeTracker` 拋出 TypeError 崩潰白屏。
+> 2. 實作自動防禦的 inline script，在 HTML 最頂端預先注入 noop 定義。
+
+## 影響檔案
+- `src/plugins.ts` [MODIFY]
+
+---
+
+# 修正 Prototype 屬性賦值方法型別注入與二次傳播效能優化
+
+**時間戳記**：2026-07-10 15:20:00
+
+## 使用者審查要求
+> [!NOTE]
+> 1. 解決 `ABCPrinter.prototype.printStaveLine` 這類 Prototype 屬性賦值方法的參數與回傳值無法對齊 `types-observed.json` 比對出正確側錄型別之問題。
+> 2. 解決二次型別反向傳播在大型檔案中因重複執行 `getDescendantsOfKind` 導致的嚴重效能瓶頸。
+
+## 影響檔案
+- `src/refactor/process-file.ts` [MODIFY]
+- `src/refactor/propagation.ts` [MODIFY]
 
 
 

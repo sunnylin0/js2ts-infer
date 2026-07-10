@@ -168,15 +168,23 @@ function resolvePropertyAccessCallee(propAccess: any, project: Project): any {
     const objName = obj.getText();
     const sourceFile = propAccess.getSourceFile();
 
-    // 逐層向上搜尋所在區塊的變數宣告
-    let current: any = obj;
+    // 尋找變數的定義：優先在當前最接近的函數 Scope 內搜尋，找不到再到全域 sourceFile 查詢
     let foundVar: any = null;
-    while (current) {
-      const block = current.getFirstAncestorByKind(SyntaxKind.Block) || sourceFile;
-      const varDecls = block.getDescendantsOfKind(SyntaxKind.VariableDeclaration);
-      foundVar = varDecls.find((v: any) => v.getName() === objName);
-      if (foundVar) break;
-      current = block.getParent();
+    const parentFn = propAccess.getFirstAncestor((n: any) => {
+      const kind = n.getKind();
+      return kind === SyntaxKind.FunctionDeclaration ||
+             kind === SyntaxKind.MethodDeclaration ||
+             kind === SyntaxKind.Constructor ||
+             kind === SyntaxKind.ArrowFunction ||
+             kind === SyntaxKind.FunctionExpression;
+    });
+
+    if (parentFn) {
+      const localDecls = parentFn.getDescendantsOfKind(SyntaxKind.VariableDeclaration);
+      foundVar = localDecls.find((v: any) => v.getName() === objName);
+    }
+    if (!foundVar) {
+      foundVar = sourceFile.getVariableDeclaration(objName);
     }
 
     if (foundVar) {
@@ -623,6 +631,17 @@ export function runGlobalReturnTypePropagation(
         const parentDecl = fn.getParentIfKind(SyntaxKind.VariableDeclaration);
         if (parentDecl) {
           fnName = parentDecl.getName();
+        } else {
+          // 處理賦值情況，例如 ClassName.prototype.methodName = function (...) {} 或是 myFunc = function (...) {}
+          const binaryExpr = fn.getParentIfKind(SyntaxKind.BinaryExpression);
+          if (binaryExpr && binaryExpr.getOperatorToken().getKind() === SyntaxKind.EqualsToken) {
+            const left = binaryExpr.getLeft();
+            if (left.getKind() === SyntaxKind.PropertyAccessExpression) {
+              fnName = (left as any).getName();
+            } else if (left.getKind() === SyntaxKind.Identifier) {
+              fnName = left.getText();
+            }
+          }
         }
       }
       allFns.push({ node: fn, name: fnName });

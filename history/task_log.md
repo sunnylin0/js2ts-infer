@@ -338,7 +338,27 @@
   - [x] 重新執行重構：`node dist/cli.js generate -i ./3_Snake -o ./3_SnakeTS -f`
   - [x] 驗證 `3_SnakeTS/src/engine/parseCommon.ts` 內的 `toUpperCase` 是否成功標註為 `toUpperCase: function (str: string): string {`
 
+---
 
+# 任務進度追蹤
+
+**時間戳記**：2026-07-10 14:31:00
+
+- [x] 為純靜態前端測試專案 `5_abc010` 建立 Vite 6 型別側錄環境
+  - [x] 建立 `5_abc010/package.json`
+  - [x] 建立 `5_abc010/vite.config.js` 並引入 `vitePlugin`
+  - [x] 安裝 Vite 6 核心套件 (`vite@6.4.3`)
+- [x] 排解 `5_abc010` 目錄下 Vite 6 啟動報錯之問題
+  - [x] 在 `vite.config.js` 中使用 `createRequire` 載入以 CJS 編譯的 `dist/plugins.js`，避免 Vite 6 拋出 Dynamic require 錯誤。
+  - [x] 將所有 HTML 檔的過時 XHTML DOCTYPE 更改為 HTML5 `<!DOCTYPE html>`，防堵 Vite 6 HTML parse5 解析失敗。
+- [x] 實作前端型別側錄自動防禦兜底（Fallback noop）
+  - [x] 於 `src/plugins.ts` 中對 `vitePlugin` 加入 `__typeTracker` 兜底 inline script 注入
+  - [x] 重新執行 `pnpm run build` 編譯專案
+- [x] 修正 Prototype 賦值方法的參數與回傳型別注入
+  - [x] 修改 `process-file.ts` 的步驟 3.5，正確解析 prototype 屬性方法的名稱
+  - [x] 修改 `propagation.ts` 的 `runGlobalReturnTypePropagation` 與 `resolvePropertyAccessCallee`
+  - [x] 優化 `resolvePropertyAccessCallee` 遍歷效能，消除重複掃描整檔案的效能瓶頸
+  - [x] 重新執行 `pnpm run build` 編譯專案
 
 
 

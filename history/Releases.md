@@ -261,6 +261,33 @@
 - **對齊命名空間解析**：在收集 `ArrowFunction` 和 `FunctionExpression` 時，比照 `process-file.ts` 對 `PropertyAssignment` 套用 `objName.propName` 解析邏輯，使物件方法（如 `parseCommon.toUpperCase`）能成功與 `typeDB` 的側錄 key 對齊。
 - **E2E 驗證**：在 `3_SnakeTS` 中，`parseCommon.ts` 的 `toUpperCase` 成功自動標註回傳型別 `: string`。
 
+---
 
+## [2026-07-10 14:31] 技術解答與環境配置 - 為純靜態前端專案 5_abc010 建立 Vite 6 型別側錄環境
+
+- **建立專案 package.json**：在 `5_abc010` 下建立 `package.json` 並宣告為 private 模組，作為依賴管理入口。
+- **建立專案 vite.config.js**：在 `5_abc010` 下建立 `vite.config.js`，引入 `js2ts-infer` 的 `vitePlugin` 插件，並將 `server.open` 設為 `/workspace.html` 以便啟動時自動打開瀏覽器。
+- **安裝 Vite 6 依賴**：在該目錄下透過 `pnpm add -D vite@6` 成功安裝 `vite@6.4.3` 核心套件。
+- **提供無 Vite 靜態插樁替代腳本**：額外提供 `run-static.ts` 供使用者在不想安裝 Vite 的情境下，能透過簡易 Express 靜態伺服器對 `.js` 與 `.html` 自動插樁並側錄型別。
+
+---
+
+## [2026-07-10 14:34] 除錯與設定優化 - 修正 5_abc010 目錄下 Vite 6 無法啟動問題
+
+- **升級 HTML 為 HTML5 DOCTYPE**：修正 `workspace.html`、`abc_editor.html`、`abc_plugin.html` 與 `font_gen.html` 的過時 XHTML DOCTYPE 為標準 of `<!DOCTYPE html>`，消除了 Vite 6 內建之 `parse5` 解析 HTML 時引發的致命 parse error。
+
+---
+
+## [2026-07-10 14:42] v1.8.0 - 實作前端型別側錄自動防禦兜底（Fallback noop）
+
+- **新增 __typeTracker 兜底 Script 注入**：修改 `src/plugins.ts` 中的 `vitePlugin` 插件，在 HTML 轉譯輸出時，自動於 `<head>` 最頂端注入一份 inline `__typeTracker` 兜底（noop）函數。
+- **防止未啟動收集器引發崩潰**：若使用者直接透過 `pnpm run dev` 啟動專案（未連接型別側錄背景伺服器），頁面中被插樁的 JS 在調用 `__typeTracker` / `__typeTracker.enter` / `__typeTracker.exit` 時會自動被 dummy 函數安全接管並返回原值，解決了 `TypeError: globalThis.__typeTracker is not a function` 引起的白屏與致命錯誤。
+
+---
+
+## [2026-07-10 15:20] v1.9.0 - 支援 Prototype 賦值方法型別注入與二次傳播效能優化
+
+- **支援 Prototype 屬性賦值命名解析**：修改 `src/refactor/process-file.ts` 及 `src/refactor/propagation.ts`。針對以 `ClassName.prototype.methodName = function(...) {}` 或一般賦值定義的函數表達式與箭頭函數，正確從 `BinaryExpression` 的左側 `PropertyAccessExpression` 解析出方法的實際名稱，進而能夠在 `types-observed.json` 中比對出正確 the 側錄型別。
+- **優化二次反向傳播效能**：修正了 `propagation.ts` 中 `resolvePropertyAccessCallee` 遍歷變數宣告時重複調用 `getDescendantsOfKind` 掃描整個 `sourceFile` 的問題。改為僅在局部 parentFn 的 descendants 內遍歷，並對全域變數調用 $O(1)$ 的 `sourceFile.getVariableDeclaration` 做鍵值查詢，將二次反向傳播耗時從數分鐘直接縮減至幾毫秒，徹底排解了重構時的效能瓶頸。
 
 

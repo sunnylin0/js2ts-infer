@@ -112,6 +112,17 @@ export function processFileRefactoring(
       const parentDecl = fn.getParentIfKind(SyntaxKind.VariableDeclaration);
       if (parentDecl) {
         fnName = parentDecl.getName();
+      } else {
+        // 處理賦值情況，例如 ClassName.prototype.methodName = function (...) {} 或是 myFunc = function (...) {}
+        const binaryExpr = fn.getParentIfKind(SyntaxKind.BinaryExpression);
+        if (binaryExpr && binaryExpr.getOperatorToken().getKind() === SyntaxKind.EqualsToken) {
+          const left = binaryExpr.getLeft();
+          if (left.getKind() === SyntaxKind.PropertyAccessExpression) {
+            fnName = (left as any).getName();
+          } else if (left.getKind() === SyntaxKind.Identifier) {
+            fnName = left.getText();
+          }
+        }
       }
     }
     if (typeof fn.removeReturnType === 'function') fn.removeReturnType();

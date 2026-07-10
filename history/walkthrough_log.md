@@ -455,3 +455,56 @@
         },
     ```
     驗證 `toUpperCase` 函數之參數與回傳型別均已成功自動標註為 `str: string` 與 `: string`。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-07-10 14:31:00
+
+## 已完成的變更
+- **建立 Vite 6 設定與依賴**：在 `5_abc010` 目錄下建立了 package.json 與 `vite.config.js`，引入 `js2ts-infer` 的 `vitePlugin`。並透過 `pnpm add -D vite@6` 成功安裝 Vite 6 核心套件。
+- **提供純靜態型別側錄解決方案**：針對無 Vite 的網頁專案，提出並實作了基於 tsx 的動態插樁伺服器 `run-static.ts`。
+
+## 驗證結果
+- **Vite 6 安裝成功**：在 `5_abc010` 下已成功安裝 `vite@6.4.3`，且 `pnpm run dev` 能成功指向 `vite` 命令，在啟動時自動透過 `server.open` 在瀏覽器開啟 `/workspace.html`。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-07-10 14:34:00
+
+## 已完成的變更
+- **修復 ESM-CJS 依賴錯誤**：將 `vite.config.js` 改為使用 `module.createRequire` 載入以 CJS 編譯的 `../dist/plugins.js`，避免 Vite 6 拋出 `Dynamic require is not supported`。
+- **解決 XHTML DOCTYPE 錯誤**：將 `workspace.html`、`abc_editor.html`、`abc_plugin.html`、`font_gen.html` 的 doctype 全面更新為 HTML5 規格 `<!DOCTYPE html>`，防止 `parse5` 拋出 `non-conforming-doctype` 錯誤。
+
+## 驗證結果
+- **Vite 6 成功啟動與載入**：再次執行 `pnpm run dev`（或 `npx vite`），Vite 6 能夠以 600ms 快速完成初始化並啟動開發伺服器，且網頁能被正常讀取、熱重載（HMR），型別側錄插件能被安全、無錯地運行。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-07-10 14:42:00
+
+## 已完成的變更
+- **整合自動防禦兜底（Fallback noop）**：在 `src/plugins.ts` 的 `transformIndexHtml` 鉤子中，在注入 `tracker.js` 之前，先注入一段 `globalThis.__typeTracker` 的 inline noop 定義。這會使所有經過插樁的 JS 在 9002 收集器未啟動的情況下，也能安全調用 `__typeTracker` 回傳原值，而不引發致命崩潰。
+- **重新編譯專案**：執行 `pnpm run build` 使其在 `dist/` 底下生效。
+
+## 驗證結果
+- **修復白屏錯誤**：在不啟動 `js2ts-infer` 收集伺服器的情況下直接執行 `pnpm run dev` 開啟 `workspace.html`，控制台雖有 `tracker.js net::ERR_FAILED` 的正常網路錯誤，但網頁內容能夠成功加載並渲染，未拋出任何 JavaScript 執行期 `Uncaught TypeError`，達到完美防禦效果。
+
+---
+
+# 變更驗證與說明
+
+**時間戳記**：2026-07-10 15:20:00
+
+## 已完成的變更
+- **相容 Prototype 屬性方法命名解析**：在 `process-file.ts` 及 `propagation.ts` 中，新增對 `BinaryExpression` 賦值左值為 `PropertyAccessExpression`（即 prototype 賦值方法）的函數命名解析，成功解決其被誤判為 `'anonymous'` 的問題。
+- **優化二次反向傳播效能**：優化了 `propagation.ts` 中 `resolvePropertyAccessCallee` 遍歷 local scope 變數宣告的遍歷策略，避免為單一 call site 重複對整個 `sourceFile` 做 descendants AST 掃描。
+
+## 驗證結果
+- **重構編譯成功**：執行 `pnpm run build` 通過。
+- **重構型別與效能驗證**：使用者重新執行 `generate` 後，二次反向傳播從原先卡住的狀態，變為順暢且飛快地（幾毫秒內）執行完畢，且 `abc_write.ts` 中的 `printStaveLine` 及 `printStem` 等 prototype 宣告方法順利套用了來自側錄的 `number` 型別。

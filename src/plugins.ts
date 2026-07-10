@@ -34,6 +34,18 @@ export function vitePlugin(options: any = {}) {
         tags: [
           {
             tag: 'script',
+            children: `
+              if (typeof globalThis.__typeTracker === 'undefined') {
+                const noop = function(id, val) { return val; };
+                noop.enter = function() {};
+                noop.exit = function() {};
+                globalThis.__typeTracker = noop;
+              }
+            `,
+            injectTo: 'head-prepend' as const
+          },
+          {
+            tag: 'script',
             attrs: { src: `http://localhost:${port}/tracker.js` },
             injectTo: 'head-prepend' as const
           }
